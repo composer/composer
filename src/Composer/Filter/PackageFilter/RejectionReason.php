@@ -31,6 +31,9 @@ class RejectionReason
     public const FILTER_LIST = 'filter-list';
     public const COOLDOWN = 'cooldown';
     public const PLATFORM = 'platform';
+    public const STABILITY = 'stability';
+    public const CONSTRAINT = 'constraint';
+    public const REPOSITORY_PRIORITY = 'repository-priority';
 
     public const COOLDOWN_REMEDY = 'To exempt the package from the cooldown policy, add it to the "policy.cooldown.ignore" config, or run the command with --no-cooldown for a one-off bypass.';
 
@@ -48,6 +51,8 @@ class RejectionReason
     private $cooldown = null;
     /** @var list<array{link: Link, problem: string}> */
     private $platformRequirements = [];
+    /** @var ?string */
+    private $canonicalRepositoryName = null;
 
     /**
      * @param self::* $type
@@ -104,6 +109,27 @@ class RejectionReason
     {
         $reason = new self(self::PLATFORM, $packageName, $prettyVersion);
         $reason->platformRequirements = array_values($unsatisfied);
+
+        return $reason;
+    }
+
+    public static function stability(string $packageName, string $prettyVersion): self
+    {
+        return new self(self::STABILITY, $packageName, $prettyVersion);
+    }
+
+    public static function constraint(string $packageName, string $prettyVersion): self
+    {
+        return new self(self::CONSTRAINT, $packageName, $prettyVersion);
+    }
+
+    /**
+     * @param string $canonicalRepositoryName the higher priority repository the package was found in, which hides it in the others
+     */
+    public static function repositoryPriority(string $packageName, string $prettyVersion, string $canonicalRepositoryName): self
+    {
+        $reason = new self(self::REPOSITORY_PRIORITY, $packageName, $prettyVersion);
+        $reason->canonicalRepositoryName = $canonicalRepositoryName;
 
         return $reason;
     }
@@ -205,6 +231,11 @@ class RejectionReason
         return $this->platformRequirements;
     }
 
+    public function getCanonicalRepositoryName(): ?string
+    {
+        return $this->canonicalRepositoryName;
+    }
+
     /**
      * The verb that makes the description a sentence, e.g. "they are" + "abandoned"
      */
@@ -215,6 +246,9 @@ class RejectionReason
         }
         if ($this->type === self::PLATFORM) {
             return $plural ? 'require' : 'requires';
+        }
+        if ($this->type === self::STABILITY || $this->type === self::CONSTRAINT) {
+            return $plural ? 'do' : 'does';
         }
 
         return $plural ? 'are' : 'is';
@@ -242,6 +276,12 @@ class RejectionReason
                 return implode(' and ', array_map(static function (array $requirement): string {
                     return $requirement['link']->getTarget().' '.$requirement['link']->getPrettyConstraint().' which '.$requirement['problem'];
                 }, $this->platformRequirements));
+            case self::STABILITY:
+                return 'not match your minimum-stability';
+            case self::CONSTRAINT:
+                return 'not match the constraint';
+            case self::REPOSITORY_PRIORITY:
+                return 'from a repository with a lower priority than '.$this->canonicalRepositoryName.', which is canonical for this package';
         }
 
         // @phpstan-ignore deadCode.unreachable
@@ -265,6 +305,9 @@ class RejectionReason
             case self::COOLDOWN:
                 return self::COOLDOWN_REMEDY;
             case self::PLATFORM:
+            case self::STABILITY:
+            case self::CONSTRAINT:
+            case self::REPOSITORY_PRIORITY:
                 return '';
         }
 

@@ -62,6 +62,56 @@ class RequireCommandTest extends TestCase
         $appTester->run(['command' => 'require', '--dry-run' => true, '--no-audit' => true, 'packages' => ['required/pkg']]);
     }
 
+    public function testRequireReportsStableVersionsHiddenByAHigherPriorityRepository(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('which has a higher repository priority. The packages from the higher priority repository do not match your minimum-stability and are therefore not installable.');
+
+        $this->initTempComposer([
+            'repositories' => [
+                'canonical' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'required/pkg', 'version' => '1.0.0-beta1'],
+                    ],
+                ],
+                'lower' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'required/pkg', 'version' => '1.0.0'],
+                    ],
+                ],
+            ],
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'require', '--dry-run' => true, '--no-audit' => true, 'packages' => ['required/pkg']]);
+    }
+
+    public function testRequireReportsPlatformAndStabilityWhenOnlyAPrereleaseExists(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Could not find package required/pkg in any version matching your PHP version, PHP extensions and Composer version:' . PHP_EOL .
+            '  - required/pkg 1.0.0-beta1 requires ext-foobar ^1 but it is not present.' . PHP_EOL . PHP_EOL .
+            'Additionally, the package was only found with a stability of "beta" while your minimum stability is "stable".'
+        );
+
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'required/pkg', 'version' => '1.0.0-beta1', 'require' => ['ext-foobar' => '^1']],
+                    ],
+                ],
+            ],
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'require', '--dry-run' => true, '--no-audit' => true, 'packages' => ['required/pkg']]);
+    }
+
     public function testRequireThrowsOnUnquotedInlineAlias(): void
     {
         $this->expectException(InvalidArgumentException::class);

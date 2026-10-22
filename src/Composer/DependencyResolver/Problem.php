@@ -413,9 +413,11 @@ class Problem
             }
         }
 
+        $result = $repositorySet->findPackagesWithRejections($packageName, $constraint);
+
         // first check if the actual requested package is found in normal conditions
         // if so it must mean it is rejected by another constraint than the one given here
-        $packages = $repositorySet->findPackages($packageName, $constraint);
+        $packages = $result->getAccepted();
         if (\count($packages) > 0) {
             $rootReqs = $repositorySet->getRootRequires();
             if (isset($rootReqs[$packageName])) {
@@ -460,11 +462,13 @@ class Problem
             return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, likely because '.(self::hasMultipleNames($packages) ? 'they conflict' : 'it conflicts').' with another require.'];
         }
 
+        // packages that only a higher priority repository hides
+        $allReposPackages = $result->getRejectedOnlyBy(RejectionReason::REPOSITORY_PRIORITY);
+
         // check if the package is found when bypassing stability checks
-        $packages = $repositorySet->findPackages($packageName, $constraint, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES);
+        $packages = $result->getRejectedOnlyBy(RejectionReason::STABILITY);
         if (\count($packages) > 0) {
             // we must first verify if a valid package would be found in a lower priority repository
-            $allReposPackages = $repositorySet->findPackages($packageName, $constraint, RepositorySet::ALLOW_SHADOWED_REPOSITORIES);
             if (\count($allReposPackages) > 0) {
                 return self::computeCheckForLowerPrioRepo($pool, $isVerbose, $packageName, $packages, $allReposPackages, 'minimum-stability', $constraint);
             }
@@ -473,10 +477,9 @@ class Problem
         }
 
         // check if the package is found when bypassing the constraint and stability checks
-        $packages = $repositorySet->findPackages($packageName, null, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES);
+        $packages = $result->getRejectedOnlyBy(RejectionReason::STABILITY, RejectionReason::CONSTRAINT);
         if (\count($packages) > 0) {
             // we must first verify if a valid package would be found in a lower priority repository
-            $allReposPackages = $repositorySet->findPackages($packageName, $constraint, RepositorySet::ALLOW_SHADOWED_REPOSITORIES);
             if (\count($allReposPackages) > 0) {
                 return self::computeCheckForLowerPrioRepo($pool, $isVerbose, $packageName, $packages, $allReposPackages, 'constraint', $constraint);
             }

@@ -16,7 +16,9 @@ use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\IO\BufferIO;
 use Composer\IO\NullIO;
+use Composer\Repository\ArrayRepository;
 use Composer\Repository\ComposerRepository;
+use Composer\Repository\RepositorySet;
 use Composer\Test\Mock\FactoryMock;
 use Composer\Util\HttpDownloader;
 use Composer\Package\Version\VersionSelector;
@@ -511,6 +513,27 @@ class VersionSelectorTest extends TestCase
         $reasons = array_column($withheld, 'reason');
         self::assertNotEmpty($reasons);
         self::assertSame('1.2.2', RejectionReason::combine($reasons)->getPrettyVersion());
+    }
+
+    public function testExplainLastLookupCollectsTheReasonsOfAllVersions(): void
+    {
+        $parser = new VersionParser;
+        $platformBlocked = self::getPackage('foo/bar', '1.0.0');
+        $platformBlocked->setRequires(['ext-foo' => new Link('foo/bar', 'ext-foo', $parser->parseConstraints('*'), Link::TYPE_REQUIRE, '*')]);
+        $beta = self::getPackage('foo/bar', '2.0.0-beta1');
+        $repository = new ArrayRepository([$beta, $platformBlocked]);
+        $repositorySet = new RepositorySet();
+        $repositorySet->addRepository($repository);
+
+        $versionSelector = new VersionSelector($repositorySet, new PlatformRepository([], []));
+
+        self::assertFalse($versionSelector->findBestCandidate('foo/bar'));
+        self::assertSame([$platformBlocked], $versionSelector->getLastResult()->getRejected());
+
+        $explained = $versionSelector->explainLastLookup();
+        self::assertSame([$platformBlocked, $beta], $explained->getPackages());
+        self::assertSame([$platformBlocked], $explained->getRejectedOnlyBy(RejectionReason::PLATFORM));
+        self::assertSame([$beta], $explained->getRejectedOnlyBy(RejectionReason::STABILITY));
     }
 
     /**
