@@ -419,7 +419,7 @@ class GitBitbucketDriver extends VcsDriver
      */
     protected function generateSshUrl(): string
     {
-        return 'git@' . $this->originUrl . ':' . $this->owner.'/'.$this->repository.'.git';
+        return 'git@ssh.' . $this->originUrl . ':' . $this->owner.'/'.$this->repository.'.git';
     }
 
     /**

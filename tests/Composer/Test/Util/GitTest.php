@@ -183,6 +183,37 @@ class GitTest extends TestCase
         $this->git->runCommand($commandCallable, $gitUrl, null, true);
     }
 
+    public function testRunCommandPrivateBitbucketRepositoryDoesNotRetrySameSshUrl(): void
+    {
+        self::expectException('RuntimeException');
+
+        $commandCallable = static function ($url): string {
+            self::assertSame('git@ssh.bitbucket.org:acme/repo.git', $url);
+
+            return 'git command failing';
+        };
+
+        $this->config
+            ->method('get')
+            ->willReturnMap([
+                ['gitlab-domains', 0, ['gitlab.com']],
+                ['github-domains', 0, ['github.com']],
+            ]);
+
+        $this->process->expects([
+            ['cmd' => 'git command failing', 'return' => 1],
+            ['cmd' => ['git', 'config', 'bitbucket.accesstoken'], 'return' => 1],
+            ['cmd' => ['git', '--version'], 'return' => 0],
+        ], true);
+
+        $this->io
+            ->method('isInteractive')
+            ->willReturn(false);
+
+        // @phpstan-ignore method.deprecated
+        $this->git->runCommand($commandCallable, 'git@ssh.bitbucket.org:acme/repo.git', null, true);
+    }
+
     /**
      * @dataProvider privateBitbucketWithOauthProvider
      *
@@ -268,6 +299,8 @@ class GitTest extends TestCase
     public static function privateBitbucketWithOauthProvider(): array
     {
         return [
+            ['git@ssh.bitbucket.org:acme/repo.git', 'https://x-token-auth:my-access-token@bitbucket.org/acme/repo.git'],
+            ['ssh://git@ssh.bitbucket.org/acme/repo.git', 'https://x-token-auth:my-access-token@bitbucket.org/acme/repo.git'],
             ['git@bitbucket.org:acme/repo.git', 'https://x-token-auth:my-access-token@bitbucket.org/acme/repo.git'],
             ['https://bitbucket.org/acme/repo.git', 'https://x-token-auth:my-access-token@bitbucket.org/acme/repo.git'],
             ['https://bitbucket.org/acme/repo', 'https://x-token-auth:my-access-token@bitbucket.org/acme/repo.git'],
@@ -278,12 +311,16 @@ class GitTest extends TestCase
     public static function privateBitbucketWithCredentialsProvider(): array
     {
         return [
+            ['git@ssh.bitbucket.org:acme/repo.git', 'MY_BITBUCKET_TOKEN', 'https://token:MY_BITBUCKET_TOKEN@bitbucket.org/acme/repo.git', 1],
             ['git@bitbucket.org:acme/repo.git', 'MY_BITBUCKET_TOKEN', 'https://token:MY_BITBUCKET_TOKEN@bitbucket.org/acme/repo.git', 1],
             ['https://bitbucket.org/acme/repo', 'MY_BITBUCKET_TOKEN', 'https://token:MY_BITBUCKET_TOKEN@bitbucket.org/acme/repo.git', 1],
             ['https://bitbucket.org/acme/repo.git', 'MY_BITBUCKET_TOKEN', 'https://token:MY_BITBUCKET_TOKEN@bitbucket.org/acme/repo.git', 1],
-            ['git@bitbucket.org:acme/repo.git', null, 'git@bitbucket.org:acme/repo.git', 0],
-            ['https://bitbucket.org/acme/repo', null, 'git@bitbucket.org:acme/repo.git', 1, 1],
-            ['https://bitbucket.org/acme/repo.git', null, 'git@bitbucket.org:acme/repo.git', 1, 1],
+            ['git@ssh.bitbucket.org:acme/repo.git', null, 'git@ssh.bitbucket.org:acme/repo.git', 0],
+            ['git@bitbucket.org:acme/repo.git', null, 'git@ssh.bitbucket.org:acme/repo.git', 1, 1],
+            ['https://bitbucket.org/acme/repo', null, 'git@ssh.bitbucket.org:acme/repo.git', 1, 1],
+            ['https://bitbucket.org/acme/repo.git', null, 'git@ssh.bitbucket.org:acme/repo.git', 1, 1],
+            ['ssh://git@bitbucket.org/acme/repo', null, 'git@ssh.bitbucket.org:acme/repo.git', 1, 1],
+            ['ssh://git@ssh.bitbucket.org/acme/repo.git', 'MY_BITBUCKET_TOKEN', 'https://token:MY_BITBUCKET_TOKEN@bitbucket.org/acme/repo.git', 1],
             ['https://bitbucket.org/acme/repo.git', 'ATAT_BITBUCKET_API_TOKEN', 'https://x-bitbucket-api-token-auth:ATAT_BITBUCKET_API_TOKEN@bitbucket.org/acme/repo.git', 1],
         ];
     }

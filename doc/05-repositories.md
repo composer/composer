@@ -587,7 +587,7 @@ GitHub and Bitbucket:
     "repositories": [
         {
             "type": "vcs",
-            "url":  "git@bitbucket.org:vendor/my-private-repo.git"
+            "url":  "git@ssh.bitbucket.org:vendor/my-private-repo.git"
         }
     ],
     "require": {
