@@ -12,16 +12,12 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Filter\PackageFilter\RejectionReason;
+use Composer\Filter\PackageFilter\FilterListRule;
 use Composer\FilterList\FilterListAuditor;
-use Composer\FilterList\FilterListEntry;
-use Composer\FilterList\FilterListProvider\FilterListProviderSet;
 use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
-use Composer\Package\RootPackageInterface;
 use Composer\Policy\ListPolicyConfig;
 use Composer\Policy\PolicyConfig;
-use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Util\HttpDownloader;
 
@@ -69,69 +65,29 @@ class FilterListPoolFilter
     {
         // During UPDATE scope, packages that are locked are about to be installed
         // and must also be checked against install-scope filter lists (e.g. malware).
-        $checkLockedAgainstInstall = $this->blockScope === ListPolicyConfig::BLOCK_SCOPE_UPDATE;
+        $lockedNameVersionMap = $this->blockScope === ListPolicyConfig::BLOCK_SCOPE_UPDATE ? $this->buildLockedNameVersionMap($request) : [];
+        $rule = new FilterListRule(
+            $this->policyConfig,
+            $this->filterListAuditor,
+            $this->httpDownloader,
+            $this->blockScope,
+            $this->repositories,
+            $this->io,
+            function (BasePackage $package) use ($request, $lockedNameVersionMap): bool {
+                return $this->isLockedEquivalent($package, $request, $lockedNameVersionMap);
+            }
+        );
 
-        $configuredScopeListNames = $this->policyConfig->getActiveBlockFilterListNames($this->blockScope);
-        $installScopeListNames = $checkLockedAgainstInstall
-            ? $this->policyConfig->getActiveBlockFilterListNames(ListPolicyConfig::BLOCK_SCOPE_INSTALL)
-            : [];
-
-        $unionListNames = array_values(array_unique(array_merge($configuredScopeListNames, $installScopeListNames)));
-        if (count($unionListNames) === 0) {
+        $rejections = $rule->getRejections($pool->getPackages());
+        if (count($rejections) === 0) {
             return $pool;
         }
-
-        // One fetch per provider for the union of both scopes' active lists.
-        // Conservative ignoreUnreachable: only suppress transport errors when
-        // both scopes opt in — otherwise the stricter scope wins.
-        $ignoreUnreachable = $this->policyConfig->ignoreUnreachable->forBlockScope($this->blockScope);
-        if ($checkLockedAgainstInstall) {
-            $ignoreUnreachable = $ignoreUnreachable && $this->policyConfig->ignoreUnreachable->forBlockScope(ListPolicyConfig::BLOCK_SCOPE_INSTALL);
-        }
-
-        $providerSet = FilterListProviderSet::create($this->policyConfig, $this->repositories, $this->httpDownloader);
-        $fetchResult = $this->fetchFilterListMap($pool, $providerSet, $unionListNames, $ignoreUnreachable);
-        $unionMap = $fetchResult['filter'];
-        if (count($fetchResult['unreachableRepos']) > 0) {
-            $this->warnUnreachable($fetchResult['unreachableRepos']);
-        }
-
-        if (count($unionMap) === 0) {
-            return $pool;
-        }
-
-        $configuredScopeMap = self::filterMapByListNames($unionMap, $configuredScopeListNames);
-        $installScopeMap = $checkLockedAgainstInstall ? self::filterMapByListNames($unionMap, $installScopeListNames) : [];
-
-        $lockedNameVersionMap = $checkLockedAgainstInstall ? $this->buildLockedNameVersionMap($request) : [];
 
         $packages = [];
         $policyRemovedVersions = $pool->getAllPolicyRemovedVersions();
-        foreach ($pool->getPackages() as $package) {
-            if (!self::isFilterable($package)) {
-                $packages[] = $package;
-                continue;
-            }
-
-            if ($checkLockedAgainstInstall && $this->isLockedEquivalent($package, $request, $lockedNameVersionMap)) {
-                $matchingEntries = $this->filterListAuditor->getMatchingBlockEntries(
-                    $package,
-                    $installScopeMap,
-                    $this->policyConfig,
-                    ListPolicyConfig::BLOCK_SCOPE_INSTALL
-                );
-            } else {
-                $matchingEntries = $this->filterListAuditor->getMatchingBlockEntries(
-                    $package,
-                    $configuredScopeMap,
-                    $this->policyConfig,
-                    $this->blockScope
-                );
-            }
-
-            if (count($matchingEntries) > 0) {
-                Pool::recordPolicyRemoval($policyRemovedVersions, $package, RejectionReason::filterList($package->getName(), $package->getPrettyVersion(), $matchingEntries));
-
+        foreach ($pool->getPackages() as $index => $package) {
+            if (isset($rejections[$index])) {
+                Pool::recordPolicyRemoval($policyRemovedVersions, $package, $rejections[$index]);
                 continue;
             }
 
@@ -139,76 +95,6 @@ class FilterListPoolFilter
         }
 
         return new Pool($packages, $pool->getUnacceptableFixedOrLockedPackages(), $pool->getAllRemovedVersions(), $pool->getAllRemovedVersionsByPackage(), $policyRemovedVersions);
-    }
-
-    /**
-     * @param list<string> $listNames
-     * @return array{filter: array<string, array<string, list<FilterListEntry>>>, unreachableRepos: array<string>}
-     */
-    private function fetchFilterListMap(Pool $pool, FilterListProviderSet $providerSet, array $listNames, bool $ignoreUnreachable): array
-    {
-        $packagesForFilter = [];
-        foreach ($pool->getPackages() as $package) {
-            if (!self::isFilterable($package)) {
-                continue;
-            }
-
-            $packagesForFilter[] = $package;
-        }
-
-        return $this->filterListAuditor->collectFilterLists(
-            $packagesForFilter,
-            $providerSet,
-            $listNames,
-            $ignoreUnreachable
-        );
-    }
-
-    /**
-     * @param array<string> $unreachableRepos
-     */
-    private function warnUnreachable(array $unreachableRepos): void
-    {
-        $this->io->writeError('<warning>Filter list data could not be fetched from some sources (ignored per policy.ignore-unreachable); matches may be incomplete:</warning>');
-        foreach ($unreachableRepos as $repo) {
-            $this->io->writeError('  - ' . $repo);
-        }
-    }
-
-    /**
-     * Restrict a packageName => listName => entries map to the given list names.
-     *
-     * Used to split a single union-fetched filter map into per-scope maps that
-     * `FilterListAuditor::matchingEntries()` can safely consume. The auditor's
-     * non-ignored-package code path does not re-filter entries by active list,
-     * so each map MUST only contain entries from lists active for its scope.
-     *
-     * @param array<string, array<string, list<FilterListEntry>>> $map
-     * @param list<string> $listNames
-     * @return array<string, array<string, list<FilterListEntry>>>
-     */
-    private static function filterMapByListNames(array $map, array $listNames): array
-    {
-        if (count($listNames) === 0) {
-            return [];
-        }
-
-        $allowed = array_flip($listNames);
-        $filtered = [];
-        foreach ($map as $packageName => $entriesByList) {
-            foreach ($entriesByList as $listName => $entries) {
-                if (isset($allowed[$listName])) {
-                    $filtered[$packageName][$listName] = $entries;
-                }
-            }
-        }
-
-        return $filtered;
-    }
-
-    private static function isFilterable(BasePackage $package): bool
-    {
-        return !($package instanceof RootPackageInterface) && !PlatformRepository::isPlatformPackage($package->getName());
     }
 
     /**
