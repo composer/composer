@@ -14,7 +14,6 @@ namespace Composer\Command;
 
 use Composer\Config;
 use Composer\Factory;
-use Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\Installer;
@@ -454,10 +453,11 @@ EOT
 
         if (!$package) {
             $errorMessage = "Could not find package $name with " . ($packageVersion ? "version $packageVersion" : "stability $stability");
-            if (!($platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter) && $versionSelector->findBestCandidate($name, $packageVersion, $stability, PlatformRequirementFilterFactory::ignoreAll())) {
+            $result = $versionSelector->getLastResult();
+            if (\count($result->getRejectedOnlyBy(RejectionReason::PLATFORM)) > 0) {
                 throw new \InvalidArgumentException($errorMessage .' in a version installable using your PHP version, PHP extensions and Composer version.');
             }
-            if ($cooldown !== null && false !== (new VersionSelector($repositorySet, $platformRepo))->findBestCandidate($name, $packageVersion, $stability, $platformRequirementFilter)) {
+            if (\count($result->getRejectedOnlyBy(RejectionReason::COOLDOWN)) > 0) {
                 throw new \InvalidArgumentException($errorMessage .' that is past the cooldown period configured in "policy.cooldown". '.RejectionReason::COOLDOWN_REMEDY);
             }
 

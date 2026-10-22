@@ -16,6 +16,7 @@ use Composer\Cache;
 use Composer\Composer;
 use Composer\Config;
 use Composer\DependencyResolver\DefaultPolicy;
+use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
@@ -1643,8 +1644,9 @@ EOT
         }
 
         $latest = $candidate !== false ? $candidate : null;
+        $result = $versionSelector->getLastResult();
         // versions exist but none is installable on this platform, so there is nothing to update to
-        if ($latest === null && count($versionSelector->getPlatformRejectedCandidates()) > 0) {
+        if ($latest === null && count($result->getRejectedOnlyBy(RejectionReason::PLATFORM)) > 0) {
             $latest = $package;
         }
         $withheld = null;
@@ -1654,14 +1656,18 @@ EOT
             $isStabilityFallback = $latest !== null && $composer->getPackage()->getPreferStable() && BasePackage::STABILITIES[$latest->getStability()] > BasePackage::STABILITIES[$package->getStability()];
             $withheldCandidates = [];
             $installedIsWithheld = false;
-            foreach ($versionSelector->getWithheldCandidates() as $withheldCandidate) {
-                while ($withheldCandidate['package'] instanceof AliasPackage) {
-                    $withheldCandidate['package'] = $withheldCandidate['package']->getAliasOf();
+            foreach ($result->getRejections(RejectionReason::COOLDOWN) as $rejection) {
+                $withheldPackage = $rejection['package'];
+                $cooldownInfo = $rejection['reason']->getCooldownInfo();
+                while ($withheldPackage instanceof AliasPackage) {
+                    $withheldPackage = $withheldPackage->getAliasOf();
                 }
-                if ($withheldCandidate['package']->getVersion() === $package->getVersion()) {
+                if ($withheldPackage->getVersion() === $package->getVersion()) {
                     $installedIsWithheld = true;
                 }
-                $withheldCandidates[] = $withheldCandidate;
+                if ($cooldownInfo !== null) {
+                    $withheldCandidates[] = ['package' => $withheldPackage, 'releaseDate' => new DateTimeImmutable($cooldownInfo['releaseDate'])];
+                }
             }
 
             // the installed version is itself still in the cooldown period, e.g. the period was configured after

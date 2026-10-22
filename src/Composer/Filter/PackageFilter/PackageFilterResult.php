@@ -79,6 +79,25 @@ class PackageFilterResult
     }
 
     /**
+     * @param RejectionReason::* $type
+     * @return list<array{package: BasePackage, reason: RejectionReason}> the packages rejected for this reason, among others
+     */
+    public function getRejections(string $type): array
+    {
+        $rejections = [];
+        foreach ($this->reasons as $index => $reasons) {
+            foreach ($reasons as $reason) {
+                if ($reason->getType() === $type) {
+                    $rejections[] = ['package' => $this->packages[$index], 'reason' => $reason];
+                    break;
+                }
+            }
+        }
+
+        return $rejections;
+    }
+
+    /**
      * The packages that would be accepted if the given rejection reasons did not apply, e.g. those only the cooldown keeps out
      *
      * @param RejectionReason::* ...$types
