@@ -30,6 +30,7 @@ use Composer\Policy\CooldownPolicyConfig;
 use Composer\Filter\PackageFilter\CooldownRule;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\PlatformRepository;
+use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
  * Selects the best possible version for a package
@@ -53,6 +54,9 @@ class VersionSelector
 
     /** @var PackageFilterResult */
     private $lastResult;
+
+    /** @var ?array{name: string, constraint: ?ConstraintInterface, minPriority: BasePackage::STABILITY_*, platformRequirementFilter: PlatformRequirementFilterInterface} */
+    private $lastLookup = null;
 
     /**
      * @param PlatformRepository   $platformRepo If passed in, the versions found will be filtered against their requirements to eliminate any not matching the current platform packages
@@ -90,8 +94,9 @@ class VersionSelector
         }
 
         $constraint = $targetPackageVersion ? $this->getParser()->parseConstraints($targetPackageVersion) : null;
-        $candidates = $this->repositorySet->findPackages(strtolower($packageName), $constraint, $repoSetFlags);
-        usort($candidates, self::getPreferenceComparator(BasePackage::STABILITIES[$preferredStability]));
+        $this->lastLookup = ['name' => strtolower($packageName), 'constraint' => $constraint, 'minPriority' => BasePackage::STABILITIES[$preferredStability], 'platformRequirementFilter' => $platformRequirementFilter];
+        $candidates = $this->repositorySet->findPackages($this->lastLookup['name'], $constraint, $repoSetFlags);
+        usort($candidates, self::getPreferenceComparator($this->lastLookup['minPriority']));
 
         // every rule checks every candidate, so callers can tell what alone keeps a version out
         $this->lastResult = $this->createFilter($platformRequirementFilter)->filter($candidates, true);
@@ -121,6 +126,23 @@ class VersionSelector
     public function getLastResult(): PackageFilterResult
     {
         return $this->lastResult;
+    }
+
+    /**
+     * Looks the package of the last findBestCandidate() call up again in every repository and stability, to explain why no version was selected
+     *
+     * @internal
+     */
+    public function explainLastLookup(): PackageFilterResult
+    {
+        if ($this->lastLookup === null) {
+            throw new \LogicException('findBestCandidate() must be called before explainLastLookup()');
+        }
+
+        $result = $this->repositorySet->findPackagesWithRejections($this->lastLookup['name'], $this->lastLookup['constraint'])
+            ->sorted(self::getPreferenceComparator($this->lastLookup['minPriority']));
+
+        return $this->createFilter($this->lastLookup['platformRequirementFilter'])->apply($result, true);
     }
 
     private function createFilter(PlatformRequirementFilterInterface $platformRequirementFilter): PackageFilter

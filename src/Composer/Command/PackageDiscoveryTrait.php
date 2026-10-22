@@ -14,7 +14,6 @@ namespace Composer\Command;
 
 use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\Factory;
-use Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
@@ -368,13 +367,15 @@ trait PackageDiscoveryTrait
                 ));
             }
 
-            // The diagnostics below ask what would match with a constraint relaxed, which the cooldown must not hide
-            $unfilteredSelector = new VersionSelector($repoSet, $platformRepo);
+            // The diagnostics below ask what would match with a rule relaxed, which the cooldown must not hide
+            $explained = $versionSelector->explainLastLookup();
 
             // Check whether the minimum stability was the problem but the package exists
-            if (false !== ($package = $unfilteredSelector->findBestCandidate($name, null, $preferredStability, $platformRequirementFilter, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES))) {
+            $package = $explained->getRejectedOnlyBy(RejectionReason::STABILITY, RejectionReason::COOLDOWN)[0] ?? null;
+            if ($package !== null) {
                 // we must first verify if a valid package would be found in a lower priority repository
-                if (false !== ($allReposPackage = $unfilteredSelector->findBestCandidate($name, null, $preferredStability, $platformRequirementFilter, RepositorySet::ALLOW_SHADOWED_REPOSITORIES))) {
+                $allReposPackage = $explained->getRejectedOnlyBy(RejectionReason::REPOSITORY_PRIORITY, RejectionReason::COOLDOWN)[0] ?? null;
+                if ($allReposPackage !== null) {
                     throw new \InvalidArgumentException(
                         'Package '.$name.' exists in '.$allReposPackage->getRepository()->getRepoName().' and '.$package->getRepository()->getRepoName().' which has a higher repository priority. The packages from the higher priority repository do not match your minimum-stability and are therefore not installable. That repository is canonical so the lower priority repo\'s packages are not installable. See https://getcomposer.org/repoprio for details and assistance.'
                     );
@@ -387,9 +388,10 @@ trait PackageDiscoveryTrait
                 ));
             }
             // Check whether the PHP version was the problem for all versions
-            if (!$platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter && false !== ($candidate = $unfilteredSelector->findBestCandidate($name, null, $preferredStability, PlatformRequirementFilterFactory::ignoreAll(), RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES))) {
+            $candidate = $explained->getRejectedOnlyBy(RejectionReason::PLATFORM, RejectionReason::STABILITY, RejectionReason::COOLDOWN)[0] ?? null;
+            if ($candidate !== null) {
                 $additional = '';
-                if (false === $unfilteredSelector->findBestCandidate($name, null, $preferredStability, PlatformRequirementFilterFactory::ignoreAll())) {
+                if (\count($explained->getRejectedOnlyBy(RejectionReason::PLATFORM, RejectionReason::COOLDOWN)) === 0) {
                     $additional = PHP_EOL.PHP_EOL.'Additionally, the package was only found with a stability of "'.$candidate->getStability().'" while your minimum stability is "'.$effectiveMinimumStability.'".';
                 }
 
