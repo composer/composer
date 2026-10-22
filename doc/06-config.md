@@ -1287,6 +1287,9 @@ Composer's caches. When garbage collecting the repo and vcs caches with
 removed. It is also used for the files cache unless
 [cache-files-ttl](#cache-files-ttl) is set.
 
+Setting it to 0 makes `composer clear-cache --gc` empty the repo and vcs caches,
+and disables the files cache unless [cache-files-ttl](#cache-files-ttl) is set.
+
 ## cache-files-ttl
 
 Defaults to the value of [cache-ttl](#cache-ttl), so `15552000` (6 months)
