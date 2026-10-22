@@ -637,7 +637,8 @@ Please note:
 Repositories with a large number of branches can be slow to load, as the
 `composer.json` of every branch has to be read. You can restrict which
 branches are loaded with the `only-branches` key, which takes a list of branch
-names that may contain `*` wildcards. The default branch is always loaded.
+names that may contain `*` wildcards. The default branch is always loaded,
+so an empty list loads only the default branch.
 
 ```json
 {
