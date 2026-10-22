@@ -25,7 +25,7 @@ use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Pcre\Preg;
 use Composer\Policy\CooldownPolicyConfig;
-use Composer\Filter\PackageFilter\RejectionReason;
+use Composer\Filter\PackageFilter\CooldownRule;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\PlatformRepository;
 use Composer\Semver\Constraint\Constraint;
@@ -248,36 +248,29 @@ class VersionSelector
     /**
      * Drops candidates still inside the cooldown so the selected version is one the solver will accept
      *
-     * @param PackageInterface[] $candidates
+     * @param BasePackage[] $candidates
      * @param callable(PackageInterface):bool|bool $showWarnings
-     * @return PackageInterface[]
+     * @return BasePackage[]
      */
     private function filterCooldownCandidates(CooldownPolicyConfig $cooldown, array $candidates, ?IOInterface $io, $showWarnings): array
     {
-        $now = new \DateTimeImmutable();
+        $rejections = (new CooldownRule($cooldown))->getRejections($candidates);
+
         /** @var array<string, true> $alreadySeenNames */
         $alreadySeenNames = [];
         /** @var array<string, true> $acceptedNames */
         $acceptedNames = [];
         $result = [];
 
-        foreach ($candidates as $pkg) {
-            // decide on the aliased package, as the pool filter does
-            $target = $pkg instanceof AliasPackage ? $pkg->getAliasOf() : $pkg;
-            if ($target->isDev() || $cooldown->isIgnored($target, 'block')) {
+        foreach ($candidates as $index => $pkg) {
+            if (!isset($rejections[$index])) {
                 $result[] = $pkg;
                 $acceptedNames[$pkg->getName()] = true;
                 continue;
             }
 
-            $cooldown->assertPublishedTimeProvided($target);
-            $releaseDate = $cooldown->getEffectiveDate($target);
-            if ($releaseDate === null || !$cooldown->isWithinCooldown($releaseDate, $now)) {
-                $result[] = $pkg;
-                $acceptedNames[$pkg->getName()] = true;
-                continue;
-            }
-
+            $reason = $rejections[$index];
+            $releaseDate = new \DateTimeImmutable($reason->getCooldownInfo()['releaseDate'] ?? 'now');
             if ($this->firstClearingWithheldCandidate === null || $releaseDate < $this->firstClearingWithheldCandidate['releaseDate']) {
                 $this->firstClearingWithheldCandidate = ['package' => $pkg, 'releaseDate' => $releaseDate];
             }
@@ -291,13 +284,6 @@ class VersionSelector
             $isLatestVersion = !isset($alreadySeenNames[$pkg->getName()]);
             $alreadySeenNames[$pkg->getName()] = true;
             if ($io !== null && ($showWarnings === true || (is_callable($showWarnings) && $showWarnings($pkg)))) {
-                $reason = RejectionReason::cooldown(
-                    $pkg->getName(),
-                    $pkg->getPrettyVersion(),
-                    $releaseDate->format(\DateTimeInterface::ATOM),
-                    $cooldown->formatTimeUntilAvailable($releaseDate, $now),
-                    $target->getPublishedDate() !== null ? 'published-time' : 'time'
-                );
                 $io->writeError(
                     '<warning>Cannot use '.$pkg->getPrettyName().($isLatestVersion ? "'s latest version" : '').' '.$pkg->getPrettyVersion().' as it '.$reason->getVerb(false).' '.$reason->getDescription().'.</>',
                     true,
