@@ -23,6 +23,7 @@ use Symfony\Component\Console\Formatter\OutputFormatter;
  *
  * @internal
  * @final
+ * @phpstan-type RejectionType self::ABANDONED|self::ADVISORIES|self::FILTER_LIST|self::COOLDOWN|self::PLATFORM|self::STABILITY|self::CONSTRAINT|self::REPOSITORY_PRIORITY
  */
 class RejectionReason
 {
@@ -35,9 +36,12 @@ class RejectionReason
     public const CONSTRAINT = 'constraint';
     public const REPOSITORY_PRIORITY = 'repository-priority';
 
+    /** The rejections caused by dependency policies, in the order the policies are applied */
+    public const POLICIES = [self::ABANDONED, self::ADVISORIES, self::FILTER_LIST, self::COOLDOWN];
+
     public const COOLDOWN_REMEDY = 'To exempt the package from the cooldown policy, add it to the "policy.cooldown.ignore" config, or run the command with --no-cooldown for a one-off bypass.';
 
-    /** @var self::* */
+    /** @var RejectionType */
     private $type;
     /** @var string */
     private $packageName;
@@ -55,7 +59,7 @@ class RejectionReason
     private $canonicalRepositoryName = null;
 
     /**
-     * @param self::* $type
+     * @param RejectionType $type
      */
     private function __construct(string $type, string $packageName, string $prettyVersion)
     {
@@ -182,7 +186,49 @@ class RejectionReason
     }
 
     /**
-     * @return self::*
+     * Explains why policies rejected the versions, as "because ..." followed by the remedies
+     *
+     * When several policies rejected different versions, one sentence would attribute every reason to
+     * every version, so the versions are then listed grouped by their own reason
+     *
+     * @param non-empty-array<self> $reasons policy rejections, in version order
+     * @param bool $decorated whether to link advisories to their details, which only works in console output and not in exception messages
+     */
+    public static function explainPolicyRejections(array $reasons, bool $plural, bool $decorated = true): string
+    {
+        $policies = array_unique(array_map(static function (self $reason): string {
+            return $reason->getType();
+        }, $reasons));
+        if (\count($policies) === 1) {
+            $reason = self::combine($reasons);
+            $remedy = $reason->getRemedy();
+
+            return 'because '.($plural ? 'they ' : 'it ').$reason->getVerb($plural).' '.$reason->getDescription($decorated).'.'.($remedy !== '' ? ' '.$remedy : '').' To turn the feature off entirely, you can set '.$reason->getOffSwitch().' to false.';
+        }
+
+        $versionsByReason = [];
+        $remedies = [];
+        $offSwitches = [];
+        foreach ($reasons as $reason) {
+            $versionsByReason[$reason->getDescription($decorated)][$reason->getPrettyVersion()] = true;
+            if ($reason->getRemedy() !== '') {
+                $remedies[$reason->getRemedy()] = true;
+            }
+            $offSwitches[$reason->getOffSwitch()] = true;
+        }
+
+        $lines = [];
+        foreach ($versionsByReason as $description => $versions) {
+            $lines[] = implode(', ', array_keys($versions)) . ': ' . $description;
+        }
+
+        $remedies['To turn a policy off entirely, you can set ' . implode(' or ', array_keys($offSwitches)) . ' to false.'] = true;
+
+        return "because:\n      - " . implode("\n      - ", $lines) . "\n      " . implode(' ', array_keys($remedies));
+    }
+
+    /**
+     * @return RejectionType
      */
     public function getType(): string
     {
@@ -194,7 +240,7 @@ class RejectionReason
      */
     public function isPolicy(): bool
     {
-        return \in_array($this->type, [self::ABANDONED, self::ADVISORIES, self::FILTER_LIST, self::COOLDOWN], true);
+        return \in_array($this->type, self::POLICIES, true);
     }
 
     public function getPackageName(): string
@@ -254,13 +300,18 @@ class RejectionReason
         return $plural ? 'are' : 'is';
     }
 
-    public function getDescription(): string
+    /**
+     * @param bool $decorated whether to link advisories to their details, which only works in console output and not in exception messages
+     */
+    public function getDescription(bool $decorated = true): string
     {
         switch ($this->type) {
             case self::ABANDONED:
                 return 'abandoned';
             case self::ADVISORIES:
-                return 'affected by security advisories ("' . implode('", "', $this->getLinkedAdvisoryIdentifiers()) . '")';
+                return 'affected by security advisories ("' . implode('", "', $decorated ? $this->getLinkedAdvisoryIdentifiers() : array_map(static function (PartialSecurityAdvisory $advisory): string {
+                    return $advisory->advisoryId;
+                }, $this->advisories)) . '")';
             case self::FILTER_LIST:
                 return implode(', ', $this->getFilterListDescriptions());
             case self::COOLDOWN:

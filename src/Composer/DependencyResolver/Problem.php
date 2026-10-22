@@ -535,7 +535,7 @@ class Problem
 
         $reason = $pool->getPolicyRemovalReason($package->getName(), $package->getVersion());
         if ($reason !== null) {
-            return [$prefix, 'was not loaded, because it '.self::formatPolicyRemovalSentence($reason, false)];
+            return [$prefix, 'was not loaded, '.RejectionReason::explainPolicyRejections([$reason], false)];
         }
 
         throw new \LogicException("Filter list removed locked package must have version removed from pool.");
@@ -770,53 +770,13 @@ class Problem
     }
 
     /**
-     * @return string the reason as the end of a sentence starting with "because they"/"because it", followed by the remedies
-     */
-    private static function formatPolicyRemovalSentence(RejectionReason $reason, bool $plural): string
-    {
-        $remedy = $reason->getRemedy();
-
-        return $reason->getVerb($plural).' '.$reason->getDescription().'.'.($remedy !== '' ? ' '.$remedy : '').' To turn the feature off entirely, you can set '.$reason->getOffSwitch().' to false.';
-    }
-
-    /**
      * Explains why policies removed the versions, as "because ..." followed by the remedies
-     *
-     * When several policies removed different versions, one sentence would attribute every reason to
-     * every version, so the versions are then listed grouped by their own reason
      *
      * @param non-empty-array<string, RejectionReason> $removals normalized version => reason, in version order
      */
     private static function formatPolicyRemovalReasons(array $removals, bool $plural, RepositorySet $repositorySet): string
     {
-        $removals = self::loadCompleteAdvisories($removals, $repositorySet);
-
-        $policies = array_unique(array_map(static function (RejectionReason $reason): string {
-            return $reason->getType();
-        }, $removals));
-        if (\count($policies) === 1) {
-            return 'because '.($plural ? 'they ' : 'it ').self::formatPolicyRemovalSentence(RejectionReason::combine($removals), $plural);
-        }
-
-        $versionsByReason = [];
-        $remedies = [];
-        $offSwitches = [];
-        foreach ($removals as $reason) {
-            $versionsByReason[$reason->getDescription()][$reason->getPrettyVersion()] = true;
-            if ($reason->getRemedy() !== '') {
-                $remedies[$reason->getRemedy()] = true;
-            }
-            $offSwitches[$reason->getOffSwitch()] = true;
-        }
-
-        $lines = [];
-        foreach ($versionsByReason as $description => $versions) {
-            $lines[] = implode(', ', array_keys($versions)) . ': ' . $description;
-        }
-
-        $remedies['To turn a policy off entirely, you can set ' . implode(' or ', array_keys($offSwitches)) . ' to false.'] = true;
-
-        return "because:\n      - " . implode("\n      - ", $lines) . "\n      " . implode(' ', array_keys($remedies));
+        return RejectionReason::explainPolicyRejections(self::loadCompleteAdvisories($removals, $repositorySet), $plural);
     }
 
     /**

@@ -448,7 +448,7 @@ EOT
         $cooldown = $this->getBlockingCooldownPolicy($config, $input);
 
         // find the latest version if there are multiple
-        $versionSelector = new VersionSelector($repositorySet, $platformRepo, $cooldown);
+        $versionSelector = new VersionSelector($repositorySet, $platformRepo, $cooldown, $this->createBlockingPolicyRules($config, $input, $repositorySet, $composer->getLoop()->getHttpDownloader()));
         $package = $versionSelector->findBestCandidate($name, $packageVersion, $stability, $platformRequirementFilter, 0, $io);
 
         if (!$package) {
@@ -459,6 +459,16 @@ EOT
             }
             if (\count($result->getRejectedOnlyBy(RejectionReason::COOLDOWN)) > 0) {
                 throw new \InvalidArgumentException($errorMessage .' that is past the cooldown period configured in "policy.cooldown". '.RejectionReason::COOLDOWN_REMEDY);
+            }
+            $blocked = [];
+            foreach ($result->getRejectedOnlyBy(...RejectionReason::POLICIES) as $candidate) {
+                $blocked[$candidate->getVersion()] = $result->getReasons($candidate)[0];
+            }
+            if (\count($blocked) > 0) {
+                uksort($blocked, static function (string $a, string $b): int {
+                    return version_compare($a, $b);
+                });
+                throw new \InvalidArgumentException($errorMessage .' that is allowed by your dependency policies, '.RejectionReason::explainPolicyRejections($blocked, \count($blocked) > 1, false));
             }
 
             throw new \InvalidArgumentException($errorMessage .'.');

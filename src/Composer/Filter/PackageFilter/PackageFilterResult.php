@@ -19,6 +19,7 @@ use Composer\Package\BasePackage;
  *
  * @internal
  * @final
+ * @phpstan-import-type RejectionType from RejectionReason
  */
 class PackageFilterResult
 {
@@ -63,7 +64,7 @@ class PackageFilterResult
     }
 
     /**
-     * @param RejectionReason::*|null $type only return packages rejected for this reason, among others
+     * @param RejectionType|null $type only return packages rejected for this reason, among others
      * @return list<BasePackage>
      */
     public function getRejected(?string $type = null): array
@@ -79,7 +80,7 @@ class PackageFilterResult
     }
 
     /**
-     * @param RejectionReason::* $type
+     * @param RejectionType $type
      * @return list<array{package: BasePackage, reason: RejectionReason}> the packages rejected for this reason, among others
      */
     public function getRejections(string $type): array
@@ -100,7 +101,7 @@ class PackageFilterResult
     /**
      * The packages that would be accepted if the given rejection reasons did not apply, e.g. those only the cooldown keeps out
      *
-     * @param RejectionReason::* ...$types
+     * @param RejectionType ...$types
      * @return list<BasePackage>
      */
     public function getRejectedOnlyBy(string ...$types): array
@@ -129,7 +130,7 @@ class PackageFilterResult
     }
 
     /**
-     * @param RejectionReason::* $type
+     * @param RejectionType $type
      */
     public function getReason(BasePackage $package, string $type): ?RejectionReason
     {
