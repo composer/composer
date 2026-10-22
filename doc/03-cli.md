@@ -204,6 +204,7 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
 * **--no-security-blocking:** DEPRECATED, use `--no-blocking` instead. Allows installing packages with security advisories, that are abandoned or that are still in the cooldown period. Also see [COMPOSER_NO_SECURITY_BLOCKING](#composer_no_security_blocking).
 * **--no-blocking:** Disables all policy based dependency blocking during this command, including the cooldown period. Also see [COMPOSER_NO_BLOCKING](#composer_no_blocking).
+* **--no-cooldown:** Disables the [cooldown policy](06-config.md#cooldown) blocking during this command, other policies still apply.
 * **--lock:** Overwrites the lock file hash to suppress warning about the lock file being out of
   date without updating package versions. Package metadata like mirrors and URLs are updated if
   they changed.
@@ -300,6 +301,7 @@ If you do not want to install the new dependencies immediately you can call it w
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
 * **--no-security-blocking:** DEPRECATED, use `--no-blocking` instead. Allows installing packages with security advisories, that are abandoned or that are still in the cooldown period. Also see [COMPOSER_NO_SECURITY_BLOCKING](#composer_no_security_blocking).
 * **--no-blocking:** Disables all policy blocking during this command, including the cooldown period. Also see [COMPOSER_NO_BLOCKING](#composer_no_blocking).
+* **--no-cooldown:** Disables the [cooldown policy](06-config.md#cooldown) blocking during this command, other policies still apply.
 * **--update-no-dev:** Run the dependency update with the `--no-dev` option. Also see [COMPOSER_NO_DEV](#composer_no_dev).
 * **--update-with-dependencies (-w):** Also update dependencies of the newly required packages, except those that are root requirements. Can also be set via the COMPOSER_WITH_DEPENDENCIES=1 env var.
 * **--update-with-all-dependencies (-W):** Also update dependencies of the newly required packages, including those that are root requirements. Can also be set via the COMPOSER_WITH_ALL_DEPENDENCIES=1 env var.
@@ -355,6 +357,7 @@ uninstalled.
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
 * **--no-security-blocking:** DEPRECATED, use `--no-blocking` instead. Allows installing packages with security advisories, that are abandoned or that are still in the cooldown period. Also see [COMPOSER_NO_SECURITY_BLOCKING](#composer_no_security_blocking).
 * **--no-blocking:** Disables all policy based dependency blocking during this command, including the cooldown period. Also see [COMPOSER_NO_BLOCKING](#composer_no_blocking).
+* **--no-cooldown:** Disables the [cooldown policy](06-config.md#cooldown) blocking during this command, other policies still apply.
 * **--update-no-dev:** Run the dependency update with the --no-dev option. Also see [COMPOSER_NO_DEV](#composer_no_dev).
 * **--update-with-dependencies (-w):** Also update dependencies of the removed packages. Can also be set via the COMPOSER_WITH_DEPENDENCIES=1 env var.
   (Deprecated, is now default behavior)
@@ -1088,6 +1091,7 @@ By default the command checks for the packages on packagist.org.
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
 * **--no-security-blocking:** DEPRECATED, use `--no-blocking` instead. Allows installing packages with security advisories, that are abandoned or that are still in the cooldown period. Also see [COMPOSER_NO_SECURITY_BLOCKING](#composer_no_security_blocking).
 * **--no-blocking:** Disables all policy blocking during this command, including the cooldown period. Also see [COMPOSER_NO_BLOCKING](#composer_no_blocking).
+* **--no-cooldown:** Disables the [cooldown policy](06-config.md#cooldown) blocking during this command, other policies still apply.
 * **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
   `lib-*` and `ext-*`) and force the installation even if the local machine does
   not fulfill these.

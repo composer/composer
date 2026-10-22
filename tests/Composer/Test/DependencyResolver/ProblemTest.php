@@ -173,7 +173,7 @@ class ProblemTest extends TestCase
         // each version gets its own line with the policy that removed it, and the remedies follow once
         self::assertStringContainsString("found vendor/pkg[1.0.0, 1.0.1] but these were not loaded, because:\n      - 1.0.0: affected by security advisories (\"", $message);
         self::assertStringContainsString('PKSA-1234-abcd-1234', $message);
-        self::assertStringContainsString("\n      - 1.0.1: still in the cooldown period configured in \"policy.cooldown\" (available in 5 days)\n      Go to https://packagist.org/security-advisories/ to find advisory details. To ignore the advisories, add their IDs to the \"policy.advisories.ignore-id\" config or add the package to \"policy.advisories.ignore\". To exempt the package from the cooldown policy, add it to the \"policy.cooldown.ignore\" config, or run the command with COMPOSER_POLICY_COOLDOWN_PERIOD=0 for a one-off bypass. To turn a policy off entirely, you can set \"policy.advisories.block\" or \"policy.cooldown.block\" to false.", $message);
+        self::assertStringContainsString("\n      - 1.0.1: still in the cooldown period configured in \"policy.cooldown\" (available in 5 days)\n      Go to https://packagist.org/security-advisories/ to find advisory details. To ignore the advisories, add their IDs to the \"policy.advisories.ignore-id\" config or add the package to \"policy.advisories.ignore\". To exempt the package from the cooldown policy, add it to the \"policy.cooldown.ignore\" config, or run the command with --no-cooldown for a one-off bypass. To turn a policy off entirely, you can set \"policy.advisories.block\" or \"policy.cooldown.block\" to false.", $message);
     }
 
     public function testGetMissingPackageReasonKeepsOneSentenceWhenOnlyTheCooldownWithheldVersions(): void
@@ -242,7 +242,7 @@ class ProblemTest extends TestCase
 
         self::assertStringContainsString("found vendor/pkg[1.0.0, 1.0.1] but these were not loaded, because:\n      - 1.0.0: flagged as malware", $message);
         self::assertStringContainsString('reason: looks suspicious', $message);
-        self::assertStringContainsString("\n      - 1.0.1: still in the cooldown period configured in \"policy.cooldown\" (available in 5 days, based on the package-supplied time field as the repository provides no published-time)\n      To ignore filters for this package, add the package to the \"policy.malware.ignore\" config. To exempt the package from the cooldown policy, add it to the \"policy.cooldown.ignore\" config, or run the command with COMPOSER_POLICY_COOLDOWN_PERIOD=0 for a one-off bypass. To turn a policy off entirely, you can set \"policy.malware.block\" or \"policy.cooldown.block\" to false.", $message);
+        self::assertStringContainsString("\n      - 1.0.1: still in the cooldown period configured in \"policy.cooldown\" (available in 5 days, based on the package-supplied time field as the repository provides no published-time)\n      To ignore filters for this package, add the package to the \"policy.malware.ignore\" config. To exempt the package from the cooldown policy, add it to the \"policy.cooldown.ignore\" config, or run the command with --no-cooldown for a one-off bypass. To turn a policy off entirely, you can set \"policy.malware.block\" or \"policy.cooldown.block\" to false.", $message);
     }
 
     public function testConflictAlternativeLinksCompleteAdvisories(): void

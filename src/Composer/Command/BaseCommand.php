@@ -473,7 +473,7 @@ abstract class BaseCommand extends Command
     }
 
     /**
-     * Creates a PolicyConfig from the Config object, applying --no-blocking / --no-security-blocking overrides.
+     * Creates a PolicyConfig from the Config object, applying --no-blocking / --no-security-blocking / --no-cooldown overrides.
      *
      * @internal
      */
@@ -489,6 +489,8 @@ abstract class BaseCommand extends Command
 
         if ($noBlocking) {
             $policyConfig = $policyConfig->withBlockingDisabled();
+        } elseif ($input !== null && $input->hasOption('no-cooldown') && $input->getOption('no-cooldown')) {
+            $policyConfig = $policyConfig->withCooldownBlockingDisabled();
         }
 
         return $policyConfig;

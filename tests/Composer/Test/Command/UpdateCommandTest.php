@@ -621,6 +621,52 @@ OUTPUT
         self::assertStringNotContainsString('Locking malicious/pkg (1.0.0)', $display);
     }
 
+    public function testNoCooldownOnlyDisablesCooldownBlocking(): void
+    {
+        $recent = gmdate('Y-m-d H:i:s', time() - 3600);
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'fresh/pkg', 'version' => '1.0.0', 'time' => '2020-01-01 00:00:00'],
+                        ['name' => 'fresh/pkg', 'version' => '1.1.0', 'time' => $recent],
+                        ['name' => 'malicious/pkg', 'version' => '1.0.0', 'time' => '2020-01-01 00:00:00'],
+                        ['name' => 'malicious/pkg', 'version' => '1.1.0', 'time' => '2020-01-01 00:00:00'],
+                    ],
+                    'filter' => [
+                        'malware' => [
+                            [
+                                'package' => 'malicious/pkg',
+                                'constraint' => '>=1.1.0',
+                                'reason' => 'malware',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'require' => [
+                'fresh/pkg' => '^1.0',
+                'malicious/pkg' => '^1.0',
+            ],
+            'config' => ['policy' => ['cooldown' => ['period' => '7 days']]],
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'update', '--dry-run' => true, '--no-audit' => true, '--no-install' => true]);
+
+        $display = $appTester->getDisplay(true);
+        self::assertStringContainsString('Locking fresh/pkg (1.0.0)', $display);
+        self::assertStringContainsString('Locking malicious/pkg (1.0.0)', $display);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'update', '--dry-run' => true, '--no-audit' => true, '--no-install' => true, '--no-cooldown' => true]);
+
+        $display = $appTester->getDisplay(true);
+        self::assertStringContainsString('Locking fresh/pkg (1.1.0)', $display);
+        self::assertStringContainsString('Locking malicious/pkg (1.0.0)', $display);
+    }
+
     public function testBumpAfterUpdateWithoutLockfile(): void
     {
         $this->initTempComposer([
