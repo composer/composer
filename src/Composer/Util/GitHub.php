@@ -105,7 +105,7 @@ class GitHub
         ]);
 
         $this->io->writeError([
-            '1. When you don\'t use \'vcs\'  type \'repositories\'  in composer.json and do not need to clone source or download dist files',
+            '1. When you don\'t use \'vcs\' type \'repositories\' in composer.json and do not need to clone source or download dist files',
             'from private GitHub repositories over HTTPS, use a fine-grained token with read-only access to public information.',
             'Use the following URL to create such a token:',
             'https://'.$originUrl.'/settings/personal-access-tokens/new?name=' . str_replace('%20', '+', rawurlencode($note)),
