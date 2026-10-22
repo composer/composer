@@ -367,6 +367,20 @@ class RejectionReason
     }
 
     /**
+     * The names of the policies that caused the rejection as configured under "policy", e.g. advisories or malware
+     *
+     * @return list<string>
+     */
+    public function getPolicyNames(): array
+    {
+        if (!$this->isPolicy()) {
+            throw new \LogicException('Only policy rejections have a policy name, got '.$this->type);
+        }
+
+        return $this->type === self::FILTER_LIST ? $this->getFilterListNames() : [$this->type];
+    }
+
+    /**
      * The config keys that turn the policy off, e.g. '"policy.advisories.block"'
      */
     public function getOffSwitch(): string
