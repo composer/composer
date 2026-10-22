@@ -16,6 +16,7 @@ use Composer\Cache;
 use Composer\Composer;
 use Composer\Config;
 use Composer\DependencyResolver\DefaultPolicy;
+use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
@@ -1642,8 +1643,9 @@ EOT
         }
 
         $latest = $candidate !== false ? $candidate : null;
+        $result = $versionSelector->getLastResult();
         // versions exist but none is installable on this platform, so there is nothing to update to
-        if ($latest === null && count($versionSelector->getPlatformRejectedCandidates()) > 0) {
+        if ($latest === null && count($result->getRejectedOnlyBy(RejectionReason::PLATFORM)) > 0) {
             $latest = $package;
         }
         $withheld = null;
@@ -1651,8 +1653,9 @@ EOT
             // a waiting release is only worth mentioning if it is newer than what can be installed already
             $baseline = $latest !== null && version_compare($latest->getVersion(), $package->getVersion(), '>') ? $latest : $package;
             $installedIsWithheld = false;
-            foreach ($versionSelector->getWithheldCandidates() as $withheldCandidate) {
-                $withheldPackage = $withheldCandidate['package'];
+            foreach ($result->getRejections(RejectionReason::COOLDOWN) as $rejection) {
+                $withheldPackage = $rejection['package'];
+                $cooldownInfo = $rejection['reason']->getCooldownInfo();
                 while ($withheldPackage instanceof AliasPackage) {
                     $withheldPackage = $withheldPackage->getAliasOf();
                 }
@@ -1661,11 +1664,12 @@ EOT
                 }
                 // the first release to clear the cooldown period among those newer than the baseline,
                 // a withheld backport to an older branch is no update
-                if (!version_compare($withheldPackage->getVersion(), $baseline->getVersion(), '>')) {
+                if ($cooldownInfo === null || !version_compare($withheldPackage->getVersion(), $baseline->getVersion(), '>')) {
                     continue;
                 }
-                if ($withheld === null || $withheldCandidate['releaseDate'] < $withheld['releaseDate']) {
-                    $withheld = ['package' => $withheldPackage, 'releaseDate' => $withheldCandidate['releaseDate']];
+                $releaseDate = new DateTimeImmutable($cooldownInfo['releaseDate']);
+                if ($withheld === null || $releaseDate < $withheld['releaseDate']) {
+                    $withheld = ['package' => $withheldPackage, 'releaseDate' => $releaseDate];
                 }
             }
 

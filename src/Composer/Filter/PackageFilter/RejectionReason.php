@@ -15,6 +15,7 @@ namespace Composer\Filter\PackageFilter;
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
 use Composer\FilterList\FilterListEntry;
+use Composer\Package\Link;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 
 /**
@@ -29,6 +30,7 @@ class RejectionReason
     public const ADVISORIES = 'advisories';
     public const FILTER_LIST = 'filter-list';
     public const COOLDOWN = 'cooldown';
+    public const PLATFORM = 'platform';
 
     public const COOLDOWN_REMEDY = 'To exempt the package from the cooldown policy, add it to the "policy.cooldown.ignore" config, or run the command with --no-cooldown for a one-off bypass.';
 
@@ -44,6 +46,8 @@ class RejectionReason
     private $filterListEntries = [];
     /** @var array{releaseDate: string, availableIn: string, source: string}|null */
     private $cooldown = null;
+    /** @var list<array{link: Link, problem: string}> */
+    private $platformRequirements = [];
 
     /**
      * @param self::* $type
@@ -94,6 +98,17 @@ class RejectionReason
     }
 
     /**
+     * @param array<array{link: Link, problem: string}> $unsatisfied the platform requirements that are not met, with why
+     */
+    public static function platform(string $packageName, string $prettyVersion, array $unsatisfied): self
+    {
+        $reason = new self(self::PLATFORM, $packageName, $prettyVersion);
+        $reason->platformRequirements = array_values($unsatisfied);
+
+        return $reason;
+    }
+
+    /**
      * Merges the reasons of several versions removed by the same policy, so one sentence can explain them all
      *
      * @param non-empty-array<self> $reasons
@@ -105,7 +120,7 @@ class RejectionReason
         $seen = [];
         foreach ($reasons as $reason) {
             if ($reason->type !== $first->type) {
-                throw new \LogicException('Cannot combine reasons of different policies: '.$first->type.' and '.$reason->type);
+                throw new \LogicException('Cannot combine reasons of different types: '.$first->type.' and '.$reason->type);
             }
 
             foreach ($reason->advisories as $advisory) {
@@ -119,6 +134,14 @@ class RejectionReason
                 if (!isset($seen[spl_object_id($entry)])) {
                     $seen[spl_object_id($entry)] = true;
                     $combined->filterListEntries[] = $entry;
+                }
+            }
+
+            foreach ($reason->platformRequirements as $requirement) {
+                $key = $requirement['link']->getTarget().' '.$requirement['link']->getPrettyConstraint().' '.$requirement['problem'];
+                if (!isset($seen[$key])) {
+                    $seen[$key] = true;
+                    $combined->platformRequirements[] = $requirement;
                 }
             }
 
@@ -138,6 +161,14 @@ class RejectionReason
     public function getType(): string
     {
         return $this->type;
+    }
+
+    /**
+     * Whether a dependency policy caused the rejection, which can then be turned off in the policy config
+     */
+    public function isPolicy(): bool
+    {
+        return \in_array($this->type, [self::ABANDONED, self::ADVISORIES, self::FILTER_LIST, self::COOLDOWN], true);
     }
 
     public function getPackageName(): string
@@ -167,12 +198,23 @@ class RejectionReason
     }
 
     /**
+     * @return list<array{link: Link, problem: string}>
+     */
+    public function getPlatformRequirements(): array
+    {
+        return $this->platformRequirements;
+    }
+
+    /**
      * The verb that makes the description a sentence, e.g. "they are" + "abandoned"
      */
     public function getVerb(bool $plural): string
     {
         if ($this->type === self::FILTER_LIST) {
             return $plural ? 'were' : 'was';
+        }
+        if ($this->type === self::PLATFORM) {
+            return $plural ? 'require' : 'requires';
         }
 
         return $plural ? 'are' : 'is';
@@ -196,10 +238,14 @@ class RejectionReason
                 }
 
                 return 'still in the cooldown period configured in "policy.cooldown"' . $availableIn;
+            case self::PLATFORM:
+                return implode(' and ', array_map(static function (array $requirement): string {
+                    return $requirement['link']->getTarget().' '.$requirement['link']->getPrettyConstraint().' which '.$requirement['problem'];
+                }, $this->platformRequirements));
         }
 
         // @phpstan-ignore deadCode.unreachable
-        throw new \LogicException('Unknown policy: '.$this->type);
+        throw new \LogicException('Unknown rejection type: '.$this->type);
     }
 
     /**
@@ -218,10 +264,12 @@ class RejectionReason
                 }, $this->getFilterListNames())) . ' config.';
             case self::COOLDOWN:
                 return self::COOLDOWN_REMEDY;
+            case self::PLATFORM:
+                return '';
         }
 
         // @phpstan-ignore deadCode.unreachable
-        throw new \LogicException('Unknown policy: '.$this->type);
+        throw new \LogicException('Unknown rejection type: '.$this->type);
     }
 
     /**
@@ -229,6 +277,10 @@ class RejectionReason
      */
     public function getOffSwitch(): string
     {
+        if (!$this->isPolicy()) {
+            throw new \LogicException('Only policy rejections can be turned off, got '.$this->type);
+        }
+
         if ($this->type === self::FILTER_LIST) {
             return implode(' and ', array_map(static function (string $listName): string {
                 return '"policy.' . $listName . '.block"';

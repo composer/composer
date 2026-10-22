@@ -13,6 +13,7 @@
 namespace Composer\Test\Package\Version;
 
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
+use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\IO\BufferIO;
 use Composer\IO\NullIO;
 use Composer\Repository\ComposerRepository;
@@ -97,11 +98,11 @@ class VersionSelectorTest extends TestCase
             ."<warning>Cannot use foo/bar 2.0.0 as it requires php >=5.6 which is not satisfied by your platform.".PHP_EOL,
             $io->getOutput()
         );
-        self::assertSame([$package3, $package2], $versionSelector->getPlatformRejectedCandidates());
+        self::assertSame([$package3, $package2, $package0], $versionSelector->getLastResult()->getRejectedOnlyBy(RejectionReason::PLATFORM));
 
         $best = $versionSelector->findBestCandidate($packageName, null, 'stable', PlatformRequirementFilterFactory::ignoreAll());
         self::assertSame((string) $package3, (string) $best, 'Latest version should be returned when ignoring platform reqs (2.1.0)');
-        self::assertSame([], $versionSelector->getPlatformRejectedCandidates());
+        self::assertSame([], $versionSelector->getLastResult()->getRejected());
     }
 
     public function testLatestVersionIsReturnedThatMatchesExtRequirements(): void
@@ -472,9 +473,9 @@ class VersionSelectorTest extends TestCase
         $versionSelector = new VersionSelector($repositorySet, null, self::cooldown(7 * 24 * 3600));
 
         self::assertFalse($versionSelector->findBestCandidate('foo/bar'));
-        $withheld = $versionSelector->getFirstClearingWithheldCandidate();
-        self::assertNotNull($withheld);
-        self::assertSame($older, $withheld['package']);
+        $withheld = array_column($versionSelector->getLastResult()->getRejections(RejectionReason::COOLDOWN), 'reason');
+        self::assertNotEmpty($withheld);
+        self::assertSame('1.2.1', RejectionReason::combine($withheld)->getPrettyVersion());
     }
 
     public function testCooldownIsNotAppliedWhenBlockingIsDisabled(): void
@@ -505,8 +506,11 @@ class VersionSelectorTest extends TestCase
         $versionSelector = new VersionSelector($repositorySet, null, self::cooldown(7 * 24 * 3600));
 
         self::assertSame($old, $versionSelector->findBestCandidate('foo/bar'));
-        self::assertSame([$newest, $recent], array_column($versionSelector->getWithheldCandidates(), 'package'));
-        self::assertSame($recent, $versionSelector->getFirstClearingWithheldCandidate()['package'] ?? null);
+        $withheld = $versionSelector->getLastResult()->getRejections(RejectionReason::COOLDOWN);
+        self::assertSame([$newest, $recent], array_column($withheld, 'package'));
+        $reasons = array_column($withheld, 'reason');
+        self::assertNotEmpty($reasons);
+        self::assertSame('1.2.2', RejectionReason::combine($reasons)->getPrettyVersion());
     }
 
     /**

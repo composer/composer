@@ -343,13 +343,14 @@ trait PackageDiscoveryTrait
                 return [$name, $constraint];
             }
 
-            // The diagnostics below ask what would match with a constraint relaxed, which the cooldown must not hide
-            $unfilteredSelector = new VersionSelector($repoSet, $platformRepo);
+            $result = $versionSelector->getLastResult();
 
-            // Check whether the cooldown withheld every version
-            if ($cooldown !== null && false !== $unfilteredSelector->findBestCandidate($name, null, $preferredStability, $platformRequirementFilter)) {
-                $withheld = $versionSelector->getFirstClearingWithheldCandidate();
-                $wait = $withheld !== null ? ' (version '.$withheld['package']->getPrettyVersion().' becomes available in '.$cooldown->formatTimeUntilAvailable($withheld['releaseDate'], new \DateTimeImmutable()).')' : '';
+            // Check whether the cooldown withheld every version that would otherwise be installable
+            $withheld = array_column($result->getRejections(RejectionReason::COOLDOWN), 'reason');
+            if (count($withheld) > 0 && count($result->getRejectedOnlyBy(RejectionReason::COOLDOWN)) > 0) {
+                $soonest = RejectionReason::combine($withheld);
+                $cooldownInfo = $soonest->getCooldownInfo();
+                $wait = $cooldownInfo !== null ? ' (version '.$soonest->getPrettyVersion().' becomes available in '.$cooldownInfo['availableIn'].')' : '';
 
                 throw new \InvalidArgumentException(sprintf(
                     'All versions of package %s are still in the cooldown period configured in "policy.cooldown"%s. '.RejectionReason::COOLDOWN_REMEDY,
@@ -359,12 +360,17 @@ trait PackageDiscoveryTrait
             }
 
             // Check whether the package requirements were the problem
-            if (!($platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter) && false !== ($candidate = $unfilteredSelector->findBestCandidate($name, null, $preferredStability, PlatformRequirementFilterFactory::ignoreAll()))) {
+            $candidate = $result->getRejected(RejectionReason::PLATFORM)[0] ?? null;
+            if ($candidate !== null) {
                 throw new \InvalidArgumentException(sprintf(
                     'Package %s has requirements incompatible with your PHP version, PHP extensions and Composer version' . $this->getPlatformExceptionDetails($candidate, $platformRepo),
                     $name
                 ));
             }
+
+            // The diagnostics below ask what would match with a constraint relaxed, which the cooldown must not hide
+            $unfilteredSelector = new VersionSelector($repoSet, $platformRepo);
+
             // Check whether the minimum stability was the problem but the package exists
             if (false !== ($package = $unfilteredSelector->findBestCandidate($name, null, $preferredStability, $platformRequirementFilter, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES))) {
                 // we must first verify if a valid package would be found in a lower priority repository

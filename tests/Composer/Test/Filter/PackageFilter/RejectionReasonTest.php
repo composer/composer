@@ -15,6 +15,7 @@ namespace Composer\Test\Filter\PackageFilter;
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\FilterList\FilterListEntry;
+use Composer\Package\Link;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Test\TestCase;
@@ -79,5 +80,21 @@ class RejectionReasonTest extends TestCase
         self::assertSame('still in the cooldown period configured in "policy.cooldown" (available in 5 days)', $verified->getDescription());
         self::assertStringContainsString('based on the package-supplied time field', $unverified->getDescription());
         self::assertSame('"policy.cooldown.block"', $verified->getOffSwitch());
+    }
+
+    public function testPlatformListsEachUnsatisfiedRequirement(): void
+    {
+        $reason = RejectionReason::platform('vendor/pkg', '1.0.0', [
+            ['link' => new Link('vendor/pkg', 'php', new Constraint('>=', '8.4.0.0'), Link::TYPE_REQUIRE, '>=8.4'), 'problem' => 'is not satisfied by your platform'],
+            ['link' => new Link('vendor/pkg', 'ext-foo', new MatchAllConstraint(), Link::TYPE_REQUIRE, '*'), 'problem' => 'is missing from your platform'],
+        ]);
+
+        self::assertFalse($reason->isPolicy());
+        self::assertSame('requires', $reason->getVerb(false));
+        self::assertSame('php >=8.4 which is not satisfied by your platform and ext-foo * which is missing from your platform', $reason->getDescription());
+        self::assertSame('', $reason->getRemedy());
+
+        self::expectException(\LogicException::class);
+        $reason->getOffSwitch();
     }
 }
