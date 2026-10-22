@@ -1195,6 +1195,22 @@ A list of domain names and tokens to authenticate against them. For example usin
 `{"example.org": "foo"}` as the value of this option will let Composer authenticate
 against example.org using an `Authorization: Bearer foo` header.
 
+## custom-headers
+
+A list of domain names and HTTP headers to send to them. For example using
+`{"example.org": ["API-TOKEN: foo", "X-Custom-Header: bar"]}` as the value of
+this option will send both headers with every request to example.org. Each
+header must be in the `Header-Name: Header-Value` format.
+More info can be found [here](articles/authentication-for-private-packages.md#custom-headers).
+
+## client-certificate
+
+A list of domain names and client TLS certificates to use for them. For example
+using `{"example.org": {"local_cert": "/path/to/cert.pem", "local_pk": "/path/to/key.pem", "passphrase": "foo"}}`
+as the value of this option will let Composer authenticate against example.org
+with that certificate. `local_cert` is required, `local_pk` and `passphrase` are
+optional. More info can be found [here](articles/authentication-for-private-packages.md#client-tls-certificates).
+
 ## platform
 
 Lets you fake platform packages (PHP and extensions) so that you can emulate a
@@ -1268,12 +1284,24 @@ type and the VCS repos of type `svn`, `fossil`, `github` and `bitbucket`.
 Defaults to `$cache-dir/vcs`. Stores VCS clones for loading VCS repository
 metadata for the `git`/`hg` types and to speed up installs.
 
+## cache-ttl
+
+Defaults to `15552000` (6 months). The time-to-live (in seconds) applied to the
+repo and vcs caches when running `composer clear-cache --gc`, which is the only
+time those are garbage collected. Entries that have not been used for this long
+are removed. It is also used for the files cache unless
+[cache-files-ttl](#cache-files-ttl) is set.
+
+Setting it to 0 makes `composer clear-cache --gc` empty the repo and vcs caches,
+and disables the files cache unless [cache-files-ttl](#cache-files-ttl) is set.
+
 ## cache-files-ttl
 
-Defaults to `15552000` (6 months). Composer caches all dist (zip, tar, ...)
-packages that it downloads. Those are purged after six months of being unused by
-default. This option allows you to tweak this duration (in seconds) or disable
-it completely by setting it to 0.
+Defaults to the value of [cache-ttl](#cache-ttl), so `15552000` (6 months)
+unless that is changed. Composer caches all dist (zip, tar, ...) packages that
+it downloads. Those are purged after being unused for that long. This option
+allows you to tweak this duration (in seconds) or disable it completely by
+setting it to 0.
 
 ## cache-files-maxsize
 
