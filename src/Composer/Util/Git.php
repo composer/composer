@@ -215,7 +215,8 @@ class Git
             // @phpstan-ignore composerPcre.maybeUnsafeStrictGroups
             } elseif (
                 Preg::isMatchStrictGroups('{^(https?)://(bitbucket\.org)/(.*?)(?:\.git)?$}i', $url, $match)
-                || Preg::isMatchStrictGroups('{^(git)@(?:ssh\.)?(bitbucket\.org)[:/](.+?\.git)$}i', $url, $match)
+                || Preg::isMatchStrictGroups('{^(git)@(?:ssh\.)?(bitbucket\.org):(.+?\.git)$}i', $url, $match)
+                || Preg::isMatchStrictGroups('{^(ssh)://git@(?:ssh\.)?(bitbucket\.org)/(.*?)(?:\.git)?$}i', $url, $match)
             ) { //bitbucket either through oauth or app password, with fallback to ssh.
                 $bitbucketUtil = new Bitbucket($this->io, $this->config, $this->process, $this->httpDownloader);
 
