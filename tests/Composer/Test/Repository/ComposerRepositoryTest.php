@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Repository;
 
+use Composer\Advisory\SecurityAdvisory;
 use Composer\FilterList\FilterListEntry;
 use Composer\IO\NullIO;
 use Composer\Package\Package;
@@ -548,6 +549,46 @@ class ComposerRepositoryTest extends TestCase
             $this->assertArrayHasKey($i, $actualPackageAdvisories);
             $this->assertSame($expectedAdvisory['advisoryId'], $actualPackageAdvisories[$i]->advisoryId);
         }
+    }
+
+    public function testGetSecurityAdvisoriesFallsBackToPartialAdvisoriesWithoutApiUrl(): void
+    {
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader->expects(
+            [
+                [
+                    'url' => 'https://example.org/packages.json',
+                    'body' => JsonFile::encode([
+                        'packages' => [],
+                        'metadata-url' => 'https://example.org/p2/%package%.json',
+                        'available-package-patterns' => ['foo/*'],
+                        'security-advisories' => ['metadata' => true],
+                    ]),
+                ],
+                [
+                    'url' => 'https://example.org/p2/foo/bar.json',
+                    'body' => JsonFile::encode([
+                        'packages' => ['foo/bar' => [['name' => 'foo/bar', 'version' => '1.0.0']]],
+                        'security-advisories' => [['advisoryId' => 'ACME-2026-001', 'affectedVersions' => '<1.0.1']],
+                        'minified' => 'composer/2.0',
+                    ]),
+                ],
+            ],
+            true
+        );
+
+        $repository = new ComposerRepository(
+            ['url' => 'https://example.org/packages.json'],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        $advisories = $repository->getSecurityAdvisories(['foo/bar' => new Constraint('=', '1.0.0.0')], false)['advisories'];
+
+        self::assertCount(1, $advisories['foo/bar']);
+        self::assertSame('ACME-2026-001', $advisories['foo/bar'][0]->advisoryId);
+        self::assertNotInstanceOf(SecurityAdvisory::class, $advisories['foo/bar'][0]);
     }
 
     public function testGetSecurityAdvisoriesBatchesLargeRequests(): void

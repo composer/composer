@@ -1,0 +1,42 @@
+--TEST--
+A partial security advisory (metadata only, no api-url) can be ignored by its non-PKSA ID.
+--COMPOSER--
+{
+    "name": "acme/project",
+    "version": "1.0.0",
+    "require": {
+        "acme/library": "1.0.0"
+    },
+    "config": {
+        "policy": {
+            "advisories": {
+                "ignore-id": ["ACME-2024-001"]
+            }
+        }
+    },
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "acme/library",
+                    "version": "1.0.0",
+                    "source": { "reference": "some.branch", "type": "git", "url": "" }
+                }
+            ],
+            "security-advisories": {
+                "acme/library": [
+                    {
+                        "advisoryId": "ACME-2024-001",
+                        "affectedVersions": ">=1.0.0,<1.1.0"
+                    }
+                ]
+            }
+        }
+    ]
+}
+--RUN--
+update
+
+--EXPECT--
+Installing acme/library (1.0.0)
