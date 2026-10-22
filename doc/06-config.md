@@ -1281,10 +1281,10 @@ metadata for the `git`/`hg` types and to speed up installs.
 
 ## cache-ttl
 
-Defaults to `15552000` (6 months). The default time-to-live (in seconds) for
-Composer's caches. When garbage collecting the repo and vcs caches with
-`composer clear-cache --gc`, entries that have not been used for this long are
-removed. It is also used for the files cache unless
+Defaults to `15552000` (6 months). The time-to-live (in seconds) applied to the
+repo and vcs caches when running `composer clear-cache --gc`, which is the only
+time those are garbage collected. Entries that have not been used for this long
+are removed. It is also used for the files cache unless
 [cache-files-ttl](#cache-files-ttl) is set.
 
 Setting it to 0 makes `composer clear-cache --gc` empty the repo and vcs caches,
