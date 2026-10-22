@@ -13,7 +13,7 @@
 namespace Composer\Test\DependencyResolver;
 
 use Composer\Advisory\Auditor;
-use Composer\DependencyResolver\PolicyRemovalReason;
+use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\SecurityAdvisoryPoolFilter;
@@ -81,8 +81,8 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
         $filteredPool = $filter->filter($pool, [$repository], new Request());
 
         $this->assertSame([$expectedPackage1, $expectedPackage2], $filteredPool->getPackages());
-        $this->assertSame(PolicyRemovalReason::ADVISORIES, self::getRemovalType($filteredPool, 'acme/package', '1.0.0.0'));
-        $this->assertCount(0, self::getRemovals($filteredPool, PolicyRemovalReason::ABANDONED));
+        $this->assertSame(RejectionReason::ADVISORIES, self::getRemovalType($filteredPool, 'acme/package', '1.0.0.0'));
+        $this->assertCount(0, self::getRemovals($filteredPool, RejectionReason::ABANDONED));
 
         $reason = $filteredPool->getPolicyRemovalReason('acme/package', '1.0.0.0');
         $this->assertNotNull($reason);
@@ -123,8 +123,8 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
         $filteredPool = $filter->filter($pool, [$repository], new Request());
 
         $this->assertSame([$expectedPackage1, $expectedPackage2], $filteredPool->getPackages());
-        $this->assertCount(0, self::getRemovals($filteredPool, PolicyRemovalReason::ABANDONED));
-        $this->assertCount(0, self::getRemovals($filteredPool, PolicyRemovalReason::ADVISORIES));
+        $this->assertCount(0, self::getRemovals($filteredPool, RejectionReason::ABANDONED));
+        $this->assertCount(0, self::getRemovals($filteredPool, RejectionReason::ADVISORIES));
     }
 
     public function testDontFilterPackagesWithBlockInsecureDisabled(): void
@@ -144,8 +144,8 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
         $filteredPool = $filter->filter($pool, [$repository], new Request());
 
         $this->assertSame([$expectedPackage1, $expectedPackage2], $filteredPool->getPackages());
-        $this->assertCount(0, self::getRemovals($filteredPool, PolicyRemovalReason::ABANDONED));
-        $this->assertCount(0, self::getRemovals($filteredPool, PolicyRemovalReason::ADVISORIES));
+        $this->assertCount(0, self::getRemovals($filteredPool, RejectionReason::ABANDONED));
+        $this->assertCount(0, self::getRemovals($filteredPool, RejectionReason::ADVISORIES));
     }
 
     public function testDontFilterPackagesWithAbandonedPackage(): void
@@ -173,8 +173,8 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
         $filteredPool = $filter->filter($pool, [], new Request());
 
         $this->assertSame([$expectedPackage, $ignoreAbandonedPackage], $filteredPool->getPackages());
-        $this->assertCount(1, self::getRemovals($filteredPool, PolicyRemovalReason::ABANDONED));
-        $this->assertCount(0, self::getRemovals($filteredPool, PolicyRemovalReason::ADVISORIES));
+        $this->assertCount(1, self::getRemovals($filteredPool, RejectionReason::ABANDONED));
+        $this->assertCount(0, self::getRemovals($filteredPool, RejectionReason::ADVISORIES));
     }
 
     public function testWarnsWhenUnreachableRepositoriesAreIgnored(): void
@@ -299,7 +299,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
 
         $this->assertCount(1, $filteredPool->getPackages());
         $this->assertSame('3.6.x-dev', $filteredPool->getPackages()[0]->getPrettyVersion());
-        $this->assertSame(PolicyRemovalReason::ADVISORIES, self::getRemovalType($filteredPool, 'acme/package', '3.3.9999999.9999999-dev'));
+        $this->assertSame(RejectionReason::ADVISORIES, self::getRemovalType($filteredPool, 'acme/package', '3.3.9999999.9999999-dev'));
     }
 
     public function testFilterBranchAliasOfDevPackageByAdvisories(): void
@@ -321,7 +321,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
         $filteredPool = $filter->filter(new Pool([$devPackage, $branchAlias, $rootAlias]), [$repository], new Request());
 
         $this->assertSame([$devPackage, $rootAlias], $filteredPool->getPackages());
-        $this->assertSame(PolicyRemovalReason::ADVISORIES, self::getRemovalType($filteredPool, 'acme/package', '3.3.9999999.9999999-dev'));
+        $this->assertSame(RejectionReason::ADVISORIES, self::getRemovalType($filteredPool, 'acme/package', '3.3.9999999.9999999-dev'));
     }
 
     public function testDefaultBranchAliasIsNotFilteredByAdvisories(): void

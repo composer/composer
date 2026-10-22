@@ -25,7 +25,7 @@ use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Pcre\Preg;
 use Composer\Policy\CooldownPolicyConfig;
-use Composer\DependencyResolver\PolicyRemovalReason;
+use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\PlatformRepository;
 use Composer\Semver\Constraint\Constraint;
@@ -291,7 +291,7 @@ class VersionSelector
             $isLatestVersion = !isset($alreadySeenNames[$pkg->getName()]);
             $alreadySeenNames[$pkg->getName()] = true;
             if ($io !== null && ($showWarnings === true || (is_callable($showWarnings) && $showWarnings($pkg)))) {
-                $reason = PolicyRemovalReason::cooldown(
+                $reason = RejectionReason::cooldown(
                     $pkg->getName(),
                     $pkg->getPrettyVersion(),
                     $releaseDate->format(\DateTimeInterface::ATOM),

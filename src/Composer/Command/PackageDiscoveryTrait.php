@@ -12,7 +12,7 @@
 
 namespace Composer\Command;
 
-use Composer\DependencyResolver\PolicyRemovalReason;
+use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\Factory;
 use Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
@@ -352,7 +352,7 @@ trait PackageDiscoveryTrait
                 $wait = $withheld !== null ? ' (version '.$withheld['package']->getPrettyVersion().' becomes available in '.$cooldown->formatTimeUntilAvailable($withheld['releaseDate'], new \DateTimeImmutable()).')' : '';
 
                 throw new \InvalidArgumentException(sprintf(
-                    'All versions of package %s are still in the cooldown period configured in "policy.cooldown"%s. '.PolicyRemovalReason::COOLDOWN_REMEDY,
+                    'All versions of package %s are still in the cooldown period configured in "policy.cooldown"%s. '.RejectionReason::COOLDOWN_REMEDY,
                     $name,
                     $wait
                 ));

@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\Policy\CooldownPolicyConfig;
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
@@ -108,7 +109,7 @@ class CooldownPoolFilter
             }
 
             // Package is too new - filter it out and track for error messages
-            Pool::recordPolicyRemoval($policyRemovedVersions, $package, PolicyRemovalReason::cooldown(
+            Pool::recordPolicyRemoval($policyRemovedVersions, $package, RejectionReason::cooldown(
                 $package->getName(),
                 $package->getPrettyVersion(),
                 $releaseDate->format(DateTimeInterface::ATOM),

@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\FilterList\FilterListAuditor;
 use Composer\FilterList\FilterListEntry;
 use Composer\FilterList\FilterListProvider\FilterListProviderSet;
@@ -129,7 +130,7 @@ class FilterListPoolFilter
             }
 
             if (count($matchingEntries) > 0) {
-                Pool::recordPolicyRemoval($policyRemovedVersions, $package, PolicyRemovalReason::filterList($package->getName(), $package->getPrettyVersion(), $matchingEntries));
+                Pool::recordPolicyRemoval($policyRemovedVersions, $package, RejectionReason::filterList($package->getName(), $package->getPrettyVersion(), $matchingEntries));
 
                 continue;
             }
