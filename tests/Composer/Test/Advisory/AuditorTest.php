@@ -1063,7 +1063,7 @@ vendor/other matched dependency policy "test-list". Reason: internal.',
         self::assertSame('Found 1 security vulnerability advisory affecting 1 package:
 Package: acme/lib
 Advisory ID: ACME-2026-001
-Affected versions: <1.0.1', trim($io->getOutput()));
+Affected versions: <1.0.1', trim(str_replace("\r", '', $io->getOutput())));
     }
 
     /**
