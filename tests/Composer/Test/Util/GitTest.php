@@ -183,6 +183,37 @@ class GitTest extends TestCase
         $this->git->runCommand($commandCallable, $gitUrl, null, true);
     }
 
+    public function testRunCommandPrivateBitbucketRepositoryDoesNotRetrySameSshUrl(): void
+    {
+        self::expectException('RuntimeException');
+
+        $commandCallable = static function ($url): string {
+            self::assertSame('git@ssh.bitbucket.org:acme/repo.git', $url);
+
+            return 'git command failing';
+        };
+
+        $this->config
+            ->method('get')
+            ->willReturnMap([
+                ['gitlab-domains', 0, ['gitlab.com']],
+                ['github-domains', 0, ['github.com']],
+            ]);
+
+        $this->process->expects([
+            ['cmd' => 'git command failing', 'return' => 1],
+            ['cmd' => ['git', 'config', 'bitbucket.accesstoken'], 'return' => 1],
+            ['cmd' => ['git', '--version'], 'return' => 0],
+        ], true);
+
+        $this->io
+            ->method('isInteractive')
+            ->willReturn(false);
+
+        // @phpstan-ignore method.deprecated
+        $this->git->runCommand($commandCallable, 'git@ssh.bitbucket.org:acme/repo.git', null, true);
+    }
+
     /**
      * @dataProvider privateBitbucketWithOauthProvider
      *

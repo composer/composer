@@ -273,14 +273,16 @@ class Git
 
                     $credentials = [rawurlencode($auth['username']), rawurlencode($auth['password'])];
                 }
-                //Falling back to ssh
+                //Falling back to ssh, unless that is the URL which already failed above
                 $sshUrl = 'git@ssh.bitbucket.org:' . $repo_with_git_part;
-                $this->io->writeError('    No bitbucket authentication configured. Falling back to ssh.');
-                if (0 === $runCommands($sshUrl)) {
-                    return;
-                }
+                if ($sshUrl !== $url) {
+                    $this->io->writeError('    No bitbucket authentication configured. Falling back to ssh.');
+                    if (0 === $runCommands($sshUrl)) {
+                        return;
+                    }
 
-                $errorMsg = $this->process->getErrorOutput();
+                    $errorMsg = $this->process->getErrorOutput();
+                }
             } elseif (
                 // @phpstan-ignore composerPcre.maybeUnsafeStrictGroups
                 Preg::isMatchStrictGroups('{^(git)@' . self::getGitLabDomainsRegex($this->config) . ':(.+?\.git)$}i', $url, $match)
