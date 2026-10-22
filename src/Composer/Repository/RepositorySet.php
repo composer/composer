@@ -66,7 +66,7 @@ class RepositorySet
      */
     private $rootReferences;
 
-    /** @var RepositoryInterface[] */
+    /** @var list<RepositoryInterface> */
     private $repositories = [];
 
     /**
@@ -180,6 +180,15 @@ class RepositorySet
         foreach ($repos as $repo) {
             $this->repositories[] = $repo;
         }
+    }
+
+    /**
+     * @internal
+     * @return list<RepositoryInterface> in order of priority
+     */
+    public function getRepositories(): array
+    {
+        return $this->repositories;
     }
 
     /**

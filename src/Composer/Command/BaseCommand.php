@@ -18,6 +18,10 @@ use Composer\Console\Application;
 use Composer\Console\Input\InputArgument;
 use Composer\Console\Input\InputOption;
 use Composer\Factory;
+use Composer\Filter\PackageFilter\AbandonedRule;
+use Composer\Filter\PackageFilter\FilterListRule;
+use Composer\Filter\PackageFilter\RejectionRuleInterface;
+use Composer\Filter\PackageFilter\SecurityAdvisoryRule;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\IO\IOInterface;
@@ -30,6 +34,9 @@ use Composer\Advisory\AuditConfig;
 use Composer\Policy\CooldownPolicyConfig;
 use Composer\Policy\ListPolicyConfig;
 use Composer\Policy\PolicyConfig;
+use Composer\FilterList\FilterListAuditor;
+use Composer\Repository\RepositorySet;
+use Composer\Util\HttpDownloader;
 use Composer\Util\Platform;
 use Symfony\Component\Console\Completion\CompletionInput;
 use Symfony\Component\Console\Completion\CompletionSuggestions;
@@ -494,6 +501,32 @@ abstract class BaseCommand extends Command
         }
 
         return $policyConfig;
+    }
+
+    /**
+     * The dependency policies other than the cooldown that would block during an update, to apply when picking versions.
+     *
+     * @internal
+     * @return list<RejectionRuleInterface>
+     */
+    protected function createBlockingPolicyRules(Config $config, ?InputInterface $input, RepositorySet $repositorySet, HttpDownloader $httpDownloader): array
+    {
+        $policyConfig = $this->createPolicyConfig($config, $input);
+        if (!$policyConfig->enabled) {
+            return [];
+        }
+
+        $rules = [];
+        // abandoned packages are only blocked along with the advisories, as in the pool
+        if ($policyConfig->advisories->shouldBlock(ListPolicyConfig::BLOCK_SCOPE_UPDATE)) {
+            $rules[] = new AbandonedRule(new Auditor(), $policyConfig->abandoned);
+            $rules[] = new SecurityAdvisoryRule(new Auditor(), $policyConfig, $repositorySet, $this->getIO());
+        }
+        if (\count($policyConfig->getActiveBlockFilterLists(ListPolicyConfig::BLOCK_SCOPE_UPDATE)) > 0) {
+            $rules[] = new FilterListRule($policyConfig, new FilterListAuditor(), $httpDownloader, ListPolicyConfig::BLOCK_SCOPE_UPDATE, $repositorySet->getRepositories(), $this->getIO());
+        }
+
+        return $rules;
     }
 
     /**

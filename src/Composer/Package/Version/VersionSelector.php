@@ -12,10 +12,12 @@
 
 namespace Composer\Package\Version;
 
+use Composer\Filter\PackageFilter\CachedRule;
 use Composer\Filter\PackageFilter\PackageFilter;
 use Composer\Filter\PackageFilter\PackageFilterResult;
 use Composer\Filter\PackageFilter\PlatformRule;
 use Composer\Filter\PackageFilter\RejectionReason;
+use Composer\Filter\PackageFilter\RejectionRuleInterface;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\IO\IOInterface;
@@ -52,6 +54,9 @@ class VersionSelector
     /** @var ?CooldownPolicyConfig */
     private $cooldown;
 
+    /** @var list<RejectionRuleInterface> */
+    private $policyRules = [];
+
     /** @var PackageFilterResult */
     private $lastResult;
 
@@ -61,12 +66,16 @@ class VersionSelector
     /**
      * @param PlatformRepository   $platformRepo If passed in, the versions found will be filtered against their requirements to eliminate any not matching the current platform packages
      * @param CooldownPolicyConfig $cooldown     If passed in, versions still within the configured cooldown are skipped
+     * @param list<RejectionRuleInterface> $policyRules @internal the other dependency policies, versions they reject are skipped too
      */
-    public function __construct(RepositorySet $repositorySet, ?PlatformRepository $platformRepo = null, ?CooldownPolicyConfig $cooldown = null)
+    public function __construct(RepositorySet $repositorySet, ?PlatformRepository $platformRepo = null, ?CooldownPolicyConfig $cooldown = null, array $policyRules = [])
     {
         $this->repositorySet = $repositorySet;
         $this->platformRepo = $platformRepo;
         $this->cooldown = $cooldown;
+        foreach ($policyRules as $rule) {
+            $this->policyRules[] = new CachedRule($rule);
+        }
         $this->lastResult = new PackageFilterResult([]);
     }
 
@@ -145,9 +154,32 @@ class VersionSelector
         return $this->createFilter($this->lastLookup['platformRequirementFilter'])->apply($result, true);
     }
 
+    /**
+     * Applies the policy rules to all versions of the given packages at once, so the data they need is fetched in bulk
+     * before the packages are looked up one by one
+     *
+     * @internal
+     * @param list<string> $packageNames
+     */
+    public function preloadPolicyData(array $packageNames): void
+    {
+        if (\count($this->policyRules) === 0) {
+            return;
+        }
+
+        $packages = [];
+        foreach ($packageNames as $packageName) {
+            foreach ($this->repositorySet->findPackages(strtolower($packageName)) as $package) {
+                $packages[] = $package;
+            }
+        }
+
+        (new PackageFilter($this->policyRules))->filter($packages, true);
+    }
+
     private function createFilter(PlatformRequirementFilterInterface $platformRequirementFilter): PackageFilter
     {
-        $rules = [];
+        $rules = $this->policyRules;
         if ($this->cooldown !== null) {
             $rules[] = new CooldownRule($this->cooldown);
         }
@@ -192,7 +224,7 @@ class VersionSelector
     }
 
     /**
-     * Explains why candidates preferred over the selected one were skipped, those withheld by the cooldown first
+     * Explains why candidates preferred over the selected one were skipped, those dependency policies reject first
      *
      * @param callable(PackageInterface):bool|bool $showWarnings
      */
@@ -205,13 +237,13 @@ class VersionSelector
         /** @var array<string, true> $acceptedNames */
         $acceptedNames = [];
         foreach ($candidates as $pkg) {
-            $reason = $this->lastResult->getReason($pkg, RejectionReason::COOLDOWN);
-            if ($reason === null) {
+            $reasons = $this->getPolicyReasons($pkg);
+            if (\count($reasons) === 0) {
                 $acceptedNames[$pkg->getName()] = true;
                 continue;
             }
 
-            // ranked below a candidate the cooldown let through (e.g. an LTS backport), so withholding it does not affect the pick
+            // ranked below a candidate the policies let through (e.g. an LTS backport), so rejecting it does not affect the pick
             if (isset($acceptedNames[$pkg->getName()])) {
                 continue;
             }
@@ -220,7 +252,9 @@ class VersionSelector
             $alreadySeenNames[$pkg->getName()] = true;
             if (self::shouldWarn($pkg, $showWarnings)) {
                 $io->writeError(
-                    '<warning>Cannot use '.$pkg->getPrettyName().($isLatestVersion ? "'s latest version" : '').' '.$pkg->getPrettyVersion().' as it '.$reason->getVerb(false).' '.$reason->getDescription().'.</>',
+                    '<warning>Cannot use '.$pkg->getPrettyName().($isLatestVersion ? "'s latest version" : '').' '.$pkg->getPrettyVersion().' as it '.implode(' and ', array_map(static function (RejectionReason $reason): string {
+                        return $reason->getVerb(false).' '.$reason->getDescription();
+                    }, $reasons)).'.</>',
                     true,
                     $isLatestVersion ? IOInterface::NORMAL : IOInterface::VERBOSE
                 );
@@ -238,7 +272,7 @@ class VersionSelector
             }
 
             $reason = $this->lastResult->getReason($pkg, RejectionReason::PLATFORM);
-            if ($reason === null || $this->lastResult->getReason($pkg, RejectionReason::COOLDOWN) !== null) {
+            if ($reason === null || \count($this->getPolicyReasons($pkg)) > 0) {
                 continue;
             }
 
@@ -258,6 +292,16 @@ class VersionSelector
                 }
             }
         }
+    }
+
+    /**
+     * @return list<RejectionReason>
+     */
+    private function getPolicyReasons(BasePackage $package): array
+    {
+        return array_values(array_filter($this->lastResult->getReasons($package), static function (RejectionReason $reason): bool {
+            return $reason->isPolicy();
+        }));
     }
 
     /**
