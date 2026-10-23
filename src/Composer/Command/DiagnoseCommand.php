@@ -41,7 +41,7 @@ use Composer\SelfUpdate\Keys;
 use Composer\SelfUpdate\Versions;
 use Composer\IO\NullIO;
 use Composer\Package\CompletePackageInterface;
-use Composer\XdebugHandler\XdebugHandler;
+use Composer\Util\ProcessRestarter;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\ExecutableFinder;
@@ -770,7 +770,7 @@ EOT
 
         if (filter_var(ini_get('xdebug.profiler_enabled'), FILTER_VALIDATE_BOOLEAN)) {
             $warnings['xdebug_profile'] = true;
-        } elseif (XdebugHandler::isXdebugActive()) {
+        } elseif (ProcessRestarter::isXdebugActive()) {
             $warnings['xdebug_loaded'] = true;
         }
 
