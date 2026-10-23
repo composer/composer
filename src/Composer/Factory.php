@@ -14,6 +14,7 @@ namespace Composer;
 
 use Composer\Config\JsonConfigSource;
 use Composer\Json\JsonFile;
+use Composer\IO\BaseIO;
 use Composer\IO\IOInterface;
 use Composer\Package\Archiver;
 use Composer\Package\Version\VersionGuesser;
@@ -27,6 +28,7 @@ use Composer\Util\ProcessExecutor;
 use Composer\Util\HttpDownloader;
 use Composer\Util\Loop;
 use Composer\Util\Silencer;
+use Composer\Plugin\Capability\AuthenticationProvider;
 use Composer\Plugin\PluginEvents;
 use Composer\EventDispatcher\Event;
 use Phar;
@@ -446,6 +448,12 @@ class Factory
             }
 
             $pm->loadInstalledPlugins();
+
+            // Register authentication capabilities from plugins as a fallback source of credentials,
+            // consulted by the IO when an origin has no locally configured authentication
+            if ($io instanceof BaseIO) {
+                $io->setAuthenticationProviders($pm->getPluginCapabilities(AuthenticationProvider::class, ['composer' => $composer, 'io' => $io, 'config' => $config]));
+            }
         }
 
         if ($fullLoad) {
