@@ -17,6 +17,7 @@ use Composer\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Downloader\ChangeReportInterface;
 use Composer\Downloader\DvcsDownloaderInterface;
+use Composer\Downloader\PathDownloader;
 use Composer\Downloader\VcsCapableDownloaderInterface;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Version\VersionGuesser;
@@ -105,7 +106,13 @@ EOT
 
             if ($downloader instanceof ChangeReportInterface) {
                 if (is_link($targetDir)) {
-                    $errors[$targetDir] = $targetDir . ' is a symbolic link.';
+                    // path repository packages are symlinked to their source dir, unless their symlink option forces a copy
+                    $isPathRepoSymlink = $downloader instanceof PathDownloader
+                        && ($package->getTransportOptions()['symlink'] ?? null) !== false
+                        && realpath($targetDir) === realpath((string) $package->getDistUrl());
+                    if (!$isPathRepoSymlink) {
+                        $errors[$targetDir] = $targetDir . ' is a symbolic link.';
+                    }
                 }
 
                 if (null !== ($changes = $downloader->getLocalChanges($package, $targetDir))) {
