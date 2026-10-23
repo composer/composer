@@ -100,7 +100,7 @@ class ArchivableFilesFinder extends \FilterIterator
             return true;
         }
 
-        $iterator = new FilesystemIterator($current, FilesystemIterator::SKIP_DOTS);
+        $iterator = new FilesystemIterator($current->getPathname(), FilesystemIterator::SKIP_DOTS);
 
         return !$iterator->valid();
     }
