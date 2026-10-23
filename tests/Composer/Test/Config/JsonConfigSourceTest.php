@@ -91,6 +91,73 @@ class JsonConfigSourceTest extends TestCase
         self::assertFileEquals(self::fixturePath('composer-empty.json'), $config);
     }
 
+    /**
+     * Drives the whole-file fallback that manipulateJson() uses when the surgical manipulation
+     * fails, by making PCRE give up on the recursive JSON pattern.
+     *
+     * @dataProvider provideRepositoryFallback
+     * @param  callable(JsonConfigSource): void  $operation
+     * @param  list<array<string, mixed>>        $expected
+     */
+    public function testRepositoryFallbackWhenManipulationFails(callable $operation, array $expected): void
+    {
+        $config = $this->workingDir.'/composer.json';
+        file_put_contents($config, JsonFile::encode(['repositories' => [
+            ['name' => 'foo', 'type' => 'vcs', 'url' => 'https://foo.test'],
+            ['type' => 'path', 'url' => '../b'],
+        ]])."\n");
+
+        $backtrackLimit = ini_get('pcre.backtrack_limit');
+        ini_set('pcre.backtrack_limit', '100');
+
+        try {
+            $operation(new JsonConfigSource(new JsonFile($config)));
+        } finally {
+            ini_set('pcre.backtrack_limit', (string) $backtrackLimit);
+        }
+
+        self::assertSame($expected, JsonFile::parseJson((string) file_get_contents($config))['repositories'] ?? []);
+    }
+
+    /**
+     * @return array<string, array{callable(JsonConfigSource): void, list<array<string, mixed>>}>
+     */
+    public static function provideRepositoryFallback(): array
+    {
+        return [
+            'remove by name' => [
+                static function (JsonConfigSource $source): void {
+                    $source->removeRepository('foo');
+                },
+                [['type' => 'path', 'url' => '../b']],
+            ],
+            'remove by position' => [
+                static function (JsonConfigSource $source): void {
+                    $source->removeRepository('1');
+                },
+                [['name' => 'foo', 'type' => 'vcs', 'url' => 'https://foo.test']],
+            ],
+            'add by name replaces the existing entry' => [
+                static function (JsonConfigSource $source): void {
+                    $source->addRepository('foo', ['type' => 'vcs', 'url' => 'https://new.test']);
+                },
+                [['type' => 'path', 'url' => '../b'], ['name' => 'foo', 'type' => 'vcs', 'url' => 'https://new.test']],
+            ],
+            'set-url by position' => [
+                static function (JsonConfigSource $source): void {
+                    $source->setRepositoryUrl('1', 'https://updated.test');
+                },
+                [['name' => 'foo', 'type' => 'vcs', 'url' => 'https://foo.test'], ['type' => 'path', 'url' => 'https://updated.test']],
+            ],
+            'add by position replaces in place' => [
+                static function (JsonConfigSource $source): void {
+                    $source->addRepository('1', ['type' => 'path', 'url' => '../new']);
+                },
+                [['name' => 'foo', 'type' => 'vcs', 'url' => 'https://foo.test'], ['type' => 'path', 'url' => '../new']],
+            ],
+        ];
+    }
+
     public function testAddPackagistRepositoryWithFalseValue(): void
     {
         $config = $this->workingDir.'/composer.json';

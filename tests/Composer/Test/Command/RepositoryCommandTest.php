@@ -446,4 +446,124 @@ class RepositoryCommandTest extends TestCase
         self::assertSame(1, $countFoo, 'Exactly one repository entry with name foo should exist');
         self::assertSame('https://example.org/new', $url, 'The foo repository should have been updated to the new URL');
     }
+
+    /**
+     * @dataProvider provideAddressingANamedRepositoryByPosition
+     * @param array<string, mixed> $command
+     */
+    public function testAddressingANamedRepositoryByPositionFails(array $command, string $expected): void
+    {
+        $this->initTempComposer(['repositories' => [
+            ['name' => 'a', 'type' => 'path', 'url' => '../a'],
+            ['name' => 'b', 'type' => 'path', 'url' => '../b'],
+            ['name' => 'c', 'type' => 'composer', 'url' => 'https://c.test'],
+        ]], [], [], false);
+
+        $before = (string) file_get_contents('composer.json');
+
+        $appTester = $this->getApplicationTester();
+
+        try {
+            $appTester->run(['command' => 'repo'] + $command);
+            self::fail('Expected a RuntimeException');
+        } catch (RuntimeException $e) {
+            self::assertStringContainsString($expected, $e->getMessage());
+        }
+
+        // the file must be left alone rather than half-rewritten
+        self::assertSame($before, file_get_contents('composer.json'));
+    }
+
+    /**
+     * @return array<string, array{array<string, mixed>, string}>
+     */
+    public static function provideAddressingANamedRepositoryByPosition(): array
+    {
+        return [
+            // https://github.com/composer/composer/pull/13025#discussion -- this used to delete repository "a"
+            'add before a position' => [
+                ['action' => 'add', 'name' => '0', 'arg1' => 'vcs', 'arg2' => 'https://moved.test', '--before' => '1'],
+                'The repository at position 1 is named "b"',
+            ],
+            'add' => [
+                ['action' => 'add', 'name' => '0', 'arg1' => 'vcs', 'arg2' => 'https://moved.test'],
+                'The repository at position 0 is named "a"',
+            ],
+            'remove' => [
+                ['action' => 'remove', 'name' => '2'],
+                'The repository at position 2 is named "c"',
+            ],
+            'set-url' => [
+                ['action' => 'set-url', 'name' => '1', 'arg1' => 'https://new.test'],
+                'The repository at position 1 is named "b"',
+            ],
+        ];
+    }
+
+    public function testAddThrowsForANumericRepositoryNameInJson(): void
+    {
+        $this->initTempComposer([]);
+
+        $appTester = $this->getApplicationTester();
+
+        try {
+            $appTester->run(['command' => 'repo', 'action' => 'add', 'name' => 'foo', 'arg1' => '{"name":"1","type":"vcs","url":"https://example.org"}']);
+            self::fail('Expected a RuntimeException');
+        } catch (RuntimeException $e) {
+            self::assertStringContainsString('A repository name can not be numeric ("1")', $e->getMessage());
+        }
+    }
+
+    public function testSetUrlByPosition(): void
+    {
+        $this->initTempComposer(['repositories' => [
+            ['type' => 'path', 'url' => '../a'],
+            ['type' => 'path', 'url' => '../b'],
+        ]], [], [], false);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'repo', 'action' => 'set-url', 'name' => '1', 'arg1' => '../new']);
+        $appTester->assertCommandIsSuccessful($appTester->getDisplay());
+
+        $json = json_decode((string) file_get_contents('composer.json'), true);
+        self::assertSame('../a', $json['repositories'][0]['url']);
+        self::assertSame('../new', $json['repositories'][1]['url']);
+    }
+
+    public function testRemoveByPosition(): void
+    {
+        $this->initTempComposer(['repositories' => [
+            ['type' => 'path', 'url' => '../a'],
+            ['type' => 'path', 'url' => '../b'],
+        ]], [], [], false);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'repo', 'action' => 'remove', 'name' => '0']);
+        $appTester->assertCommandIsSuccessful($appTester->getDisplay());
+
+        $json = json_decode((string) file_get_contents('composer.json'), true);
+        self::assertSame([['type' => 'path', 'url' => '../b']], $json['repositories']);
+    }
+
+    public function testAddBeforeAPosition(): void
+    {
+        $this->initTempComposer(['repositories' => [
+            ['type' => 'path', 'url' => '../a'],
+            ['type' => 'path', 'url' => '../b'],
+        ]], [], [], false);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run([
+            'command' => 'repo',
+            'action' => 'add',
+            'name' => 'foo',
+            'arg1' => 'vcs',
+            'arg2' => 'https://example.org',
+            '--before' => '1',
+        ]);
+        $appTester->assertCommandIsSuccessful($appTester->getDisplay());
+
+        $json = json_decode((string) file_get_contents('composer.json'), true);
+        self::assertSame(['../a', 'https://example.org', '../b'], array_column($json['repositories'], 'url'));
+    }
 }
