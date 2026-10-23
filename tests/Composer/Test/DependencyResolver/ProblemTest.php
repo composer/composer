@@ -14,7 +14,7 @@ namespace Composer\Test\DependencyResolver;
 
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\DependencyResolver\GenericRule;
-use Composer\DependencyResolver\PolicyRemovalReason;
+use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Problem;
 use Composer\DependencyResolver\Request;
@@ -44,7 +44,7 @@ class ProblemTest extends TestCase
             'aikido'
         );
         $pool = new Pool([], [], [], [], [
-            'vendor/malware' => ['1.0.0.0' => PolicyRemovalReason::filterList('vendor/malware', '1.0.0', [$entry])],
+            'vendor/malware' => ['1.0.0.0' => RejectionReason::filterList('vendor/malware', '1.0.0', [$entry])],
         ]);
 
         [$prefix, $suffix] = Problem::getMissingLockedPackageReason($pool, $package);
@@ -69,7 +69,7 @@ class ProblemTest extends TestCase
             [],  // removedVersionsByPackage
             [    // policyRemovedVersions
                 'vendor/pkg' => [
-                    '2.0.0.0' => PolicyRemovalReason::cooldown('vendor/pkg', '2.0.0', '2026-01-10T12:00:00+00:00', '5 days', 'published-time'),
+                    '2.0.0.0' => RejectionReason::cooldown('vendor/pkg', '2.0.0', '2026-01-10T12:00:00+00:00', '5 days', 'published-time'),
                 ],
             ]
         );
@@ -112,7 +112,7 @@ class ProblemTest extends TestCase
             [],
             [
                 'vendor/pkg' => [
-                    '2.0.0.0' => PolicyRemovalReason::cooldown('vendor/pkg', '2.0.0', '2026-01-10T12:00:00+00:00', '5 days', 'time'),
+                    '2.0.0.0' => RejectionReason::cooldown('vendor/pkg', '2.0.0', '2026-01-10T12:00:00+00:00', '5 days', 'time'),
                 ],
             ]
         );
@@ -147,8 +147,8 @@ class ProblemTest extends TestCase
             [],
             [
                 'vendor/pkg' => [
-                    '1.0.0.0' => PolicyRemovalReason::advisories('vendor/pkg', '1.0.0', [$advisory]),
-                    '1.0.1.0' => PolicyRemovalReason::cooldown('vendor/pkg', '1.0.1', '2026-01-10T12:00:00+00:00', '5 days', 'published-time'),
+                    '1.0.0.0' => RejectionReason::advisories('vendor/pkg', '1.0.0', [$advisory]),
+                    '1.0.1.0' => RejectionReason::cooldown('vendor/pkg', '1.0.1', '2026-01-10T12:00:00+00:00', '5 days', 'published-time'),
                 ],
             ]
         );
@@ -180,8 +180,8 @@ class ProblemTest extends TestCase
     {
         $pool = new Pool([], [], [], [], [
             'vendor/pkg' => [
-                '1.0.1.0' => PolicyRemovalReason::cooldown('vendor/pkg', '1.0.1', '2026-01-10T12:00:00+00:00', '1 day', 'published-time'),
-                '1.0.2.0' => PolicyRemovalReason::cooldown('vendor/pkg', '1.0.2', '2026-01-12T12:00:00+00:00', '3 days', 'published-time'),
+                '1.0.1.0' => RejectionReason::cooldown('vendor/pkg', '1.0.1', '2026-01-10T12:00:00+00:00', '1 day', 'published-time'),
+                '1.0.2.0' => RejectionReason::cooldown('vendor/pkg', '1.0.2', '2026-01-12T12:00:00+00:00', '3 days', 'published-time'),
             ],
         ]);
 
@@ -222,8 +222,8 @@ class ProblemTest extends TestCase
             [],
             [
                 'vendor/pkg' => [
-                    '1.0.0.0' => PolicyRemovalReason::filterList('vendor/pkg', '1.0.0', [$entry]),
-                    '1.0.1.0' => PolicyRemovalReason::cooldown('vendor/pkg', '1.0.1', '2026-01-10T12:00:00+00:00', '5 days', 'time'),
+                    '1.0.0.0' => RejectionReason::filterList('vendor/pkg', '1.0.0', [$entry]),
+                    '1.0.1.0' => RejectionReason::cooldown('vendor/pkg', '1.0.1', '2026-01-10T12:00:00+00:00', '5 days', 'time'),
                 ],
             ]
         );
@@ -250,7 +250,7 @@ class ProblemTest extends TestCase
         $conflicter = self::getPackage('acme/conflicter', '1.0.0');
         $lib = self::getPackage('acme/lib', '1.0.1');
         $pool = new Pool([$conflicter, $lib], [], [], [], [
-            'acme/lib' => ['1.0.0.0' => PolicyRemovalReason::advisories('acme/lib', '1.0.0', [new PartialSecurityAdvisory('acme/lib', 'test-advisory-1', new Constraint('<', '1.0.1.0'))])],
+            'acme/lib' => ['1.0.0.0' => RejectionReason::advisories('acme/lib', '1.0.0', [new PartialSecurityAdvisory('acme/lib', 'test-advisory-1', new Constraint('<', '1.0.1.0'))])],
         ]);
 
         $repositorySet = new RepositorySet();

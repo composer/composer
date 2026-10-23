@@ -10,24 +10,25 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Test\DependencyResolver;
+namespace Composer\Test\Filter\PackageFilter;
 
 use Composer\Advisory\PartialSecurityAdvisory;
-use Composer\DependencyResolver\PolicyRemovalReason;
+use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\FilterList\FilterListEntry;
+use Composer\Package\Link;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Test\TestCase;
 
-class PolicyRemovalReasonTest extends TestCase
+class RejectionReasonTest extends TestCase
 {
     public function testCombinePicksChronologicallyEarliestCooldownAcrossOffsets(): void
     {
         // Lexically "2026-01-12T00:30..." < "2026-01-12T01:00...", but 1.0.0's instant (23:00Z the day before)
         // is the earlier one, so a string compare would wrongly pick 2.0.0 as the soonest-available version
-        $combined = PolicyRemovalReason::combine([
-            PolicyRemovalReason::cooldown('vendor/pkg', '1.0.0', '2026-01-12T01:00:00+02:00', '5 days', 'time'),
-            PolicyRemovalReason::cooldown('vendor/pkg', '2.0.0', '2026-01-12T00:30:00+00:00', '6 days', 'time'),
+        $combined = RejectionReason::combine([
+            RejectionReason::cooldown('vendor/pkg', '1.0.0', '2026-01-12T01:00:00+02:00', '5 days', 'time'),
+            RejectionReason::cooldown('vendor/pkg', '2.0.0', '2026-01-12T00:30:00+00:00', '6 days', 'time'),
         ]);
 
         self::assertSame('1.0.0', $combined->getPrettyVersion());
@@ -37,9 +38,9 @@ class PolicyRemovalReasonTest extends TestCase
     public function testCombineMergesAdvisoriesOfAllVersions(): void
     {
         $shared = new PartialSecurityAdvisory('vendor/pkg', 'PKSA-aaaa-aaaa-aaaa', new Constraint('<', '2.0.0.0'));
-        $combined = PolicyRemovalReason::combine([
-            PolicyRemovalReason::advisories('vendor/pkg', '1.0.0', [$shared, new PartialSecurityAdvisory('vendor/pkg', 'CVE-2026-1', new Constraint('<', '1.1.0.0'))]),
-            PolicyRemovalReason::advisories('vendor/pkg', '1.5.0', [$shared]),
+        $combined = RejectionReason::combine([
+            RejectionReason::advisories('vendor/pkg', '1.0.0', [$shared, new PartialSecurityAdvisory('vendor/pkg', 'CVE-2026-1', new Constraint('<', '1.1.0.0'))]),
+            RejectionReason::advisories('vendor/pkg', '1.5.0', [$shared]),
         ]);
 
         self::assertSame(['PKSA-aaaa-aaaa-aaaa', 'CVE-2026-1'], array_map(static function (PartialSecurityAdvisory $advisory): string {
@@ -52,15 +53,15 @@ class PolicyRemovalReasonTest extends TestCase
     {
         self::expectException(\LogicException::class);
 
-        PolicyRemovalReason::combine([
-            PolicyRemovalReason::abandoned('vendor/pkg', '1.0.0'),
-            PolicyRemovalReason::cooldown('vendor/pkg', '2.0.0', '2026-01-12T00:30:00+00:00', '6 days', 'time'),
+        RejectionReason::combine([
+            RejectionReason::abandoned('vendor/pkg', '1.0.0'),
+            RejectionReason::cooldown('vendor/pkg', '2.0.0', '2026-01-12T00:30:00+00:00', '6 days', 'time'),
         ]);
     }
 
     public function testFilterListRendersEachList(): void
     {
-        $reason = PolicyRemovalReason::filterList('vendor/pkg', '1.0.0', [
+        $reason = RejectionReason::filterList('vendor/pkg', '1.0.0', [
             new FilterListEntry('vendor/pkg', new MatchAllConstraint(), 'malware', 'https://example.org/m', 'looks suspicious', 'PKG-1', 'aikido'),
             new FilterListEntry('vendor/pkg', new MatchAllConstraint(), 'internal'),
         ]);
@@ -73,11 +74,27 @@ class PolicyRemovalReasonTest extends TestCase
 
     public function testCooldownMentionsWeakerTimeSource(): void
     {
-        $verified = PolicyRemovalReason::cooldown('vendor/pkg', '1.0.0', '2026-01-12T00:30:00+00:00', '5 days', 'published-time');
-        $unverified = PolicyRemovalReason::cooldown('vendor/pkg', '1.0.0', '2026-01-12T00:30:00+00:00', '5 days', 'time');
+        $verified = RejectionReason::cooldown('vendor/pkg', '1.0.0', '2026-01-12T00:30:00+00:00', '5 days', 'published-time');
+        $unverified = RejectionReason::cooldown('vendor/pkg', '1.0.0', '2026-01-12T00:30:00+00:00', '5 days', 'time');
 
         self::assertSame('still in the cooldown period configured in "policy.cooldown" (available in 5 days)', $verified->getDescription());
         self::assertStringContainsString('based on the package-supplied time field', $unverified->getDescription());
         self::assertSame('"policy.cooldown.block"', $verified->getOffSwitch());
+    }
+
+    public function testPlatformListsEachUnsatisfiedRequirement(): void
+    {
+        $reason = RejectionReason::platform('vendor/pkg', '1.0.0', [
+            ['link' => new Link('vendor/pkg', 'php', new Constraint('>=', '8.4.0.0'), Link::TYPE_REQUIRE, '>=8.4'), 'problem' => 'is not satisfied by your platform'],
+            ['link' => new Link('vendor/pkg', 'ext-foo', new MatchAllConstraint(), Link::TYPE_REQUIRE, '*'), 'problem' => 'is missing from your platform'],
+        ]);
+
+        self::assertFalse($reason->isPolicy());
+        self::assertSame('requires', $reason->getVerb(false));
+        self::assertSame('php >=8.4 which is not satisfied by your platform and ext-foo * which is missing from your platform', $reason->getDescription());
+        self::assertSame('', $reason->getRemedy());
+
+        self::expectException(\LogicException::class);
+        $reason->getOffSwitch();
     }
 }

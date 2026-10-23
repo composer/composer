@@ -12,9 +12,9 @@
 
 namespace Composer\Command;
 
-use Composer\DependencyResolver\PolicyRemovalReason;
+use Composer\Filter\PackageFilter\PackageFilterResult;
+use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\Factory;
-use Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
@@ -23,7 +23,6 @@ use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Version\VersionSelector;
 use Composer\Pcre\Preg;
-use Composer\Policy\CooldownPolicyConfig;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
@@ -285,14 +284,44 @@ trait PackageDiscoveryTrait
     }
 
     /**
-     * The cooldown to apply while picking a version, or null when it would not block the resulting update
+     * The first policy rejection of each package, keyed by version as Problem reports them
+     *
+     * @param list<BasePackage> $packages
+     * @return array<string, RejectionReason>
      */
-    private function getCooldownPolicyConfig(InputInterface $input): ?CooldownPolicyConfig
+    private static function getPolicyRejections(PackageFilterResult $result, array $packages): array
+    {
+        $rejections = [];
+        foreach ($packages as $package) {
+            foreach ($result->getReasons($package) as $reason) {
+                if ($reason->isPolicy()) {
+                    $rejections[$package->getVersion()] = $reason;
+                    break;
+                }
+            }
+        }
+        uksort($rejections, static function (string $a, string $b): int {
+            return version_compare($a, $b);
+        });
+
+        return $rejections;
+    }
+
+    /**
+     * A version selector that skips the versions the dependency policies would block during an update
+     */
+    private function createVersionSelector(InputInterface $input, RepositorySet $repoSet, ?PlatformRepository $platformRepo): VersionSelector
     {
         $composer = $this->tryComposer();
         $config = $composer !== null ? $composer->getConfig() : Factory::createConfig($this->getIO());
+        $httpDownloader = $composer !== null ? $composer->getLoop()->getHttpDownloader() : Factory::createHttpDownloader($this->getIO(), $config);
 
-        return $this->getBlockingCooldownPolicy($config, $input);
+        return new VersionSelector(
+            $repoSet,
+            $platformRepo,
+            $this->getBlockingCooldownPolicy($config, $input),
+            $this->createBlockingPolicyRules($config, $input, $repoSet, $httpDownloader)
+        );
     }
 
     /**
@@ -314,8 +343,7 @@ trait PackageDiscoveryTrait
 
         // find the latest version allowed in this repo set
         $repoSet = $this->getRepositorySet($input);
-        $cooldown = $this->getCooldownPolicyConfig($input);
-        $versionSelector = new VersionSelector($repoSet, $platformRepo, $cooldown);
+        $versionSelector = $this->createVersionSelector($input, $repoSet, $platformRepo);
         $effectiveMinimumStability = $this->getMinimumStability($input);
 
         $package = $versionSelector->findBestCandidate($name, null, $preferredStability, $platformRequirementFilter, 0, $this->getIO());
@@ -343,32 +371,51 @@ trait PackageDiscoveryTrait
                 return [$name, $constraint];
             }
 
-            // The diagnostics below ask what would match with a constraint relaxed, which the cooldown must not hide
-            $unfilteredSelector = new VersionSelector($repoSet, $platformRepo);
+            $result = $versionSelector->getLastResult();
 
-            // Check whether the cooldown withheld every version
-            if ($cooldown !== null && false !== $unfilteredSelector->findBestCandidate($name, null, $preferredStability, $platformRequirementFilter)) {
-                $withheld = $versionSelector->getFirstClearingWithheldCandidate();
-                $wait = $withheld !== null ? ' (version '.$withheld['package']->getPrettyVersion().' becomes available in '.$cooldown->formatTimeUntilAvailable($withheld['releaseDate'], new \DateTimeImmutable()).')' : '';
+            // Check whether dependency policies blocked every version that would otherwise be installable
+            $blocked = self::getPolicyRejections($result, $result->getRejectedOnlyBy(...RejectionReason::POLICIES));
+            if (count($blocked) > 0) {
+                $withheld = array_column($result->getRejections(RejectionReason::COOLDOWN), 'reason');
+                if (count($withheld) > 0 && count(array_filter($blocked, static function (RejectionReason $reason): bool {
+                    return $reason->getType() !== RejectionReason::COOLDOWN;
+                })) === 0) {
+                    $soonest = RejectionReason::combine($withheld);
+                    $cooldownInfo = $soonest->getCooldownInfo();
+                    $wait = $cooldownInfo !== null ? ' (version '.$soonest->getPrettyVersion().' becomes available in '.$cooldownInfo['availableIn'].')' : '';
+
+                    throw new \InvalidArgumentException(sprintf(
+                        'All versions of package %s are still in the cooldown period configured in "policy.cooldown"%s. '.RejectionReason::COOLDOWN_REMEDY,
+                        $name,
+                        $wait
+                    ));
+                }
 
                 throw new \InvalidArgumentException(sprintf(
-                    'All versions of package %s are still in the cooldown period configured in "policy.cooldown"%s. '.PolicyRemovalReason::COOLDOWN_REMEDY,
+                    'All versions of package %s that would otherwise be installable are blocked by your dependency policies, %s',
                     $name,
-                    $wait
+                    RejectionReason::explainPolicyRejections($blocked, count($blocked) > 1, false)
                 ));
             }
 
             // Check whether the package requirements were the problem
-            if (!($platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter) && false !== ($candidate = $unfilteredSelector->findBestCandidate($name, null, $preferredStability, PlatformRequirementFilterFactory::ignoreAll()))) {
+            $candidate = $result->getRejected(RejectionReason::PLATFORM)[0] ?? null;
+            if ($candidate !== null) {
                 throw new \InvalidArgumentException(sprintf(
                     'Package %s has requirements incompatible with your PHP version, PHP extensions and Composer version' . $this->getPlatformExceptionDetails($candidate, $platformRepo),
                     $name
                 ));
             }
+
+            // The diagnostics below ask what would match with a rule relaxed, which the dependency policies must not hide
+            $explained = $versionSelector->explainLastLookup();
+
             // Check whether the minimum stability was the problem but the package exists
-            if (false !== ($package = $unfilteredSelector->findBestCandidate($name, null, $preferredStability, $platformRequirementFilter, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES))) {
+            $package = $explained->getRejectedOnlyBy(RejectionReason::STABILITY, ...RejectionReason::POLICIES)[0] ?? null;
+            if ($package !== null) {
                 // we must first verify if a valid package would be found in a lower priority repository
-                if (false !== ($allReposPackage = $unfilteredSelector->findBestCandidate($name, null, $preferredStability, $platformRequirementFilter, RepositorySet::ALLOW_SHADOWED_REPOSITORIES))) {
+                $allReposPackage = $explained->getRejectedOnlyBy(RejectionReason::REPOSITORY_PRIORITY, ...RejectionReason::POLICIES)[0] ?? null;
+                if ($allReposPackage !== null) {
                     throw new \InvalidArgumentException(
                         'Package '.$name.' exists in '.$allReposPackage->getRepository()->getRepoName().' and '.$package->getRepository()->getRepoName().' which has a higher repository priority. The packages from the higher priority repository do not match your minimum-stability and are therefore not installable. That repository is canonical so the lower priority repo\'s packages are not installable. See https://getcomposer.org/repoprio for details and assistance.'
                     );
@@ -381,9 +428,10 @@ trait PackageDiscoveryTrait
                 ));
             }
             // Check whether the PHP version was the problem for all versions
-            if (!$platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter && false !== ($candidate = $unfilteredSelector->findBestCandidate($name, null, $preferredStability, PlatformRequirementFilterFactory::ignoreAll(), RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES))) {
+            $candidate = $explained->getRejectedOnlyBy(RejectionReason::PLATFORM, RejectionReason::STABILITY, ...RejectionReason::POLICIES)[0] ?? null;
+            if ($candidate !== null) {
                 $additional = '';
-                if (false === $unfilteredSelector->findBestCandidate($name, null, $preferredStability, PlatformRequirementFilterFactory::ignoreAll())) {
+                if (\count($explained->getRejectedOnlyBy(RejectionReason::PLATFORM, ...RejectionReason::POLICIES)) === 0) {
                     $additional = PHP_EOL.PHP_EOL.'Additionally, the package was only found with a stability of "'.$candidate->getStability().'" while your minimum stability is "'.$effectiveMinimumStability.'".';
                 }
 

@@ -12,7 +12,7 @@
 
 namespace Composer\Test\DependencyResolver;
 
-use Composer\DependencyResolver\PolicyRemovalReason;
+use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\DependencyResolver\Pool;
 use Composer\Package\Link;
 use Composer\Semver\Constraint\Constraint;
@@ -64,9 +64,9 @@ class PoolTest extends TestCase
     {
         $pool = new Pool([], [], [], [], [
             'vendor/pkg' => [
-                '2.0.0.0' => $v2 = PolicyRemovalReason::abandoned('vendor/pkg', '2.0.0'),
-                '1.0.0.0' => $v1 = PolicyRemovalReason::abandoned('vendor/pkg', '1.0.0'),
-                '3.0.0.0' => PolicyRemovalReason::abandoned('vendor/pkg', '3.0.0'),
+                '2.0.0.0' => $v2 = RejectionReason::abandoned('vendor/pkg', '2.0.0'),
+                '1.0.0.0' => $v1 = RejectionReason::abandoned('vendor/pkg', '1.0.0'),
+                '3.0.0.0' => RejectionReason::abandoned('vendor/pkg', '3.0.0'),
             ],
         ]);
 
@@ -84,9 +84,9 @@ class PoolTest extends TestCase
         $replaced = self::getPackage('vendor/replaced', '2.0.0');
 
         $map = [];
-        Pool::recordPolicyRemoval($map, $replacer, $replacerReason = PolicyRemovalReason::abandoned('vendor/pkg', '2.0.0'));
-        Pool::recordPolicyRemoval($map, $replaced, $ownReason = PolicyRemovalReason::abandoned('vendor/replaced', '2.0.0'));
-        Pool::recordPolicyRemoval($map, $replacer, PolicyRemovalReason::abandoned('vendor/pkg', '2.0.0'));
+        Pool::recordPolicyRemoval($map, $replacer, $replacerReason = RejectionReason::abandoned('vendor/pkg', '2.0.0'));
+        Pool::recordPolicyRemoval($map, $replaced, $ownReason = RejectionReason::abandoned('vendor/replaced', '2.0.0'));
+        Pool::recordPolicyRemoval($map, $replacer, RejectionReason::abandoned('vendor/pkg', '2.0.0'));
 
         self::assertSame($replacerReason, $map['vendor/pkg']['2.0.0.0']);
         self::assertSame($ownReason, $map['vendor/replaced']['2.0.0.0']);

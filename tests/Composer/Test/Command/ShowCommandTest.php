@@ -16,6 +16,7 @@ use Composer\Package\Link;
 use Composer\Pcre\Preg;
 use Composer\Pcre\Regex;
 use Composer\Repository\PlatformRepository;
+use Composer\Json\JsonFile;
 use Composer\Test\TestCase;
 use DateTimeImmutable;
 use InvalidArgumentException;
@@ -330,6 +331,111 @@ Everything up to date", trim($appTester->getDisplay(true)));
         $appTester = $this->getApplicationTester();
         self::assertSame(0, $appTester->run(['command' => 'outdated', '--all' => true, '--strict' => true]));
         self::assertStringContainsString('vendor/needs-ext 1.0.0 = 1.0.0', $appTester->getDisplay(true));
+    }
+
+    public function testOutdatedShowsTheNewestReleaseTheAdvisoriesPolicyBlocksNextToTheInstallableOne(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => self::getVulnerableRepository([
+                    ['name' => 'vulnerable/pkg', 'version' => '1.0.0'],
+                    ['name' => 'vulnerable/pkg', 'version' => '1.1.0'],
+                    ['name' => 'vulnerable/pkg', 'version' => '2.0.0'],
+                ]),
+            ],
+            'require' => ['vulnerable/pkg' => '*'],
+        ]);
+
+        $this->createInstalledJson([
+            self::getPackage('vulnerable/pkg', '1.0.0'),
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        self::assertSame(1, $appTester->run(['command' => 'outdated', '--strict' => true]));
+        self::assertStringContainsString('vulnerable/pkg 1.0.0 <highlight>! 1.1.0 (2.0.0 blocked by advisories)</highlight>', $appTester->getDisplay(true));
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'outdated', '--format' => 'json']);
+        $installed = JsonFile::parseJson($appTester->getDisplay(true))['installed'];
+        self::assertSame('1.1.0', $installed[0]['latest']);
+        self::assertSame('2.0.0', $installed[0]['blocked-latest']);
+        self::assertSame(['advisories'], $installed[0]['blocked-by']);
+    }
+
+    public function testOutdatedListsButDoesNotCountReleasesThePoliciesBlock(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => self::getVulnerableRepository([
+                    ['name' => 'vulnerable/pkg', 'version' => '1.0.0'],
+                    ['name' => 'vulnerable/pkg', 'version' => '2.0.0'],
+                ]),
+            ],
+            'require' => ['vulnerable/pkg' => '*'],
+        ]);
+
+        $this->createInstalledJson([
+            self::getPackage('vulnerable/pkg', '1.0.0'),
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        self::assertSame(0, $appTester->run(['command' => 'outdated', '--strict' => true]));
+        self::assertStringContainsString('vulnerable/pkg 1.0.0 = 1.0.0 (2.0.0 blocked by advisories)', $appTester->getDisplay(true));
+    }
+
+    public function testShowLatestDoesNotOfferADowngradeWhenTheInstalledVersionIsBlocked(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => self::getVulnerableRepository([
+                    ['name' => 'vulnerable/pkg', 'version' => '1.0.0'],
+                    ['name' => 'vulnerable/pkg', 'version' => '2.0.0'],
+                ]),
+            ],
+            'require' => ['vulnerable/pkg' => '*'],
+        ]);
+
+        $this->createInstalledJson([
+            self::getPackage('vulnerable/pkg', '2.0.0'),
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        self::assertSame(0, $appTester->run(['command' => 'outdated', '--strict' => true, '--all' => true]));
+        self::assertStringContainsString('vulnerable/pkg 2.0.0 = 2.0.0', $appTester->getDisplay(true));
+    }
+
+    /**
+     * A package repository with an advisory affecting vulnerable/pkg 2.x
+     *
+     * @param list<array<string, mixed>> $packages
+     * @return array<string, mixed>
+     */
+    private static function getVulnerableRepository(array $packages): array
+    {
+        return [
+            'type' => 'package',
+            'package' => $packages,
+            'security-advisories' => [
+                'vulnerable/pkg' => [
+                    [
+                        'advisoryId' => 'PKSA-test-001',
+                        'packageName' => 'vulnerable/pkg',
+                        'remoteId' => 'CVE-2024-1234',
+                        'title' => 'Test Security Vulnerability',
+                        'link' => 'https://example.com/advisory',
+                        'cve' => 'CVE-2024-1234',
+                        'affectedVersions' => '>=2.0.0,<3.0.0',
+                        'source' => 'test',
+                        'reportedAt' => '2024-01-01 00:00:00',
+                        'composerRepository' => 'Package Repository',
+                        'severity' => 'high',
+                        'sources' => [
+                            ['name' => 'test', 'remoteId' => 'CVE-2024-1234'],
+                        ],
+                    ],
+                ],
+            ],
+        ];
     }
 
     public function testOutdatedStrictFailsForPackagesMissingFromAllRepositories(): void

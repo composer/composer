@@ -12,6 +12,8 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Filter\PackageFilter\PackageFilterResult;
+use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\AliasPackage;
@@ -169,7 +171,7 @@ class Problem
             }
 
             $plural = \count($removals) > 1;
-            $versions = array_map(static function (PolicyRemovalReason $reason): string {
+            $versions = array_map(static function (RejectionReason $reason): string {
                 return $reason->getPrettyVersion();
             }, $removals);
             $prettyVersions = $isVerbose ? array_values($versions) : self::condenseVersionList($versions, 1);
@@ -412,9 +414,11 @@ class Problem
             }
         }
 
+        $result = $repositorySet->findPackagesWithRejections($packageName, $constraint);
+
         // first check if the actual requested package is found in normal conditions
         // if so it must mean it is rejected by another constraint than the one given here
-        $packages = $repositorySet->findPackages($packageName, $constraint);
+        $packages = $result->getAccepted();
         if (\count($packages) > 0) {
             $rootReqs = $repositorySet->getRootRequires();
             if (isset($rootReqs[$packageName])) {
@@ -447,7 +451,7 @@ class Problem
 
             $policyRemovals = $pool->getPolicyRemovedVersions($packageName, $constraint);
             if (\count($policyRemovals) > 0) {
-                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, '.self::formatPolicyRemovalReasons($policyRemovals, true, $repositorySet)];
+                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, '.self::formatPolicyRemovalReasons($policyRemovals, true, $repositorySet).self::formatOtherRejections($result, $isVerbose)];
             }
 
             if (!array_any($packages, static function ($p): bool {
@@ -456,14 +460,16 @@ class Problem
                 return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' in the lock file but not in remote repositories, make sure you avoid updating this package to keep the one from the lock file.'];
             }
 
-            return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, likely because '.(self::hasMultipleNames($packages) ? 'they conflict' : 'it conflicts').' with another require.'];
+            return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, likely because '.(self::hasMultipleNames($packages) ? 'they conflict' : 'it conflicts').' with another require.'.self::formatOtherRejections($result, $isVerbose)];
         }
 
+        // packages that only a higher priority repository hides
+        $allReposPackages = $result->getRejectedOnlyBy(RejectionReason::REPOSITORY_PRIORITY);
+
         // check if the package is found when bypassing stability checks
-        $packages = $repositorySet->findPackages($packageName, $constraint, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES);
+        $packages = $result->getRejectedOnlyBy(RejectionReason::STABILITY);
         if (\count($packages) > 0) {
             // we must first verify if a valid package would be found in a lower priority repository
-            $allReposPackages = $repositorySet->findPackages($packageName, $constraint, RepositorySet::ALLOW_SHADOWED_REPOSITORIES);
             if (\count($allReposPackages) > 0) {
                 return self::computeCheckForLowerPrioRepo($pool, $isVerbose, $packageName, $packages, $allReposPackages, 'minimum-stability', $constraint);
             }
@@ -472,10 +478,9 @@ class Problem
         }
 
         // check if the package is found when bypassing the constraint and stability checks
-        $packages = $repositorySet->findPackages($packageName, null, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES);
+        $packages = $result->getRejectedOnlyBy(RejectionReason::STABILITY, RejectionReason::CONSTRAINT);
         if (\count($packages) > 0) {
             // we must first verify if a valid package would be found in a lower priority repository
-            $allReposPackages = $repositorySet->findPackages($packageName, $constraint, RepositorySet::ALLOW_SHADOWED_REPOSITORIES);
             if (\count($allReposPackages) > 0) {
                 return self::computeCheckForLowerPrioRepo($pool, $isVerbose, $packageName, $packages, $allReposPackages, 'constraint', $constraint);
             }
@@ -531,7 +536,7 @@ class Problem
 
         $reason = $pool->getPolicyRemovalReason($package->getName(), $package->getVersion());
         if ($reason !== null) {
-            return [$prefix, 'was not loaded, because it '.self::formatPolicyRemovalSentence($reason, false)];
+            return [$prefix, 'was not loaded, '.RejectionReason::explainPolicyRejections([$reason], false)];
         }
 
         throw new \LogicException("Filter list removed locked package must have version removed from pool.");
@@ -726,6 +731,31 @@ class Problem
     }
 
     /**
+     * Mentions the versions matching the constraint that were skipped for another reason, so one message explains all of them
+     */
+    private static function formatOtherRejections(PackageFilterResult $result, bool $isVerbose): string
+    {
+        $acceptedVersions = [];
+        foreach ($result->getAccepted() as $package) {
+            $acceptedVersions[$package->getName()][$package->getVersion()] = true;
+        }
+
+        $found = [];
+        foreach ([RejectionReason::STABILITY, RejectionReason::REPOSITORY_PRIORITY] as $type) {
+            // a copy of an accepted version in a lower priority repository is no alternative
+            $packages = array_values(array_filter($result->getRejectedOnlyBy($type), static function (BasePackage $package) use ($acceptedVersions): bool {
+                return !isset($acceptedVersions[$package->getName()][$package->getVersion()]);
+            }));
+            $reason = \count($packages) > 0 ? $result->getReason($packages[0], $type) : null;
+            if ($reason !== null) {
+                $found[] = self::getPackageList($packages, $isVerbose).' which '.$reason->getVerb(\count($packages) > 1).' '.$reason->getDescription();
+            }
+        }
+
+        return \count($found) > 0 ? ' Also found '.implode(', and ', $found).'.' : '';
+    }
+
+    /**
      * Turns a constraint into text usable in a sentence describing a request
      */
     protected static function constraintToText(?ConstraintInterface $constraint = null): string
@@ -766,66 +796,26 @@ class Problem
     }
 
     /**
-     * @return string the reason as the end of a sentence starting with "because they"/"because it", followed by the remedies
-     */
-    private static function formatPolicyRemovalSentence(PolicyRemovalReason $reason, bool $plural): string
-    {
-        $remedy = $reason->getRemedy();
-
-        return $reason->getVerb($plural).' '.$reason->getDescription().'.'.($remedy !== '' ? ' '.$remedy : '').' To turn the feature off entirely, you can set '.$reason->getOffSwitch().' to false.';
-    }
-
-    /**
      * Explains why policies removed the versions, as "because ..." followed by the remedies
      *
-     * When several policies removed different versions, one sentence would attribute every reason to
-     * every version, so the versions are then listed grouped by their own reason
-     *
-     * @param non-empty-array<string, PolicyRemovalReason> $removals normalized version => reason, in version order
+     * @param non-empty-array<string, RejectionReason> $removals normalized version => reason, in version order
      */
     private static function formatPolicyRemovalReasons(array $removals, bool $plural, RepositorySet $repositorySet): string
     {
-        $removals = self::loadCompleteAdvisories($removals, $repositorySet);
-
-        $policies = array_unique(array_map(static function (PolicyRemovalReason $reason): string {
-            return $reason->getType();
-        }, $removals));
-        if (\count($policies) === 1) {
-            return 'because '.($plural ? 'they ' : 'it ').self::formatPolicyRemovalSentence(PolicyRemovalReason::combine($removals), $plural);
-        }
-
-        $versionsByReason = [];
-        $remedies = [];
-        $offSwitches = [];
-        foreach ($removals as $reason) {
-            $versionsByReason[$reason->getDescription()][$reason->getPrettyVersion()] = true;
-            if ($reason->getRemedy() !== '') {
-                $remedies[$reason->getRemedy()] = true;
-            }
-            $offSwitches[$reason->getOffSwitch()] = true;
-        }
-
-        $lines = [];
-        foreach ($versionsByReason as $description => $versions) {
-            $lines[] = implode(', ', array_keys($versions)) . ': ' . $description;
-        }
-
-        $remedies['To turn a policy off entirely, you can set ' . implode(' or ', array_keys($offSwitches)) . ' to false.'] = true;
-
-        return "because:\n      - " . implode("\n      - ", $lines) . "\n      " . implode(' ', array_keys($remedies));
+        return RejectionReason::explainPolicyRejections(self::loadCompleteAdvisories($removals, $repositorySet), $plural);
     }
 
     /**
      * The pool may only hold partial advisories, load the complete ones to link to their details
      *
-     * @param non-empty-array<string, PolicyRemovalReason> $removals normalized version => reason
-     * @return non-empty-array<string, PolicyRemovalReason>
+     * @param non-empty-array<string, RejectionReason> $removals normalized version => reason
+     * @return non-empty-array<string, RejectionReason>
      */
     private static function loadCompleteAdvisories(array $removals, RepositorySet $repositorySet): array
     {
         $versionsByName = [];
         foreach ($removals as $version => $reason) {
-            if ($reason->getType() === PolicyRemovalReason::ADVISORIES) {
+            if ($reason->getType() === RejectionReason::ADVISORIES) {
                 $versionsByName[$reason->getPackageName()][] = new Constraint('==', (string) $version);
             }
         }
@@ -845,8 +835,8 @@ class Problem
         }
 
         foreach ($removals as $version => $reason) {
-            if ($reason->getType() === PolicyRemovalReason::ADVISORIES) {
-                $removals[$version] = PolicyRemovalReason::advisories($reason->getPackageName(), $reason->getPrettyVersion(), array_map(static function (PartialSecurityAdvisory $advisory) use ($completeAdvisories): PartialSecurityAdvisory {
+            if ($reason->getType() === RejectionReason::ADVISORIES) {
+                $removals[$version] = RejectionReason::advisories($reason->getPackageName(), $reason->getPrettyVersion(), array_map(static function (PartialSecurityAdvisory $advisory) use ($completeAdvisories): PartialSecurityAdvisory {
                     return $completeAdvisories[$advisory->advisoryId] ?? $advisory;
                 }, $reason->getAdvisories()));
             }
