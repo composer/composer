@@ -112,7 +112,7 @@ abstract class ArchiveDownloader extends FileDownloader
             }
 
             /**
-             * Returns the folder content, excluding .DS_Store
+             * Returns the folder content, excluding .DS_Store and __MACOSX
              *
              * @param  string         $dir Directory
              * @return \SplFileInfo[]
@@ -122,6 +122,7 @@ abstract class ArchiveDownloader extends FileDownloader
                     ->ignoreVCS(false)
                     ->ignoreDotFiles(false)
                     ->notName('.DS_Store')
+                    ->notName('__MACOSX')
                     ->depth(0)
                     ->in($dir);
 

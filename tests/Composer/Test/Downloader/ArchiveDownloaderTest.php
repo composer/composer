@@ -174,4 +174,50 @@ class ArchiveDownloaderTest extends TestCase
             ]
         );
     }
+
+    public function testInstallUnwrapsSingleFolderWithMacOsxDirectory(): void
+    {
+        $testDir = self::getUniqueTmpDirectory();
+        $targetDir = $testDir . '/target';
+        $vendorDir = $testDir . '/vendor';
+
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $config = new \Composer\Config(false);
+        $config->merge(['config' => ['vendor-dir' => $vendorDir]]);
+
+        $http = new \Composer\Util\HttpDownloader($io, $config);
+        $process = new \Composer\Util\ProcessExecutor($io);
+        $loop = new \Composer\Util\Loop($http, $process);
+        $filesystem = new \Composer\Util\Filesystem($process);
+
+        $package = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
+        $package->expects($this->any())
+            ->method('getName')
+            ->willReturn('test/pkg');
+        $package->expects($this->any())
+            ->method('getDistUrl')
+            ->willReturn('http://example.com/archive.zip');
+
+        $downloader = new class($io, $config, $http, null, null, $filesystem, $process) extends \Composer\Downloader\ArchiveDownloader {
+            protected function extract(\Composer\Package\PackageInterface $package, string $file, string $path): \React\Promise\PromiseInterface
+            {
+                mkdir($path . '/pkg-dir', 0777, true);
+                file_put_contents($path . '/pkg-dir/composer.json', '{"name":"test/pkg"}');
+                mkdir($path . '/__MACOSX', 0777, true);
+                file_put_contents($path . '/__MACOSX/._pkg-dir', 'metadata');
+
+                return \React\Promise\resolve(null);
+            }
+        };
+
+        $promise = $downloader->install($package, $targetDir, false);
+        $loop->wait([$promise]);
+
+        self::assertFileExists($targetDir . '/composer.json');
+        self::assertFileDoesNotExist($targetDir . '/pkg-dir');
+        self::assertFileDoesNotExist($targetDir . '/__MACOSX');
+
+        $filesystem->removeDirectory($testDir);
+    }
 }
+
