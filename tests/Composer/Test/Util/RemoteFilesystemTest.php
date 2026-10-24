@@ -13,6 +13,7 @@
 namespace Composer\Test\Util;
 
 use Composer\Config;
+use Composer\Exception\SecurityException;
 use Composer\IO\IOInterface;
 use Composer\Util\AuthHelper;
 use Composer\Util\RemoteFilesystem;
@@ -158,6 +159,21 @@ class RemoteFilesystemTest extends TestCase
         $fs = new RemoteFilesystem($this->getIOInterfaceMock(), $this->getConfigMock());
 
         self::assertStringContainsString('testGetContents', (string) $fs->getContents('http://example.org', 'file://'.__FILE__));
+    }
+
+    public function testDisabledGzipEncodingIsRefused(): void
+    {
+        $fs = new RemoteFilesystem($this->getIOInterfaceMock(), $this->getConfigMock());
+
+        self::expectException(SecurityException::class);
+        $fs->getContents('http://example.org', 'file://'.__FILE__, false, ['disabled_encodings' => ['GZIP']]);
+    }
+
+    public function testOtherDisabledEncodingsAreIgnored(): void
+    {
+        $fs = new RemoteFilesystem($this->getIOInterfaceMock(), $this->getConfigMock());
+
+        self::assertStringContainsString('testOtherDisabledEncodingsAreIgnored', (string) $fs->getContents('http://example.org', 'file://'.__FILE__, false, ['disabled_encodings' => ['br', 'zstd']]));
     }
 
     public function testCopy(): void

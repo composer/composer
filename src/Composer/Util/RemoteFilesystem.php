@@ -18,6 +18,7 @@ use Composer\Config;
 use Composer\Downloader\MaxFileSizeExceededException;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
+use Composer\Exception\SecurityException;
 use Composer\Pcre\Preg;
 use Composer\Util\Http\Response;
 use Composer\Util\Http\TlsChainDenylist;
@@ -279,6 +280,16 @@ class RemoteFilesystem
             $maxFileSize = $options['max_file_size'];
             unset($options['max_file_size']);
         }
+
+        // streams only ever decode gzip, which cannot be turned off here, so refuse rather than ignore the option
+        if (isset($options['disabled_encodings']) && is_array($options['disabled_encodings'])) {
+            foreach ($options['disabled_encodings'] as $encoding) {
+                if (is_string($encoding) && in_array(strtolower(trim($encoding)), ['gzip', 'x-gzip'], true)) {
+                    throw new SecurityException('The gzip content-encoding cannot be disabled when downloading '.Url::sanitize($fileUrl).' without the curl extension, aborting.');
+                }
+            }
+        }
+        unset($options['disabled_encodings']);
 
         $hostKey = TlsChainDenylist::getHostKey($fileUrl);
         if (null !== $hostKey && isset($this->distrustedHosts[$hostKey])) {

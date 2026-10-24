@@ -13,6 +13,7 @@
 namespace Composer\Util\Http;
 
 use Composer\Config;
+use Composer\Exception\SecurityException;
 use Composer\Downloader\MaxFileSizeExceededException;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
@@ -75,6 +76,12 @@ class CurlDownloader
      * @var array<string, string>
      */
     private $distrustedHosts = [];
+    /**
+     * Disabled content-encoding a response announced, keyed by job id, see initDownload()
+     *
+     * @var array<int, string>
+     */
+    private $rejectedEncodings = [];
     /** @var IOInterface */
     private $io;
     /** @var Config */
@@ -114,6 +121,12 @@ class CurlDownloader
         ],
     ];
 
+    /**
+     * Default CURLOPT_ENCODING value and the content-encodings libcurl can decode, see getAcceptEncoding()
+     *
+     * @var array{string, list<string>}|null
+     */
+    private static $encodingSupport = null;
     /** @var array<string, true> */
     private static $ignoredProgressInfo = [
         'total_time' => true,
@@ -256,9 +269,29 @@ class CurlDownloader
         curl_setopt($curlHandle, CURLOPT_FOLLOWLOCATION, false);
         curl_setopt($curlHandle, CURLOPT_CONNECTTIMEOUT, 10);
         curl_setopt($curlHandle, CURLOPT_TIMEOUT, max((int) ini_get("default_socket_timeout"), 300));
-        curl_setopt($curlHandle, CURLOPT_WRITEHEADER, $headerHandle);
+        $disabledEncodings = self::getDisabledEncodings($options);
+        if ([] === $disabledEncodings) {
+            curl_setopt($curlHandle, CURLOPT_WRITEHEADER, $headerHandle);
+        } else {
+            $jobId = (int) $curlHandle;
+            // once CURLOPT_ENCODING is set libcurl decodes whatever the server sends, so the transfer is
+            // aborted from the header callback, which runs before any of the body gets decoded
+            curl_setopt($curlHandle, CURLOPT_HEADERFUNCTION, function ($handle, string $line) use ($headerHandle, $disabledEncodings, $jobId): int {
+                $encoding = self::findDisabledEncoding($line, $disabledEncodings);
+                if (null !== $encoding) {
+                    $this->rejectedEncodings[$jobId] = $encoding;
+
+                    return 0;
+                }
+
+                return (int) fwrite($headerHandle, $line);
+            });
+        }
         curl_setopt($curlHandle, CURLOPT_FILE, $bodyHandle);
-        curl_setopt($curlHandle, CURLOPT_ENCODING, ""); // let cURL set the Accept-Encoding header to what it supports
+        $acceptEncoding = self::getAcceptEncoding($disabledEncodings);
+        if (null !== $acceptEncoding) {
+            curl_setopt($curlHandle, CURLOPT_ENCODING, $acceptEncoding);
+        }
         curl_setopt($curlHandle, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
 
         if (null !== $hostKey) {
@@ -304,12 +337,6 @@ class CurlDownloader
         // see https://github.com/composer/composer/issues/12987
         if (0 === strpos($url, 'https://') && \defined('CURL_VERSION_HTTP2') && \defined('CURL_HTTP_VERSION_2_0') && (CURL_VERSION_HTTP2 & $features) !== 0) {
             curl_setopt($curlHandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
-        }
-
-        // curl 8.7.0 - 8.7.1 has a bug whereas automatic accept-encoding header results in an error when reading the response
-        // https://github.com/composer/composer/issues/11913
-        if (isset($version['version']) && in_array($version['version'], ['8.7.0', '8.7.1'], true) && \defined('CURL_VERSION_LIBZ') && (CURL_VERSION_LIBZ & $features) !== 0) {
-            curl_setopt($curlHandle, CURLOPT_ENCODING, "gzip");
         }
 
         $options = $this->authHelper->addAuthenticationOptions($options, $origin, $url);
@@ -378,6 +405,7 @@ class CurlDownloader
             }
             unset($this->jobs[$id]);
         }
+        unset($this->rejectedEncodings[$id]);
 
         // a retry waiting for its delay is not in flight but must not be started either
         foreach ($this->delayedJobs as $i => $delayedJob) {
@@ -443,6 +471,8 @@ class CurlDownloader
             }
             $job = $this->jobs[$i];
             unset($this->jobs[$i]);
+            $rejectedEncoding = $this->rejectedEncodings[$i] ?? null;
+            unset($this->rejectedEncodings[$i]);
             $error = curl_error($curlHandle);
             $errno = curl_errno($curlHandle);
             curl_multi_remove_handle($this->multiHandle, $curlHandle);
@@ -462,6 +492,11 @@ class CurlDownloader
                         $this->io->writeError('<error>'.$e->getMessage().'</error>');
                     }
                     throw $e;
+                }
+
+                // not a TransportException, so callers do not retry or fall back to another source
+                if (null !== $rejectedEncoding) {
+                    throw new SecurityException('The response from '.Url::sanitize($job['url']).' uses the disabled "'.$rejectedEncoding.'" content-encoding, aborting.');
                 }
 
                 // TODO progress
@@ -629,6 +664,109 @@ class CurlDownloader
                 // TODO progress
             }
         }
+    }
+
+    /**
+     * @param mixed[] $options
+     *
+     * @return list<non-empty-string>
+     */
+    private static function getDisabledEncodings(array $options): array
+    {
+        if (!isset($options['disabled_encodings'])) {
+            return [];
+        }
+        if (!is_array($options['disabled_encodings'])) {
+            throw new \InvalidArgumentException('The disabled_encodings option must be a list of content-encodings, got '.get_debug_type($options['disabled_encodings']));
+        }
+
+        $encodings = [];
+        foreach ($options['disabled_encodings'] as $encoding) {
+            $encoding = self::normalizeEncoding($encoding);
+            if ('' === $encoding) {
+                throw new \InvalidArgumentException('The disabled_encodings option must not contain empty entries');
+            }
+            $encodings[] = $encoding;
+        }
+
+        return array_values(array_unique($encodings));
+    }
+
+    /**
+     * @param list<non-empty-string> $disabledEncodings
+     *
+     * @return string|null the value for CURLOPT_ENCODING, null to leave libcurl's decoding off entirely
+     */
+    private static function getAcceptEncoding(array $disabledEncodings): ?string
+    {
+        if (null === self::$encodingSupport) {
+            $version = curl_version();
+            $features = false !== $version ? $version['features'] : 0;
+            $hasLibz = \defined('CURL_VERSION_LIBZ') && (CURL_VERSION_LIBZ & $features) !== 0;
+            // curl 8.7.0 - 8.7.1 has a bug whereas automatic accept-encoding header results in an error when reading the response
+            // https://github.com/composer/composer/issues/11913
+            $isCurl87 = isset($version['version']) && in_array($version['version'], ['8.7.0', '8.7.1'], true);
+
+            $supported = [];
+            if ($hasLibz) {
+                $supported[] = 'gzip';
+                if (!$isCurl87) {
+                    $supported[] = 'deflate';
+                }
+            }
+            if (!$isCurl87 && \defined('CURL_VERSION_BROTLI') && (CURL_VERSION_BROTLI & $features) !== 0) {
+                $supported[] = 'br';
+            }
+            if (!$isCurl87 && \defined('CURL_VERSION_ZSTD') && (CURL_VERSION_ZSTD & $features) !== 0) {
+                $supported[] = 'zstd';
+            }
+
+            // an empty default lets cURL set the Accept-Encoding header to what it supports
+            self::$encodingSupport = [$isCurl87 && $hasLibz ? 'gzip' : '', $supported];
+        }
+
+        [$default, $supported] = self::$encodingSupport;
+        if ([] === $disabledEncodings) {
+            return $default;
+        }
+
+        $allowed = array_diff($supported, $disabledEncodings);
+
+        return [] === $allowed ? null : implode(', ', $allowed);
+    }
+
+    /**
+     * @param list<non-empty-string> $disabledEncodings
+     */
+    private static function findDisabledEncoding(string $headerLine, array $disabledEncodings): ?string
+    {
+        if (!Preg::isMatchStrictGroups('{^content-encoding:(.*)$}i', trim($headerLine), $match)) {
+            return null;
+        }
+
+        foreach (explode(',', $match[1]) as $encoding) {
+            $encoding = self::normalizeEncoding($encoding);
+            if (in_array($encoding, $disabledEncodings, true)) {
+                return $encoding;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param mixed $encoding
+     */
+    private static function normalizeEncoding($encoding): string
+    {
+        if (!is_string($encoding)) {
+            throw new \InvalidArgumentException('The disabled_encodings option must be a list of content-encodings, got a '.get_debug_type($encoding).' entry');
+        }
+
+        $encoding = strtolower(trim($encoding));
+
+        // libcurl decodes x-gzip as gzip
+        return 'x-gzip' === $encoding ? 'gzip' : $encoding;
     }
 
     /**
