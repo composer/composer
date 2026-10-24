@@ -128,6 +128,14 @@ PHP
         $this->createHttpDownloader()->get(self::$baseUrl.'?encoding=gzip', ['disabled_encodings' => ['gzip', 'deflate', 'br', 'zstd']]);
     }
 
+    public function testRequestOptionAddsToTheDefaultDisabledEncodings(): void
+    {
+        self::expectException(SecurityException::class);
+        self::expectExceptionMessage('uses the disabled "br" content-encoding');
+
+        $this->createHttpDownloader(['disabled_encodings' => ['br', 'zstd']])->get(self::$baseUrl.'?encoding=br', ['disabled_encodings' => ['gzip']]);
+    }
+
     public function testEncodingWhichIsNotDisabledIsDecoded(): void
     {
         $response = $this->createHttpDownloader()->get(self::$baseUrl.'?encoding=gzip', ['disabled_encodings' => ['br']]);
@@ -185,11 +193,14 @@ PHP
         return $result;
     }
 
-    private function createHttpDownloader(): HttpDownloader
+    /**
+     * @param mixed[] $options
+     */
+    private function createHttpDownloader(array $options = []): HttpDownloader
     {
         $config = new Config(false);
         $config->merge(['config' => ['secure-http' => false]]);
 
-        return new HttpDownloader(new NullIO(), $config);
+        return new HttpDownloader(new NullIO(), $config, $options);
     }
 }

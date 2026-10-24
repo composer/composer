@@ -199,7 +199,24 @@ class HttpDownloader
      */
     public function setOptions(array $options)
     {
-        $this->options = array_replace_recursive($this->options, $options);
+        $this->options = self::mergeOptions($this->options, $options);
+    }
+
+    /**
+     * @param mixed[] $defaults
+     * @param mixed[] $options
+     * @return mixed[]
+     */
+    private static function mergeOptions(array $defaults, array $options): array
+    {
+        $merged = array_replace_recursive($defaults, $options);
+
+        // array_replace_recursive would overwrite list entries by index, re-enabling some of the defaults
+        if (isset($defaults['disabled_encodings'], $options['disabled_encodings']) && is_array($defaults['disabled_encodings']) && is_array($options['disabled_encodings'])) {
+            $merged['disabled_encodings'] = array_values(array_unique(array_merge($defaults['disabled_encodings'], $options['disabled_encodings'])));
+        }
+
+        return $merged;
     }
 
     /**
@@ -209,7 +226,7 @@ class HttpDownloader
      */
     private function addJob(array $request, bool $sync = false): array
     {
-        $request['options'] = array_replace_recursive($this->options, $request['options']);
+        $request['options'] = self::mergeOptions($this->options, $request['options']);
 
         /** @var Job */
         $job = [
