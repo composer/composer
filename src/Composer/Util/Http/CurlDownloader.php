@@ -121,6 +121,12 @@ class CurlDownloader
         ],
     ];
 
+    /**
+     * Default CURLOPT_ENCODING value and the content-encodings libcurl can decode, see getAcceptEncoding()
+     *
+     * @var array{string, list<string>}|null
+     */
+    private static $encodingSupport = null;
     /** @var array<string, true> */
     private static $ignoredProgressInfo = [
         'total_time' => true,
@@ -693,30 +699,35 @@ class CurlDownloader
      */
     private static function getAcceptEncoding(array $disabledEncodings): ?string
     {
-        $version = curl_version();
-        $features = false !== $version ? $version['features'] : 0;
-        $hasLibz = \defined('CURL_VERSION_LIBZ') && (CURL_VERSION_LIBZ & $features) !== 0;
-        // curl 8.7.0 - 8.7.1 has a bug whereas automatic accept-encoding header results in an error when reading the response
-        // https://github.com/composer/composer/issues/11913
-        $isCurl87 = isset($version['version']) && in_array($version['version'], ['8.7.0', '8.7.1'], true);
+        if (null === self::$encodingSupport) {
+            $version = curl_version();
+            $features = false !== $version ? $version['features'] : 0;
+            $hasLibz = \defined('CURL_VERSION_LIBZ') && (CURL_VERSION_LIBZ & $features) !== 0;
+            // curl 8.7.0 - 8.7.1 has a bug whereas automatic accept-encoding header results in an error when reading the response
+            // https://github.com/composer/composer/issues/11913
+            $isCurl87 = isset($version['version']) && in_array($version['version'], ['8.7.0', '8.7.1'], true);
 
-        if ([] === $disabledEncodings) {
-            // let cURL set the Accept-Encoding header to what it supports
-            return $isCurl87 && $hasLibz ? 'gzip' : '';
-        }
-
-        $supported = [];
-        if ($hasLibz) {
-            $supported[] = 'gzip';
-            if (!$isCurl87) {
-                $supported[] = 'deflate';
+            $supported = [];
+            if ($hasLibz) {
+                $supported[] = 'gzip';
+                if (!$isCurl87) {
+                    $supported[] = 'deflate';
+                }
             }
+            if (!$isCurl87 && \defined('CURL_VERSION_BROTLI') && (CURL_VERSION_BROTLI & $features) !== 0) {
+                $supported[] = 'br';
+            }
+            if (!$isCurl87 && \defined('CURL_VERSION_ZSTD') && (CURL_VERSION_ZSTD & $features) !== 0) {
+                $supported[] = 'zstd';
+            }
+
+            // an empty default lets cURL set the Accept-Encoding header to what it supports
+            self::$encodingSupport = [$isCurl87 && $hasLibz ? 'gzip' : '', $supported];
         }
-        if (!$isCurl87 && \defined('CURL_VERSION_BROTLI') && (CURL_VERSION_BROTLI & $features) !== 0) {
-            $supported[] = 'br';
-        }
-        if (!$isCurl87 && \defined('CURL_VERSION_ZSTD') && (CURL_VERSION_ZSTD & $features) !== 0) {
-            $supported[] = 'zstd';
+
+        [$default, $supported] = self::$encodingSupport;
+        if ([] === $disabledEncodings) {
+            return $default;
         }
 
         $allowed = array_diff($supported, $disabledEncodings);
