@@ -32,7 +32,7 @@ class CurlDownloaderEncodingTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        if (!extension_loaded('curl') || !extension_loaded('zlib')) {
+        if (!extension_loaded('curl') || !extension_loaded('zlib') || !function_exists('proc_open')) {
             return;
         }
 
@@ -53,8 +53,13 @@ PHP
         $address = (string) stream_socket_get_name($socket, false);
         fclose($socket);
 
+        $command = [PHP_BINARY, '-S', $address, self::$serverDir.'/router.php'];
+        // an array command skips the shell, so proc_terminate() stops the server and not just a wrapping cmd.exe
+        if (\PHP_VERSION_ID < 70400) {
+            $command = implode(' ', array_map('escapeshellarg', $command));
+        }
         $server = proc_open(
-            escapeshellarg(PHP_BINARY).' -S '.escapeshellarg($address).' '.escapeshellarg(self::$serverDir.'/router.php'),
+            $command,
             [0 => ['pipe', 'r'], 1 => ['file', self::$serverDir.'/server.log', 'a'], 2 => ['file', self::$serverDir.'/server.log', 'a']],
             $pipes
         );
@@ -89,8 +94,8 @@ PHP
 
     protected function setUp(): void
     {
-        if (!extension_loaded('curl') || !extension_loaded('zlib')) {
-            self::markTestSkipped('curl and zlib extensions are required');
+        if (!extension_loaded('curl') || !extension_loaded('zlib') || !function_exists('proc_open')) {
+            self::markTestSkipped('curl and zlib extensions and proc_open are required');
         }
         if (null === self::$server) {
             self::markTestSkipped('Could not start the PHP built-in web server');
