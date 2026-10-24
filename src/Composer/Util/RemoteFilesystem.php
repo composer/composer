@@ -280,6 +280,9 @@ class RemoteFilesystem
             unset($options['max_file_size']);
         }
 
+        // only relevant to curl, streams leave all decoding to PHP and only ever decode gzip
+        unset($options['disabled_encodings']);
+
         $hostKey = TlsChainDenylist::getHostKey($fileUrl);
         if (null !== $hostKey && isset($this->distrustedHosts[$hostKey])) {
             throw TlsChainDenylist::createException($fileUrl, $this->distrustedHosts[$hostKey], false);
