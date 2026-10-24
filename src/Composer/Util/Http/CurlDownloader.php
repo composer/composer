@@ -663,7 +663,7 @@ class CurlDownloader
     /**
      * @param mixed[] $options
      *
-     * @return list<string>
+     * @return list<non-empty-string>
      */
     private static function getDisabledEncodings(array $options): array
     {
@@ -674,11 +674,20 @@ class CurlDownloader
             throw new \InvalidArgumentException('The disabled_encodings option must be a list of content-encodings, got '.get_debug_type($options['disabled_encodings']));
         }
 
-        return array_values(array_unique(array_map([self::class, 'normalizeEncoding'], $options['disabled_encodings'])));
+        $encodings = [];
+        foreach ($options['disabled_encodings'] as $encoding) {
+            $encoding = self::normalizeEncoding($encoding);
+            if ('' === $encoding) {
+                throw new \InvalidArgumentException('The disabled_encodings option must not contain empty entries');
+            }
+            $encodings[] = $encoding;
+        }
+
+        return array_values(array_unique($encodings));
     }
 
     /**
-     * @param list<string> $disabledEncodings
+     * @param list<non-empty-string> $disabledEncodings
      *
      * @return string|null the value for CURLOPT_ENCODING, null to leave libcurl's decoding off entirely
      */
@@ -716,7 +725,7 @@ class CurlDownloader
     }
 
     /**
-     * @param list<string> $disabledEncodings
+     * @param list<non-empty-string> $disabledEncodings
      */
     private static function findDisabledEncoding(string $headerLine, array $disabledEncodings): ?string
     {

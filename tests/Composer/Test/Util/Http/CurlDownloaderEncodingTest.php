@@ -164,6 +164,13 @@ PHP
         $this->createHttpDownloader()->get(self::$baseUrl.'?encoding=gzip', ['disabled_encodings' => 'br']);
     }
 
+    public function testEmptyEncodingIsRejected(): void
+    {
+        self::expectException(\InvalidArgumentException::class);
+
+        $this->createHttpDownloader()->get(self::$baseUrl.'?encoding='.rawurlencode('gzip,'), ['disabled_encodings' => [' ']]);
+    }
+
     public function testAcceptEncodingLeavesOutDisabledEncodings(): void
     {
         $default = self::getAcceptEncoding([]);
@@ -178,7 +185,7 @@ PHP
     }
 
     /**
-     * @param list<string> $disabledEncodings
+     * @param list<non-empty-string> $disabledEncodings
      */
     private static function getAcceptEncoding(array $disabledEncodings): ?string
     {
