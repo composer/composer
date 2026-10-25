@@ -69,8 +69,8 @@ class Zip
             $name = $zip->getNameIndex($i);
             $dirname = dirname($name);
 
-            // ignore OSX specific resource fork folder
-            if (strpos($name, '__MACOSX') !== false) {
+            // ignore well-known OS/editor metadata entries (resource forks, thumbnail caches, etc.)
+            if (self::isMetadataPath($name)) {
                 continue;
             }
 
@@ -97,5 +97,27 @@ class Zip
         }
 
         throw new \RuntimeException('No composer.json found either at the top level or within the topmost directory');
+    }
+
+    /**
+     * Whether the top-level segment of an archive entry path (or a bare file
+     * name) is a well-known OS/editor metadata artifact — resource forks,
+     * thumbnail caches, and similar — that is never part of the package and
+     * must be ignored when determining the archive's single top-level directory.
+     */
+    public static function isMetadataPath(string $name): bool
+    {
+        $name = str_replace('\\', '/', $name);
+        $top = explode('/', ltrim($name, '/'))[0];
+
+        // macOS AppleDouble resource-fork files, e.g. "._composer.json"
+        if (substr($top, 0, 2) === '._') {
+            return true;
+        }
+
+        return in_array($top, [
+            '.DS_Store', '__MACOSX', '.AppleDouble', '.fseventsd',
+            '.Spotlight-V100', '.Trashes', 'Thumbs.db', 'desktop.ini',
+        ], true);
     }
 }

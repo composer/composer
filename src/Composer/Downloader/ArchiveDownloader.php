@@ -14,6 +14,7 @@ namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
 use Composer\Util\Platform;
+use Composer\Util\Zip;
 use Symfony\Component\Finder\Finder;
 use React\Promise\PromiseInterface;
 use Composer\DependencyResolver\Operation\InstallOperation;
@@ -112,7 +113,10 @@ abstract class ArchiveDownloader extends FileDownloader
             }
 
             /**
-             * Returns the folder content, excluding .DS_Store
+             * Returns the folder content, excluding well-known OS/editor metadata
+             * (resource forks, thumbnail caches, etc.) so that an archive whose real
+             * package directory is shipped alongside such an entry still unwraps
+             * correctly instead of installing one level too deep.
              *
              * @param  string         $dir Directory
              * @return \SplFileInfo[]
@@ -121,11 +125,18 @@ abstract class ArchiveDownloader extends FileDownloader
                 $finder = Finder::create()
                     ->ignoreVCS(false)
                     ->ignoreDotFiles(false)
-                    ->notName('.DS_Store')
                     ->depth(0)
                     ->in($dir);
 
-                return iterator_to_array($finder);
+                $content = [];
+                foreach ($finder as $file) {
+                    if (Zip::isMetadataPath($file->getFilename())) {
+                        continue;
+                    }
+                    $content[] = $file;
+                }
+
+                return $content;
             };
             $renameRecursively = null;
             /**
