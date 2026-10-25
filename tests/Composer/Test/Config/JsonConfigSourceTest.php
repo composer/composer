@@ -185,6 +185,59 @@ class JsonConfigSourceTest extends TestCase
         self::assertSame($expected, file_get_contents($config));
     }
 
+    public function testAddPropertyToArrayValuedExtraDoesNotDoubleNest(): void
+    {
+        $config = $this->workingDir.'/composer.json';
+        $original = '{
+    "name": "vendor/pkg",
+    "extra": [
+        "hello"
+    ]
+}
+';
+        file_put_contents($config, $original);
+
+        $jsonConfigSource = new JsonConfigSource(new JsonFile($config));
+        $jsonConfigSource->addProperty('extra.1', 'world');
+
+        // The value must land at extra.1, not at a phantom extra.extra.1 (GH-13165).
+        $expected = '{
+    "name": "vendor/pkg",
+    "extra": [
+        "hello",
+        "world"
+    ]
+}
+';
+        self::assertSame($expected, file_get_contents($config));
+    }
+
+    public function testRemovePropertyFromArrayValuedExtraDoesNotDoubleNest(): void
+    {
+        $config = $this->workingDir.'/composer.json';
+        $original = '{
+    "name": "vendor/pkg",
+    "extra": [
+        "hello",
+        "world"
+    ]
+}
+';
+        file_put_contents($config, $original);
+
+        $jsonConfigSource = new JsonConfigSource(new JsonFile($config));
+        $jsonConfigSource->removeProperty('extra.1');
+
+        $expected = '{
+    "name": "vendor/pkg",
+    "extra": [
+        "hello"
+    ]
+}
+';
+        self::assertSame($expected, file_get_contents($config));
+    }
+
     public function testRemovePolicyListFieldCascadesEmptyAncestors(): void
     {
         $config = $this->workingDir.'/composer.json';

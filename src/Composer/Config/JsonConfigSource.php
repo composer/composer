@@ -319,7 +319,8 @@ class JsonConfigSource implements ConfigSourceInterface
             if (strpos($key, 'extra.') === 0 || strpos($key, 'scripts.') === 0) {
                 $bits = explode('.', $key);
                 $last = array_pop($bits);
-                $arr = &$config[reset($bits)];
+                $firstBit = array_shift($bits);
+                $arr = &$config[$firstBit];
                 foreach ($bits as $bit) {
                     if (!isset($arr[$bit])) {
                         $arr[$bit] = [];
@@ -342,7 +343,8 @@ class JsonConfigSource implements ConfigSourceInterface
             if (strpos($key, 'extra.') === 0 || strpos($key, 'scripts.') === 0 || stripos($key, 'autoload.') === 0 || stripos($key, 'autoload-dev.') === 0) {
                 $bits = explode('.', $key);
                 $last = array_pop($bits);
-                $arr = &$config[reset($bits)];
+                $firstBit = array_shift($bits);
+                $arr = &$config[$firstBit];
                 foreach ($bits as $bit) {
                     if (!isset($arr[$bit])) {
                         return;
