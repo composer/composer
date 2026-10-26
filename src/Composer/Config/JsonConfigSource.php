@@ -349,7 +349,14 @@ class JsonConfigSource implements ConfigSourceInterface
                     }
                     $arr = &$arr[$bit];
                 }
+                $wasList = array_is_list($arr);
                 unset($arr[$last]);
+                // keep lists as lists and emptied objects as objects, as JsonManipulator does
+                if ($wasList) {
+                    $arr = array_values($arr);
+                } elseif ($arr === []) {
+                    $arr = new \stdClass;
+                }
             } else {
                 unset($config[$key]);
             }

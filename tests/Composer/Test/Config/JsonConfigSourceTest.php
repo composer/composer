@@ -227,12 +227,12 @@ class JsonConfigSourceTest extends TestCase
         file_put_contents($config, $original);
 
         $jsonConfigSource = new JsonConfigSource(new JsonFile($config));
-        $jsonConfigSource->removeProperty('extra.1');
+        $jsonConfigSource->removeProperty('extra.0');
 
         $expected = '{
     "name": "vendor/pkg",
     "extra": [
-        "hello"
+        "world"
     ]
 }
 ';
@@ -276,6 +276,8 @@ class JsonConfigSourceTest extends TestCase
         yield 'add script' => ['{"scripts": {"test": "phpunit"}}', 'addProperty', ['scripts.lint', 'phpcs'], '{"scripts":{"test":"phpunit","lint":"phpcs"}}'];
         yield 'add suggest' => ['{"suggest": {"a/b": "c"}}', 'addProperty', ['suggest.foo/b.ar', 'desc'], '{"suggest":{"a\/b":"c","foo\/b.ar":"desc"}}'];
         yield 'remove nested extra key with literal remainder' => ['{"extra": {"a": {"b.c": "x", "d": 1}}}', 'removeProperty', ['extra.a.b.c'], '{"extra":{"a":{"d":1}}}'];
+        yield 'remove last nested key keeps an object' => ['{"extra": {"foo": {"bar": 1}, "z": 2}}', 'removeProperty', ['extra.foo.bar'], '{"extra":{"foo":{},"z":2}}'];
+        yield 'remove last extra key keeps an object' => ['{"extra": {"foo": 1}}', 'removeProperty', ['extra.foo'], '{"extra":{}}'];
         yield 'remove below a scalar is a no-op' => ['{"extra": {"foo": "bar", "z": 1}}', 'removeProperty', ['extra.foo.0.x'], '{"extra":{"foo":"bar","z":1}}'];
         yield 'remove suggest' => ['{"suggest": {"foo/bar": "x", "a/b": "y"}}', 'removeProperty', ['suggest.foo/bar'], '{"suggest":{"a\/b":"y"}}'];
         yield 'remove autoload type' => ['{"autoload": {"psr-4": {"A\\\\": "src/"}, "files": ["x.php"]}}', 'removeProperty', ['autoload.psr-4'], '{"autoload":{"files":["x.php"]}}'];
