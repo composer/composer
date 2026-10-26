@@ -316,13 +316,12 @@ class JsonConfigSource implements ConfigSourceInterface
     public function addProperty(string $name, $value): void
     {
         $this->manipulateJson('addProperty', static function (&$config, $key, $val): void {
-            if (strpos($key, 'extra.') === 0 || strpos($key, 'scripts.') === 0) {
-                $bits = explode('.', $key);
+            if (Preg::isMatch('{^(suggest|extra|scripts)\.}', $key)) {
+                $bits = self::splitPropertyKey($key);
                 $last = array_pop($bits);
-                $firstBit = array_shift($bits);
-                $arr = &$config[$firstBit];
+                $arr = &$config;
                 foreach ($bits as $bit) {
-                    if (!isset($arr[$bit])) {
+                    if (!isset($arr[$bit]) || !is_array($arr[$bit])) {
                         $arr[$bit] = [];
                     }
                     $arr = &$arr[$bit];
@@ -340,13 +339,12 @@ class JsonConfigSource implements ConfigSourceInterface
     public function removeProperty(string $name): void
     {
         $this->manipulateJson('removeProperty', static function (&$config, $key): void {
-            if (strpos($key, 'extra.') === 0 || strpos($key, 'scripts.') === 0 || stripos($key, 'autoload.') === 0 || stripos($key, 'autoload-dev.') === 0) {
-                $bits = explode('.', $key);
+            if (Preg::isMatch('{^(suggest|extra|scripts|autoload|autoload-dev)\.}', $key)) {
+                $bits = self::splitPropertyKey($key);
                 $last = array_pop($bits);
-                $firstBit = array_shift($bits);
-                $arr = &$config[$firstBit];
+                $arr = &$config;
                 foreach ($bits as $bit) {
-                    if (!isset($arr[$bit])) {
+                    if (!isset($arr[$bit]) || !is_array($arr[$bit])) {
                         return;
                     }
                     $arr = &$arr[$bit];
@@ -471,6 +469,21 @@ class JsonConfigSource implements ConfigSourceInterface
         if ($newFile) {
             Silencer::call('chmod', $this->file->getPath(), 0600);
         }
+    }
+
+    /**
+     * Mirrors JsonManipulator's key handling: extra/scripts nest at most two levels deep, the rest stays a literal dotted key
+     *
+     * @return non-empty-list<string>
+     */
+    private static function splitPropertyKey(string $key): array
+    {
+        [$mainNode, $name] = explode('.', $key, 2);
+        if (in_array($mainNode, ['extra', 'scripts'], true)) {
+            return array_merge([$mainNode], explode('.', $name, 2));
+        }
+
+        return [$mainNode, $name];
     }
 
     /**
