@@ -44,6 +44,10 @@ class Tar
         foreach ($phar as $folderFile) {
             $name = $folderFile->getBasename();
 
+            if (Platform::isMetadataPath($name)) {
+                continue;
+            }
+
             if ($folderFile->isDir()) {
                 $topLevelPaths[$name] = true;
                 if (\count($topLevelPaths) > 1) {

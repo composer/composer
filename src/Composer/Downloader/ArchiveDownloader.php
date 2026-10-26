@@ -112,18 +112,22 @@ abstract class ArchiveDownloader extends FileDownloader
             }
 
             /**
-             * Returns the folder content, excluding .DS_Store
+             * Returns the folder content, optionally excluding OS metadata entries
              *
-             * @param  string         $dir Directory
+             * @param  string         $dir          Directory
+             * @param  bool           $skipMetadata
              * @return \SplFileInfo[]
              */
-            $getFolderContent = static function ($dir): array {
+            $getFolderContent = static function ($dir, bool $skipMetadata = false): array {
                 $finder = Finder::create()
                     ->ignoreVCS(false)
                     ->ignoreDotFiles(false)
-                    ->notName('.DS_Store')
                     ->depth(0)
                     ->in($dir);
+
+                if ($skipMetadata) {
+                    $finder->notName(Platform::METADATA_NAME_REGEX);
+                }
 
                 return iterator_to_array($finder);
             };
@@ -169,7 +173,8 @@ abstract class ArchiveDownloader extends FileDownloader
                 }
             }
 
-            $contentDir = $getFolderContent($temporaryDir);
+            // metadata siblings must not prevent unwrapping a single top-level dir
+            $contentDir = $getFolderContent($temporaryDir, true);
             $singleDirAtTopLevel = 1 === count($contentDir) && is_dir((string) reset($contentDir));
 
             if ($renameAsOne) {

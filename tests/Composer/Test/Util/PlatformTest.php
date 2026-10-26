@@ -330,4 +330,36 @@ class PlatformTest extends TestCase
 
         Platform::assertPharMetadataSafe();
     }
+
+    /**
+     * @dataProvider provideMetadataPaths
+     */
+    public function testIsMetadataPath(bool $expected, string $path): void
+    {
+        self::assertSame($expected, Platform::isMetadataPath($path));
+    }
+
+    /**
+     * @return array<array{bool, string}>
+     */
+    public static function provideMetadataPaths(): array
+    {
+        return [
+            [true, '.DS_Store'],
+            [true, '__MACOSX'],
+            [true, '__MACOSX/foo/._bar'],
+            [true, '._composer.json'],
+            [false, 'folder/._nested'], // only the top-level segment decides; "folder" is a real dir
+            [true, 'Thumbs.db'],
+            [true, 'desktop.ini'],
+            [true, 'Desktop.ini'],
+            [true, 'thumbs.db'],
+            [false, '.ds_store'],
+            [true, '.AppleDouble'],
+            [true, '.fseventsd/0001'],
+            [false, 'composer.json'],
+            [false, 'src/Client.php'],
+            [false, 'folder'],
+        ];
+    }
 }

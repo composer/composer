@@ -121,4 +121,18 @@ class ZipTest extends TestCase
 
         self::assertEquals("{\n    \"name\": \"foo/bar\"\n}\n", $result);
     }
+
+    public function testReturnsComposerJsonIgnoringOsMetadataEntries(): void
+    {
+        if (!extension_loaded('zip')) {
+            $this->markTestSkipped('The PHP zip extension is not loaded.');
+        }
+
+        // Archive with a single real package folder shipped alongside incidental
+        // OS metadata at the top level (Thumbs.db, AppleDouble ._folder, __MACOSX).
+        // These must not be mistaken for additional top-level directories.
+        $result = Zip::getComposerJson(__DIR__.'/Fixtures/Zip/metadata.zip');
+
+        self::assertEquals("{\n    \"name\": \"foo/bar\"\n}\n", $result);
+    }
 }

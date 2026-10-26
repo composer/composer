@@ -58,6 +58,12 @@ class TarTest extends TestCase
         self::assertEquals("{\n    \"name\": \"foo/bar\"\n}\n", $result);
     }
 
+    public function testReturnsComposerJsonIgnoringOsMetadataEntries(): void
+    {
+        $result = Tar::getComposerJson(__DIR__.'/Fixtures/Tar/metadata.tar.gz');
+        self::assertEquals("{\n    \"name\": \"foo/bar\"\n}\n", $result);
+    }
+
     public function testMultipleTopLevelDirsIsInvalid(): void
     {
         self::expectException('RuntimeException');
