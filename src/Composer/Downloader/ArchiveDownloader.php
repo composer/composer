@@ -113,30 +113,26 @@ abstract class ArchiveDownloader extends FileDownloader
             }
 
             /**
-             * Returns the folder content, excluding well-known OS/editor metadata
-             * (resource forks, thumbnail caches, etc.) so that an archive whose real
-             * package directory is shipped alongside such an entry still unwraps
-             * correctly instead of installing one level too deep.
+             * Returns the folder content, optionally excluding OS metadata entries
              *
-             * @param  string         $dir Directory
+             * @param  string         $dir          Directory
+             * @param  bool           $skipMetadata
              * @return \SplFileInfo[]
              */
-            $getFolderContent = static function ($dir): array {
+            $getFolderContent = static function ($dir, bool $skipMetadata = false): array {
                 $finder = Finder::create()
                     ->ignoreVCS(false)
                     ->ignoreDotFiles(false)
                     ->depth(0)
                     ->in($dir);
 
-                $content = [];
-                foreach ($finder as $file) {
-                    if (Zip::isMetadataPath($file->getFilename())) {
-                        continue;
-                    }
-                    $content[] = $file;
+                if ($skipMetadata) {
+                    $finder->filter(static function (\SplFileInfo $file): bool {
+                        return !Zip::isMetadataPath($file->getFilename());
+                    });
                 }
 
-                return $content;
+                return iterator_to_array($finder);
             };
             $renameRecursively = null;
             /**
@@ -180,7 +176,8 @@ abstract class ArchiveDownloader extends FileDownloader
                 }
             }
 
-            $contentDir = $getFolderContent($temporaryDir);
+            // metadata siblings must not prevent unwrapping a single top-level dir
+            $contentDir = $getFolderContent($temporaryDir, true);
             $singleDirAtTopLevel = 1 === count($contentDir) && is_dir((string) reset($contentDir));
 
             if ($renameAsOne) {

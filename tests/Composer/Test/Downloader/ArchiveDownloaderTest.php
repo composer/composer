@@ -12,7 +12,15 @@
 
 namespace Composer\Test\Downloader;
 
+use Composer\Downloader\ArchiveDownloader;
+use Composer\Package\Package;
+use Composer\Package\PackageInterface;
 use Composer\Test\TestCase;
+use Composer\Util\Filesystem;
+use Composer\Util\HttpDownloader;
+use Composer\Util\Loop;
+use Composer\Util\ProcessExecutor;
+use React\Promise\PromiseInterface;
 
 class ArchiveDownloaderTest extends TestCase
 {
@@ -157,6 +165,60 @@ class ArchiveDownloaderTest extends TestCase
             ['https://bitbucket.org/davereid/drush-virtualhost/get/77ca490c26ac818e024d1138aa8bd3677d1ef21f', 'zip'],
             ['https://bitbucket.org/davereid/drush-virtualhost/get/master', 'tar.gz'],
             ['https://bitbucket.org/davereid/drush-virtualhost/get/v1.0', 'tar.bz2'],
+        ];
+    }
+
+    /**
+     * @dataProvider provideInstallTargets
+     */
+    public function testInstallUnwrapsSingleDirNextToMetadataAndKeepsNestedFiles(bool $merge): void
+    {
+        $testDir = self::getUniqueTmpDirectory();
+        $path = $testDir.'/target';
+        // a vendor dir inside the target prevents emptying it, which forces the merge code path
+        $vendorDir = $merge ? $path.'/vendor' : $testDir.'/vendor';
+        mkdir($vendorDir, 0777, true);
+
+        $config = $this->getMockBuilder('Composer\Config')->getMock();
+        $config->method('get')->willReturn($vendorDir);
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+
+        $httpDownloader = new HttpDownloader($io, $config);
+        $process = new ProcessExecutor($io);
+        $downloader = new class($io, $config, $httpDownloader, null, null, new Filesystem($process), $process) extends ArchiveDownloader {
+            protected function extract(PackageInterface $package, string $file, string $path): PromiseInterface
+            {
+                foreach (['pkg/composer.json', 'pkg/.DS_Store', 'pkg/sub/Thumbs.db', 'pkg/sub/._foo', 'Thumbs.db', '._pkg', '__MACOSX/pkg/._composer.json'] as $file) {
+                    @mkdir(dirname($path.'/'.$file), 0777, true);
+                    file_put_contents($path.'/'.$file, '');
+                }
+
+                return \React\Promise\resolve(null);
+            }
+        };
+
+        $package = new Package('foo/bar', '1.0.0.0', '1.0.0');
+        $package->setDistUrl('https://example.org/foo.zip');
+
+        try {
+            (new Loop($httpDownloader, $process))->wait([$downloader->install($package, $path, false)]);
+
+            foreach (['composer.json', '.DS_Store', 'sub/Thumbs.db', 'sub/._foo'] as $file) {
+                self::assertFileExists($path.'/'.$file);
+            }
+            foreach (['pkg', 'Thumbs.db', '._pkg', '__MACOSX'] as $file) {
+                self::assertFileDoesNotExist($path.'/'.$file);
+            }
+        } finally {
+            (new Filesystem())->removeDirectory($testDir);
+        }
+    }
+
+    public static function provideInstallTargets(): array
+    {
+        return [
+            'rename as one' => [false],
+            'merge into non-empty target' => [true],
         ];
     }
 
