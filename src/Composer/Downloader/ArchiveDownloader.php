@@ -14,7 +14,6 @@ namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
 use Composer\Util\Platform;
-use Composer\Util\Zip;
 use Symfony\Component\Finder\Finder;
 use React\Promise\PromiseInterface;
 use Composer\DependencyResolver\Operation\InstallOperation;
@@ -127,7 +126,7 @@ abstract class ArchiveDownloader extends FileDownloader
                     ->in($dir);
 
                 if ($skipMetadata) {
-                    $finder->notName(Zip::METADATA_NAME_REGEX);
+                    $finder->notName(Platform::METADATA_NAME_REGEX);
                 }
 
                 return iterator_to_array($finder);

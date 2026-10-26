@@ -12,20 +12,11 @@
 
 namespace Composer\Util;
 
-use Composer\Pcre\Preg;
-
 /**
  * @author Andreas Schempp <andreas.schempp@terminal42.ch>
  */
 class Zip
 {
-    /**
-     * Matches OS metadata file names, Windows ones case-insensitively
-     *
-     * @internal
-     */
-    public const METADATA_NAME_REGEX = '{^(?:\._.*|\.DS_Store|__MACOSX|\.AppleDouble|\.fseventsd|\.Spotlight-V100|\.Trashes|(?i:thumbs\.db|desktop\.ini))$}';
-
     /**
      * Gets content of the root composer.json inside a ZIP archive.
      */
@@ -82,7 +73,7 @@ class Zip
             $dirname = dirname($name);
 
             // ignore well-known OS/editor metadata entries (resource forks, thumbnail caches, etc.)
-            if (self::isMetadataPath($name)) {
+            if (Platform::isMetadataPath($name)) {
                 continue;
             }
 
@@ -109,15 +100,5 @@ class Zip
         }
 
         throw new \RuntimeException('No composer.json found either at the top level or within the topmost directory');
-    }
-
-    /**
-     * Whether the top-level segment of an archive entry path is OS metadata (resource forks, thumbnail caches, etc.)
-     */
-    public static function isMetadataPath(string $name): bool
-    {
-        $top = explode('/', ltrim(str_replace('\\', '/', $name), '/'))[0];
-
-        return Preg::isMatch(self::METADATA_NAME_REGEX, $top);
     }
 }

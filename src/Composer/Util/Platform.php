@@ -22,6 +22,13 @@ use Composer\Pcre\Preg;
 class Platform
 {
     /**
+     * Matches OS metadata file names, Windows ones case-insensitively
+     *
+     * @internal
+     */
+    public const METADATA_NAME_REGEX = '{^(?:\._.*|\.DS_Store|__MACOSX|\.AppleDouble|\.fseventsd|\.Spotlight-V100|\.Trashes|(?i:thumbs\.db|desktop\.ini))$}';
+
+    /**
      * Env vars which indicate that Composer is being run by an AI coding agent, mapped to the agent name
      *
      * Order matters as the first match wins. AI_AGENT is handled separately, see getAiAgent()
@@ -575,5 +582,15 @@ class Platform
         }
 
         return '/dev/null';
+    }
+
+    /**
+     * Whether the top-level segment of an archive entry path is OS metadata (resource forks, thumbnail caches, etc.)
+     */
+    public static function isMetadataPath(string $name): bool
+    {
+        $top = explode('/', ltrim(str_replace('\\', '/', $name), '/'))[0];
+
+        return Preg::isMatch(self::METADATA_NAME_REGEX, $top);
     }
 }

@@ -44,7 +44,7 @@ class Tar
         foreach ($phar as $folderFile) {
             $name = $folderFile->getBasename();
 
-            if (Zip::isMetadataPath($name)) {
+            if (Platform::isMetadataPath($name)) {
                 continue;
             }
 
