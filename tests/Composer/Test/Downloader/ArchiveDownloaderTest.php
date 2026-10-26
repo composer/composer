@@ -188,9 +188,9 @@ class ArchiveDownloaderTest extends TestCase
         $downloader = new class($io, $config, $httpDownloader, null, null, new Filesystem($process), $process) extends ArchiveDownloader {
             protected function extract(PackageInterface $package, string $file, string $path): PromiseInterface
             {
-                foreach (['pkg/composer.json', 'pkg/.DS_Store', 'pkg/sub/Thumbs.db', 'pkg/sub/._foo', 'Thumbs.db', '._pkg', '__MACOSX/pkg/._composer.json'] as $file) {
-                    @mkdir(dirname($path.'/'.$file), 0777, true);
-                    file_put_contents($path.'/'.$file, '');
+                foreach (['pkg/composer.json', 'pkg/.DS_Store', 'pkg/sub/Thumbs.db', 'pkg/sub/._foo', 'Thumbs.db', '._pkg', '__MACOSX/pkg/._composer.json'] as $entry) {
+                    @mkdir(dirname($path.'/'.$entry), 0777, true);
+                    file_put_contents($path.'/'.$entry, '');
                 }
 
                 return \React\Promise\resolve(null);

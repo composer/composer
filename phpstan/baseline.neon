@@ -3805,22 +3805,12 @@ parameters:
 			path: ../src/Composer/Util/Zip.php
 
 		-
-			message: "#^Only booleans are allowed in &&, array\\<int\\|string, true\\> given on the left side\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Zip.php
-
-		-
-			message: "#^Parameter \\#1 \\$haystack of function strpos expects string, string\\|false given\\.$#"
+			message: "#^Only booleans are allowed in &&, array\\<string, true\\> given on the left side\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Zip.php
 
 		-
 			message: "#^Parameter \\#1 \\$name of method ZipArchive\\:\\:getStream\\(\\) expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Zip.php
-
-		-
-			message: "#^Parameter \\#1 \\$path of function dirname expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Zip.php
 

@@ -67,6 +67,9 @@ class Zip
         $topLevelPaths = [];
         for ($i = 0; $i < $zip->numFiles; $i++) {
             $name = $zip->getNameIndex($i);
+            if (false === $name) {
+                continue;
+            }
             $dirname = dirname($name);
 
             // ignore well-known OS/editor metadata entries (resource forks, thumbnail caches, etc.)
