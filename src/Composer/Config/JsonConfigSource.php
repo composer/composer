@@ -316,12 +316,12 @@ class JsonConfigSource implements ConfigSourceInterface
     public function addProperty(string $name, $value): void
     {
         $this->manipulateJson('addProperty', static function (&$config, $key, $val): void {
-            if (strpos($key, 'extra.') === 0 || strpos($key, 'scripts.') === 0) {
-                $bits = explode('.', $key);
+            if (Preg::isMatch('{^(suggest|extra|scripts)\.}', $key)) {
+                $bits = self::splitPropertyKey($key);
                 $last = array_pop($bits);
-                $arr = &$config[reset($bits)];
+                $arr = &$config;
                 foreach ($bits as $bit) {
-                    if (!isset($arr[$bit])) {
+                    if (!isset($arr[$bit]) || !is_array($arr[$bit])) {
                         $arr[$bit] = [];
                     }
                     $arr = &$arr[$bit];
@@ -339,17 +339,24 @@ class JsonConfigSource implements ConfigSourceInterface
     public function removeProperty(string $name): void
     {
         $this->manipulateJson('removeProperty', static function (&$config, $key): void {
-            if (strpos($key, 'extra.') === 0 || strpos($key, 'scripts.') === 0 || stripos($key, 'autoload.') === 0 || stripos($key, 'autoload-dev.') === 0) {
-                $bits = explode('.', $key);
+            if (Preg::isMatch('{^(suggest|extra|scripts|autoload|autoload-dev)\.}', $key)) {
+                $bits = self::splitPropertyKey($key);
                 $last = array_pop($bits);
-                $arr = &$config[reset($bits)];
+                $arr = &$config;
                 foreach ($bits as $bit) {
-                    if (!isset($arr[$bit])) {
+                    if (!isset($arr[$bit]) || !is_array($arr[$bit])) {
                         return;
                     }
                     $arr = &$arr[$bit];
                 }
+                $wasList = array_is_list($arr);
                 unset($arr[$last]);
+                // keep lists as lists and emptied objects as objects, as JsonManipulator does
+                if ($wasList) {
+                    $arr = array_values($arr);
+                } elseif ($arr === []) {
+                    $arr = new \stdClass;
+                }
             } else {
                 unset($config[$key]);
             }
@@ -469,6 +476,21 @@ class JsonConfigSource implements ConfigSourceInterface
         if ($newFile) {
             Silencer::call('chmod', $this->file->getPath(), 0600);
         }
+    }
+
+    /**
+     * Mirrors JsonManipulator's key handling: extra/scripts nest at most two levels deep, the rest stays a literal dotted key
+     *
+     * @return non-empty-list<string>
+     */
+    private static function splitPropertyKey(string $key): array
+    {
+        [$mainNode, $name] = explode('.', $key, 2);
+        if (in_array($mainNode, ['extra', 'scripts'], true)) {
+            return array_merge([$mainNode], explode('.', $name, 2));
+        }
+
+        return [$mainNode, $name];
     }
 
     /**

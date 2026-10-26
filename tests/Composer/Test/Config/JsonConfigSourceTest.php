@@ -14,6 +14,7 @@ namespace Composer\Test\Config;
 
 use Composer\Config\JsonConfigSource;
 use Composer\Json\JsonFile;
+use Composer\Json\JsonManipulator;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 
@@ -183,6 +184,103 @@ class JsonConfigSourceTest extends TestCase
 }
 ';
         self::assertSame($expected, file_get_contents($config));
+    }
+
+    public function testAddPropertyToArrayValuedExtraDoesNotDoubleNest(): void
+    {
+        $config = $this->workingDir.'/composer.json';
+        $original = '{
+    "name": "vendor/pkg",
+    "extra": [
+        "hello"
+    ]
+}
+';
+        file_put_contents($config, $original);
+
+        $jsonConfigSource = new JsonConfigSource(new JsonFile($config));
+        $jsonConfigSource->addProperty('extra.1', 'world');
+
+        // The value must land at extra.1, not at a phantom extra.extra.1 (GH-13165).
+        $expected = '{
+    "name": "vendor/pkg",
+    "extra": [
+        "hello",
+        "world"
+    ]
+}
+';
+        self::assertSame($expected, file_get_contents($config));
+    }
+
+    public function testRemovePropertyFromArrayValuedExtraDoesNotDoubleNest(): void
+    {
+        $config = $this->workingDir.'/composer.json';
+        $original = '{
+    "name": "vendor/pkg",
+    "extra": [
+        "hello",
+        "world"
+    ]
+}
+';
+        file_put_contents($config, $original);
+
+        $jsonConfigSource = new JsonConfigSource(new JsonFile($config));
+        $jsonConfigSource->removeProperty('extra.0');
+
+        $expected = '{
+    "name": "vendor/pkg",
+    "extra": [
+        "world"
+    ]
+}
+';
+        self::assertSame($expected, file_get_contents($config));
+    }
+
+    /**
+     * @dataProvider providePropertyManipulations
+     * @param 'addProperty'|'removeProperty' $method
+     * @param list<string> $args
+     */
+    public function testPropertyFallbackMatchesManipulator(string $original, string $method, array $args, string $expected): void
+    {
+        $config = $this->workingDir.'/composer.json';
+
+        file_put_contents($config, $original);
+        call_user_func_array([new JsonConfigSource(new JsonFile($config)), $method], $args);
+        self::assertSame($expected, json_encode(json_decode((string) file_get_contents($config))), 'JsonManipulator path');
+
+        // make the manipulator regexes fail so the fallback runs, skipping schema validation which would fail too
+        $file = $this->getMockBuilder(JsonFile::class)->setConstructorArgs([$config])->onlyMethods(['validateSchema'])->getMock();
+        $backtrackLimit = (string) ini_get('pcre.backtrack_limit');
+        ini_set('pcre.backtrack_limit', '2');
+        try {
+            self::assertFalse(call_user_func_array([new JsonManipulator($original), $method], $args));
+            file_put_contents($config, $original);
+            call_user_func_array([new JsonConfigSource($file), $method], $args);
+        } finally {
+            ini_set('pcre.backtrack_limit', $backtrackLimit);
+        }
+        self::assertSame($expected, json_encode(json_decode((string) file_get_contents($config))), 'fallback path');
+    }
+
+    /**
+     * @return iterable<string, array{string, 'addProperty'|'removeProperty', list<string>, string}>
+     */
+    public static function providePropertyManipulations(): iterable
+    {
+        yield 'add nested extra key keeps the remainder literal' => ['{"extra": {"foo": "bar"}}', 'addProperty', ['extra.a.b.c', 'x'], '{"extra":{"foo":"bar","a":{"b.c":"x"}}}'];
+        yield 'add replaces a scalar parent' => ['{"extra": {"foo": "bar"}}', 'addProperty', ['extra.foo.baz', 'x'], '{"extra":{"foo":{"baz":"x"}}}'];
+        yield 'add script' => ['{"scripts": {"test": "phpunit"}}', 'addProperty', ['scripts.lint', 'phpcs'], '{"scripts":{"test":"phpunit","lint":"phpcs"}}'];
+        yield 'add suggest' => ['{"suggest": {"a/b": "c"}}', 'addProperty', ['suggest.foo/b.ar', 'desc'], '{"suggest":{"a\/b":"c","foo\/b.ar":"desc"}}'];
+        yield 'remove nested extra key with literal remainder' => ['{"extra": {"a": {"b.c": "x", "d": 1}}}', 'removeProperty', ['extra.a.b.c'], '{"extra":{"a":{"d":1}}}'];
+        yield 'remove last nested key keeps an object' => ['{"extra": {"foo": {"bar": 1}, "z": 2}}', 'removeProperty', ['extra.foo.bar'], '{"extra":{"foo":{},"z":2}}'];
+        yield 'remove last extra key keeps an object' => ['{"extra": {"foo": 1}}', 'removeProperty', ['extra.foo'], '{"extra":{}}'];
+        yield 'remove below a scalar is a no-op' => ['{"extra": {"foo": "bar", "z": 1}}', 'removeProperty', ['extra.foo.0.x'], '{"extra":{"foo":"bar","z":1}}'];
+        yield 'remove suggest' => ['{"suggest": {"foo/bar": "x", "a/b": "y"}}', 'removeProperty', ['suggest.foo/bar'], '{"suggest":{"a\/b":"y"}}'];
+        yield 'remove autoload type' => ['{"autoload": {"psr-4": {"A\\\\": "src/"}, "files": ["x.php"]}}', 'removeProperty', ['autoload.psr-4'], '{"autoload":{"files":["x.php"]}}'];
     }
 
     public function testRemovePolicyListFieldCascadesEmptyAncestors(): void
