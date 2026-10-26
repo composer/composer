@@ -127,9 +127,7 @@ abstract class ArchiveDownloader extends FileDownloader
                     ->in($dir);
 
                 if ($skipMetadata) {
-                    $finder->filter(static function (\SplFileInfo $file): bool {
-                        return !Zip::isMetadataPath($file->getFilename());
-                    });
+                    $finder->notName(Zip::METADATA_NAME_REGEX);
                 }
 
                 return iterator_to_array($finder);

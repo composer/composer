@@ -12,11 +12,20 @@
 
 namespace Composer\Util;
 
+use Composer\Pcre\Preg;
+
 /**
  * @author Andreas Schempp <andreas.schempp@terminal42.ch>
  */
 class Zip
 {
+    /**
+     * Matches OS metadata file names, Windows ones case-insensitively
+     *
+     * @internal
+     */
+    public const METADATA_NAME_REGEX = '{^(?:\._.*|\.DS_Store|__MACOSX|\.AppleDouble|\.fseventsd|\.Spotlight-V100|\.Trashes|(?i:thumbs\.db|desktop\.ini))$}';
+
     /**
      * Gets content of the root composer.json inside a ZIP archive.
      */
@@ -103,26 +112,12 @@ class Zip
     }
 
     /**
-     * Whether the top-level segment of an archive entry path (or a bare file
-     * name) is a well-known OS/editor metadata artifact — resource forks,
-     * thumbnail caches, and similar — that is never part of the package and
-     * must be ignored when determining the archive's single top-level directory.
+     * Whether the top-level segment of an archive entry path is OS metadata (resource forks, thumbnail caches, etc.)
      */
     public static function isMetadataPath(string $name): bool
     {
-        $name = str_replace('\\', '/', $name);
-        $top = explode('/', ltrim($name, '/'))[0];
+        $top = explode('/', ltrim(str_replace('\\', '/', $name), '/'))[0];
 
-        // macOS AppleDouble resource-fork files, e.g. "._composer.json"
-        if (substr($top, 0, 2) === '._') {
-            return true;
-        }
-
-        // Windows names are case-insensitive, e.g. "Desktop.ini"
-        if (in_array(strtolower($top), ['thumbs.db', 'desktop.ini'], true)) {
-            return true;
-        }
-
-        return in_array($top, ['.DS_Store', '__MACOSX', '.AppleDouble', '.fseventsd', '.Spotlight-V100', '.Trashes'], true);
+        return Preg::isMatch(self::METADATA_NAME_REGEX, $top);
     }
 }
