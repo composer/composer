@@ -115,9 +115,11 @@ class Zip
             return true;
         }
 
-        return in_array($top, [
-            '.DS_Store', '__MACOSX', '.AppleDouble', '.fseventsd',
-            '.Spotlight-V100', '.Trashes', 'Thumbs.db', 'desktop.ini',
-        ], true);
+        // Windows names are case-insensitive, e.g. "Desktop.ini"
+        if (in_array(strtolower($top), ['thumbs.db', 'desktop.ini'], true)) {
+            return true;
+        }
+
+        return in_array($top, ['.DS_Store', '__MACOSX', '.AppleDouble', '.fseventsd', '.Spotlight-V100', '.Trashes'], true);
     }
 }

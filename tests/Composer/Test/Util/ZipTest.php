@@ -157,6 +157,9 @@ class ZipTest extends TestCase
             [false, 'folder/._nested'], // only the top-level segment decides; "folder" is a real dir
             [true, 'Thumbs.db'],
             [true, 'desktop.ini'],
+            [true, 'Desktop.ini'],
+            [true, 'thumbs.db'],
+            [false, '.ds_store'],
             [true, '.AppleDouble'],
             [true, '.fseventsd/0001'],
             [false, 'composer.json'],
