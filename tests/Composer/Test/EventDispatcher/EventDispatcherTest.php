@@ -329,6 +329,46 @@ class EventDispatcherTest extends TestCase
     /**
      * @return void
      */
+    public function testDispatcherEscapesAdditionalArgsForComposerScripts()
+    {
+        $process = new ProcessExecutorMock;
+        $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
+            ->setConstructorArgs(array(
+                $this->createComposerInstance(),
+                $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
+                $process,
+            ))
+            ->setMethods(array(
+                'getListeners',
+            ))
+            ->getMock();
+
+        $reflMethod = new \ReflectionMethod($dispatcher, 'getPhpExecCommand');
+        $reflMethod->setAccessible(true);
+        $composerBinaryBkp = Platform::getEnv('COMPOSER_BINARY');
+        Platform::putEnv('COMPOSER_BINARY', '/path/to/composer');
+        $composerCmd = $reflMethod->invoke($dispatcher).' '.ProcessExecutor::escape('/path/to/composer');
+
+        $args = ProcessExecutor::escape('; echo foo').' '.ProcessExecutor::escape('$(echo bar)');
+        $process->expects(array(
+            $composerCmd.' show --format=json '.$args,
+        ), true);
+
+        $dispatcher->expects($this->atLeastOnce())
+            ->method('getListeners')
+            ->will($this->returnValue(array('@composer show --format=json')));
+
+        $dispatcher->dispatchScript('foo', false, array('; echo foo', '$(echo bar)'));
+
+        if (false !== $composerBinaryBkp) {
+            Platform::putEnv('COMPOSER_BINARY', $composerBinaryBkp);
+        } else {
+            Platform::clearEnv('COMPOSER_BINARY');
+        }
+
+        $process->assertComplete($this);
+    }
+
     public static function createsVendorBinFolderChecksEnvDoesNotContainsBin()
     {
         mkdir(__DIR__ . '/vendor/bin', 0700, true);

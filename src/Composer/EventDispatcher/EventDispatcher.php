@@ -200,7 +200,9 @@ class EventDispatcher
                     $args = array_merge($script, $event->getArguments());
                     $flags = $event->getFlags();
                     if (strpos($callable, '@composer ') === 0) {
-                        $exec = $this->getPhpExecCommand() . ' ' . ProcessExecutor::escape(Platform::getEnv('COMPOSER_BINARY')) . ' ' . implode(' ', $args);
+                        // the additional args come from the command line so they must be escaped, unlike the script's own args
+                        $escapedArgs = array_merge($script, array_map(array('Composer\Util\ProcessExecutor', 'escape'), $event->getArguments()));
+                        $exec = $this->getPhpExecCommand() . ' ' . ProcessExecutor::escape(Platform::getEnv('COMPOSER_BINARY')) . ' ' . implode(' ', $escapedArgs);
                         if (0 !== ($exitCode = $this->executeTty($exec))) {
                             $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()), true, IOInterface::QUIET);
 
