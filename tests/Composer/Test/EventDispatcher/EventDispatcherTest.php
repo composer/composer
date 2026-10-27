@@ -368,6 +368,54 @@ class EventDispatcherTest extends TestCase
         self::assertEquals($expected, $io->getOutput());
     }
 
+    public function testDispatcherEscapesAdditionalArgsForComposerScripts(): void
+    {
+        $process = $this->getProcessExecutorMock();
+        $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
+            ->setConstructorArgs([
+                $this->createComposerInstance(),
+                $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
+                $process,
+            ])
+            ->onlyMethods([
+                'getListeners',
+            ])
+            ->getMock();
+
+        $reflMethod = new \ReflectionMethod($dispatcher, 'getPhpExecCommand');
+        if (PHP_VERSION_ID < 80100) {
+            $reflMethod->setAccessible(true);
+        }
+        $composerBinaryBkp = Platform::getEnv('COMPOSER_BINARY');
+        Platform::putEnv('COMPOSER_BINARY', '/path/to/composer');
+        $composerCmd = $reflMethod->invoke($dispatcher).' '.ProcessExecutor::escape('/path/to/composer');
+
+        $args = ProcessExecutor::escape('; echo foo').' '.ProcessExecutor::escape('$(echo bar)');
+        $process->expects([
+            $composerCmd.' show --format=json '.$args,
+            $composerCmd.' show '.$args.' --format=json',
+        ], true);
+
+        $listeners = [
+            '@composer show --format=json',
+            '@composer show @additional_args --format=json',
+        ];
+
+        $dispatcher->expects($this->atLeastOnce())
+            ->method('getListeners')
+            ->will($this->returnValue($listeners));
+
+        try {
+            $dispatcher->dispatchScript('foo', false, ['; echo foo', '$(echo bar)']);
+        } finally {
+            if (false !== $composerBinaryBkp) {
+                Platform::putEnv('COMPOSER_BINARY', $composerBinaryBkp);
+            } else {
+                Platform::clearEnv('COMPOSER_BINARY');
+            }
+        }
+    }
+
     public static function createsVendorBinFolderChecksEnvDoesNotContainsBin(): void
     {
         mkdir(__DIR__ . '/vendor/bin', 0700, true);

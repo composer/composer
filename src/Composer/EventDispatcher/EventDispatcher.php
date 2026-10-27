@@ -234,15 +234,18 @@ class EventDispatcher
                     $this->io->writeError(sprintf('> %s: %s', $formattedEventNameWithArgs, $callable), true, IOInterface::VERBOSE);
 
                     $script = explode(' ', substr($callable, 1));
-                    $scriptName = $script[0];
-                    unset($script[0]);
+                    $scriptName = array_shift($script);
 
                     $index = array_search('@additional_args', $script, true);
-                    if ($index !== false) {
-                        $args = array_splice($script, $index, 0, $additionalArgs);
-                    } else {
-                        $args = array_merge($script, $additionalArgs);
-                    }
+                    $mergeArgs = static function (array $additionalArgs) use ($script, $index): array {
+                        if ($index === false) {
+                            return array_merge($script, $additionalArgs);
+                        }
+                        array_splice($script, $index, 1, $additionalArgs);
+
+                        return $script;
+                    };
+                    $args = $mergeArgs($additionalArgs);
                     $flags = $event->getFlags();
                     if (isset($flags['script-alias-input'])) {
                         $argsString = implode(' ', array_map(static function ($arg) { return ProcessExecutor::escape($arg); }, $script));
@@ -250,7 +253,9 @@ class EventDispatcher
                         unset($argsString);
                     }
                     if (strpos($callable, '@composer ') === 0) {
-                        $exec = $this->getPhpExecCommand() . ' ' . ProcessExecutor::escape(Platform::getEnv('COMPOSER_BINARY')) . ' ' . implode(' ', $args);
+                        // the additional args come from the command line so they must be escaped, unlike the script's own args
+                        $escapedArgs = $mergeArgs(array_map(static function ($arg) { return ProcessExecutor::escape($arg); }, $additionalArgs));
+                        $exec = $this->getPhpExecCommand() . ' ' . ProcessExecutor::escape(Platform::getEnv('COMPOSER_BINARY')) . ' ' . implode(' ', $escapedArgs);
                         if (0 !== ($exitCode = $this->executeTty($exec))) {
                             $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()), true, IOInterface::QUIET);
 
