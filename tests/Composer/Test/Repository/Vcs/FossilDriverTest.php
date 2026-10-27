@@ -14,6 +14,7 @@ namespace Composer\Test\Repository\Vcs;
 
 use Composer\Repository\Vcs\FossilDriver;
 use Composer\Config;
+use Composer\IO\NullIO;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 
@@ -63,5 +64,27 @@ class FossilDriverTest extends TestCase
         $config = new Config();
         $result = FossilDriver::supports($this->getMockBuilder('Composer\IO\IOInterface')->getMock(), $config, $url);
         self::assertEquals($assertion, $result);
+    }
+
+    public function testCloneFailureOutputIsSanitized(): void
+    {
+        $url = 'https://user:secret@example.org/acme';
+        $repoFile = $this->config->get('cache-repo-dir') . '/https---user-----example-org-acme.fossil';
+
+        $process = $this->getProcessExecutorMock();
+        $process->expects([
+            ['cmd' => ['fossil', 'version']],
+            ['cmd' => ['fossil', 'clone', '--', $url, $repoFile], 'return' => 1, 'stderr' => 'Error: unable to connect to "'.$url.'"'],
+        ], true);
+
+        $driver = new FossilDriver(['url' => $url], new NullIO(), $this->config, $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(), $process);
+
+        try {
+            $driver->initialize();
+            self::fail('Expected an exception');
+        } catch (\RuntimeException $e) {
+            self::assertStringContainsString('unable to connect to "https://user:***@example.org/acme"', $e->getMessage());
+            self::assertStringNotContainsString('secret', $e->getMessage());
+        }
     }
 }

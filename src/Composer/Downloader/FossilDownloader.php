@@ -13,6 +13,7 @@
 namespace Composer\Downloader;
 
 use Composer\Util\Platform;
+use Composer\Util\Url;
 use React\Promise\PromiseInterface;
 use Composer\Package\PackageInterface;
 use Composer\Pcre\Preg;
@@ -114,7 +115,7 @@ class FossilDownloader extends VcsDownloader
     private function execute(array $command, ?string $cwd = null, ?string &$output = null): void
     {
         if (0 !== $this->process->execute($command, $output, $cwd)) {
-            throw new RuntimeException('Failed to execute ' . implode(' ', $command) . "\n\n" . $this->process->getErrorOutput());
+            throw new RuntimeException(Url::sanitize('Failed to execute ' . implode(' ', $command) . "\n\n" . $this->process->getErrorOutput()));
         }
     }
 

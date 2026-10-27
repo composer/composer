@@ -56,7 +56,7 @@ class FossilDriver extends VcsDriver
                 throw new \RuntimeException('FossilDriver requires a usable cache directory, and it looks like you set it to be disabled');
             }
 
-            $localName = Preg::replace('{[^a-z0-9]}i', '-', $this->url);
+            $localName = Preg::replace('{[^a-z0-9]}i', '-', Url::sanitize($this->url));
             $this->repoFile = $this->config->get('cache-repo-dir') . '/' . $localName . '.fossil';
             $this->checkoutDir = $this->config->get('cache-vcs-dir') . '/' . $localName . '/';
 
@@ -94,7 +94,7 @@ class FossilDriver extends VcsDriver
         // update the repo if it is a valid fossil repository
         if (is_file($this->repoFile) && is_dir($this->checkoutDir) && 0 === $this->process->execute(['fossil', 'info'], $output, $this->checkoutDir)) {
             if (0 !== $this->process->execute(['fossil', 'pull'], $output, $this->checkoutDir)) {
-                $this->io->writeError('<error>Failed to update '.Url::sanitize($this->url).', package information from this repository may be outdated ('.$this->process->getErrorOutput().')</error>');
+                $this->io->writeError('<error>Failed to update '.Url::sanitize($this->url).', package information from this repository may be outdated ('.Url::sanitize($this->process->getErrorOutput()).')</error>');
             }
         } else {
             // clean up directory and do a fresh clone into it
@@ -104,7 +104,7 @@ class FossilDriver extends VcsDriver
             $fs->ensureDirectoryExists($this->checkoutDir);
 
             if (0 !== $this->process->execute(['fossil', 'clone', '--', $this->url, $this->repoFile], $output)) {
-                $output = $this->process->getErrorOutput();
+                $output = Url::sanitize($this->process->getErrorOutput());
 
                 throw new \RuntimeException('Failed to clone '.Url::sanitize($this->url).' to repository ' . $this->repoFile . "\n\n" .$output);
             }

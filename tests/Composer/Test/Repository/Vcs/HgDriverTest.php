@@ -13,6 +13,7 @@
 namespace Composer\Test\Repository\Vcs;
 
 use Composer\Repository\Vcs\HgDriver;
+use Composer\IO\BufferIO;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Config;
@@ -97,6 +98,26 @@ HG_BOOKMARKS;
             'help' => 'dbf6c8acb641',
             'default' => 'dbf6c8acb640',
         ], $branches);
+    }
+
+    public function testUpdateFailureOutputIsSanitized(): void
+    {
+        $url = 'https://example.org/acme';
+        $repoDir = $this->config->get('cache-vcs-dir') . '/https---example-org-acme/';
+        mkdir($repoDir, 0777, true);
+
+        $process = $this->getProcessExecutorMock();
+        $process->expects([
+            ['cmd' => ['hg', 'summary']],
+            ['cmd' => ['hg', 'pull'], 'return' => 255, 'stderr' => "pulling from https://user:secret@example.org/acme\nabort: HTTP Error 500\n"],
+        ]);
+
+        $io = new BufferIO();
+        $driver = new HgDriver(['url' => $url], $io, $this->config, $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(), $process);
+        $driver->initialize();
+
+        self::assertStringContainsString('pulling from https://user:***@example.org/acme', $io->getOutput());
+        self::assertStringNotContainsString('secret', $io->getOutput());
     }
 
     public function testFileGetContentInvalidIdentifier(): void
