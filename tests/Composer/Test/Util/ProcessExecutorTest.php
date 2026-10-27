@@ -90,6 +90,14 @@ class ProcessExecutorTest extends TestCase
         ];
     }
 
+    public function testHidePasswordsInArrayCommands(): void
+    {
+        $process = new ProcessExecutor($buffer = new BufferIO('', StreamOutput::VERBOSITY_DEBUG));
+        $process->execute(['echo', '--username', 'foo', '--password', 'bar', '--', 'https://foo.example.org/svn/'], $output);
+        $expected = implode(' ', array_map([ProcessExecutor::class, 'escape'], ['echo', '--username', 'foo', '--password', '***', '--', 'https://foo.example.org/svn/']));
+        self::assertEquals('Executing command (CWD): ' . $expected, trim($buffer->getOutput()));
+    }
+
     public function testDoesntHidePorts(): void
     {
         $process = new ProcessExecutor($buffer = new BufferIO('', StreamOutput::VERBOSITY_DEBUG));

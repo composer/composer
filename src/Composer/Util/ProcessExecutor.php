@@ -486,6 +486,14 @@ class ProcessExecutor
             return;
         }
 
+        if (is_array($command)) {
+            foreach ($command as $index => $arg) {
+                if ($arg === '--password' && isset($command[$index + 1])) {
+                    $command[$index + 1] = '***';
+                }
+            }
+        }
+
         $commandString = is_string($command) ? $command : implode(' ', array_map(self::class.'::escape', $command));
         $safeCommand = Url::sanitize($commandString);
         $safeCommand = Preg::replace("{--password (.*[^\\\\]\') }", '--password \'***\' ', $safeCommand);
