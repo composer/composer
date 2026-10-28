@@ -92,7 +92,7 @@ class ProcessExecutorTest extends TestCase
 
     /**
      * @dataProvider hidePasswordInArrayCommandsProvider
-     * @param list<string> $command
+     * @param non-empty-list<string> $command
      * @param list<string> $expectedCommand
      */
     public function testHidePasswordsInArrayCommands(array $command, array $expectedCommand): void
