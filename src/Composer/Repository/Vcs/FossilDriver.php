@@ -110,7 +110,7 @@ class FossilDriver extends VcsDriver
             }
 
             if (0 !== $this->process->execute(['fossil', 'open', '--nested', '--', $this->repoFile], $output, $this->checkoutDir)) {
-                $output = $this->process->getErrorOutput();
+                $output = Url::sanitize($this->process->getErrorOutput());
 
                 throw new \RuntimeException('Failed to open repository '.$this->repoFile.' in ' . $this->checkoutDir . "\n\n" .$output);
             }
