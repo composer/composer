@@ -498,6 +498,7 @@ class ProcessExecutor
 
         $commandString = is_string($command) ? $command : implode(' ', array_map(self::class.'::escape', $command));
         $safeCommand = Url::sanitize($commandString);
+        // array commands are redacted above, this covers string commands e.g. from plugins
         $safeCommand = Preg::replace("{--password (.*[^\\\\]\') }", '--password \'***\' ', $safeCommand);
         $this->io->writeError('Executing'.($async ? ' async' : '').' command ('.($cwd ?: 'CWD').'): '.$safeCommand);
     }
