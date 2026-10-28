@@ -1,3 +1,16 @@
+### [2.2.31] 2026-10-29
+
+  * Security: Fixed package names in `vendor/composer/installed.json` being able to escape the vendor directory during install and reinstall (GHSA-c968-33g3-wh7p)
+  * Security: Fixed inline repository HTTP headers, such as API tokens, being written into `composer.lock` (GHSA-fm2w-xgf2-f9fh)
+  * Security: Reject TLS connections presenting distrusted intermediate certificates, `composer/ca-bundle` 1.4.16+ is now required (#13147)
+  * Security: Fixed additional arguments passed to `@composer` scripts not being escaped (#13170)
+  * Security: Fixed repository transport options such as custom http headers being sent to dist URLs on other hosts whose name starts with the repository host (#13143)
+  * Security: Fixed `secure-http` check skipping malformed URLs and git transport-prefixed URLs (#13145)
+  * Security: Sanitize URL-embedded credentials in hg and fossil error output (#13173)
+  * Fixed `@script` references with quoted arguments being split on spaces when passed to `@composer` scripts (#13170)
+  * Fixed warnings when finding packages within inline packages of a composer repository (#13134)
+  * Fixed `composer archive` failing on PHP 5.3 (#13160)
+
 ### [2.2.30] 2026-08-27
 
   * Security: Validate package bin paths against path traversal using symlinks (GHSA-96h3-5x6v-m776, CVE-2026-59944)
@@ -1558,6 +1571,7 @@
 
   * Initial release
 
+[2.2.31]: https://github.com/composer/composer/compare/2.2.30...2.2.31
 [2.2.30]: https://github.com/composer/composer/compare/2.2.29...2.2.30
 [2.2.29]: https://github.com/composer/composer/compare/2.2.28...2.2.29
 [2.2.28]: https://github.com/composer/composer/compare/2.2.27...2.2.28
