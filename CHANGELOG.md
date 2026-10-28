@@ -1,3 +1,15 @@
+### [2.11.0] 2026-10-29
+
+  * Security: Fixed package names in `vendor/composer/installed.json` being able to escape the vendor directory during install and reinstall (GHSA-c968-33g3-wh7p)
+  * Security: Fixed inline repository HTTP headers, such as API tokens, being written into `composer.lock` (GHSA-fm2w-xgf2-f9fh)
+  * Security: Fixed additional arguments passed to `@composer` scripts not being escaped (#13169)
+  * Security: Fixed svn passwords not being redacted from debug output (#13171)
+  * Security: Sanitize URL-embedded credentials in hg and fossil error output (#13172)
+  * Improved dependency resolution performance and memory usage (#13174)
+  * Fixed `config` corrupting composer.json when modifying `extra` or `scripts` entries which are JSON arrays (#13167)
+  * Fixed archives not being unwrapped correctly when OS/editor metadata entries like `__MACOSX` or `Thumbs.db` sit next to the package's top-level dir (#13168)
+  * Fixed `@script` references with quoted arguments being split on spaces when passed to `@composer` scripts (#13169)
+
 ### [2.11.0-RC1] 2026-10-22
 
   * BC Break: Removed the `source-fallback` config option which was added in 2.10 as a temporary measure, dist installs no longer fall back to source (#13050)
@@ -2268,6 +2280,7 @@
 
   * Initial release
 
+[2.11.0]: https://github.com/composer/composer/compare/2.11.0-RC1...2.11.0
 [2.11.0-RC1]: https://github.com/composer/composer/compare/2.10.3...2.11.0-RC1
 [2.10.3]: https://github.com/composer/composer/compare/2.10.2...2.10.3
 [2.10.2]: https://github.com/composer/composer/compare/2.10.1...2.10.2
