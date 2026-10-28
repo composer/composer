@@ -436,6 +436,9 @@ class EventDispatcherTest extends TestCase
         }
     }
 
+    /**
+     * @return void
+     */
     public static function createsVendorBinFolderChecksEnvDoesNotContainsBin()
     {
         mkdir(__DIR__ . '/vendor/bin', 0700, true);
