@@ -17,6 +17,35 @@ use Generator;
 
 class StatusCommandTest extends TestCase
 {
+    public function testStatusForInstalledDistFiles(): void
+    {
+        $directory = $this->initTempComposer([
+            'require' => ['root/req' => '1.*'],
+            'repositories' => [],
+        ]);
+        file_put_contents('package.txt', 'original content');
+        $package = self::getPackage('root/req');
+        $package->setDistType('file');
+        $package->setDistUrl('file://'.$directory.'/package.txt');
+        $package->setInstallationSource('dist');
+        $this->createComposerLock([$package]);
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'install']);
+        $appTester->assertCommandIsSuccessful();
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'status', '--verbose' => true]);
+        $appTester->assertCommandIsSuccessful();
+        self::assertSame('No local changes', trim($appTester->getDisplay(true)));
+
+        file_put_contents('vendor/root/req/package.txt', 'modified content');
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'status', '--verbose' => true]);
+        self::assertSame(1, $appTester->getStatusCode());
+        self::assertStringContainsString('package.txt', $appTester->getDisplay(true));
+        self::assertStringNotContainsString('Failed to detect changes:', $appTester->getDisplay(true));
+    }
+
     public function testNoLocalChanges(): void
     {
         $this->initTempComposer(['require' => ['root/req' => '1.*']]);
