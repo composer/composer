@@ -17,6 +17,17 @@ use RuntimeException;
 
 class ConfigCommandTest extends TestCase
 {
+    public function testListIncludesArrayValuedDefaults(): void
+    {
+        $this->initTempComposer();
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'config', '--list' => true]);
+
+        $appTester->assertCommandIsSuccessful();
+        self::assertStringContainsString('[use-include-path] false', $appTester->getDisplay(true));
+        self::assertStringContainsString('[github-protocols] [https, ssh]', $appTester->getDisplay(true));
+    }
+
     /**
      * @dataProvider provideConfigUpdates
      * @param array<mixed> $before
