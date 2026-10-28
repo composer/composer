@@ -667,9 +667,6 @@ class EventDispatcher
     }
 
     /**
-     * Checks if string given references a composer run-script
-     */
-    /**
      * Splits on whitespace, keeping quoted parts together and unquoting them
      *
      * @return list<string>
@@ -685,6 +682,9 @@ class EventDispatcher
         }, $matches[0]);
     }
 
+    /**
+     * Checks if string given references a composer run-script
+     */
     protected function isComposerScript(string $callable): bool
     {
         return str_starts_with($callable, '@') && !str_starts_with($callable, '@php ') && !str_starts_with($callable, '@putenv ');
