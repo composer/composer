@@ -15,6 +15,7 @@ namespace Composer\Downloader;
 use Composer\Package\PackageInterface;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Hg as HgUtils;
+use Composer\Util\Url;
 
 /**
  * @author Per Bernhardt <plb@webfactory.de>
@@ -49,7 +50,7 @@ class HgDownloader extends VcsDownloader
         $ref = ProcessExecutor::escape($package->getSourceReference());
         $command = sprintf('hg up -- %s', $ref);
         if (0 !== $this->process->execute($command, $ignoredOutput, realpath($path))) {
-            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+            throw new \RuntimeException(Url::sanitize('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput()));
         }
 
         return \React\Promise\resolve();
@@ -100,7 +101,7 @@ class HgDownloader extends VcsDownloader
         $command = sprintf('hg log -r %s:%s --style compact', ProcessExecutor::escape($fromReference), ProcessExecutor::escape($toReference));
 
         if (0 !== $this->process->execute($command, $output, realpath($path))) {
-            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+            throw new \RuntimeException(Url::sanitize('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput()));
         }
 
         return $output;

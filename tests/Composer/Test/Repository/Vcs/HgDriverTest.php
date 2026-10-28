@@ -13,6 +13,7 @@
 namespace Composer\Test\Repository\Vcs;
 
 use Composer\Repository\Vcs\HgDriver;
+use Composer\IO\BufferIO;
 use Composer\Test\Mock\ProcessExecutorMock;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
@@ -66,6 +67,26 @@ class HgDriverTest extends TestCase
             array('https://bitbucket.org/user/repo'),
             array('https://user@bitbucket.org/user/repo'),
         );
+    }
+
+    public function testUpdateFailureOutputIsSanitized()
+    {
+        $url = 'https://example.org/acme';
+        $repoDir = $this->config->get('cache-vcs-dir') . '/https---example-org-acme/';
+        mkdir($repoDir, 0777, true);
+
+        $process = new ProcessExecutorMock;
+        $process->expects(array(
+            array('cmd' => 'hg summary'),
+            array('cmd' => 'hg pull', 'return' => 255, 'stderr' => "pulling from https://user:secret@example.org/acme\nabort: HTTP Error 500\n"),
+        ));
+
+        $io = new BufferIO();
+        $driver = new HgDriver(array('url' => $url), $io, $this->config, $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(), $process);
+        $driver->initialize();
+
+        $this->assertStringContainsString('pulling from https://user:***@example.org/acme', $io->getOutput());
+        $this->assertStringNotContainsString('secret', $io->getOutput());
     }
 
     public function testGetBranchesFilterInvalidBranchNames()

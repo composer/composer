@@ -18,6 +18,7 @@ use Composer\Pcre\Preg;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
 use Composer\IO\IOInterface;
+use Composer\Util\Url;
 
 /**
  * @author BohwaZ <http://bohwaz.net/>
@@ -55,7 +56,7 @@ class FossilDriver extends VcsDriver
                 throw new \RuntimeException('FossilDriver requires a usable cache directory, and it looks like you set it to be disabled');
             }
 
-            $localName = Preg::replace('{[^a-z0-9]}i', '-', $this->url);
+            $localName = Preg::replace('{[^a-z0-9]}i', '-', Url::sanitize($this->url));
             $this->repoFile = $this->config->get('cache-repo-dir') . '/' . $localName . '.fossil';
             $this->checkoutDir = $this->config->get('cache-vcs-dir') . '/' . $localName . '/';
 
@@ -89,13 +90,13 @@ class FossilDriver extends VcsDriver
         $fs->ensureDirectoryExists($this->checkoutDir);
 
         if (!is_writable(dirname($this->checkoutDir))) {
-            throw new \RuntimeException('Can not clone '.$this->url.' to access package information. The "'.$this->checkoutDir.'" directory is not writable by the current user.');
+            throw new \RuntimeException('Can not clone '.Url::sanitize($this->url).' to access package information. The "'.$this->checkoutDir.'" directory is not writable by the current user.');
         }
 
         // update the repo if it is a valid fossil repository
         if (is_file($this->repoFile) && is_dir($this->checkoutDir) && 0 === $this->process->execute('fossil info', $output, $this->checkoutDir)) {
             if (0 !== $this->process->execute('fossil pull', $output, $this->checkoutDir)) {
-                $this->io->writeError('<error>Failed to update '.$this->url.', package information from this repository may be outdated ('.$this->process->getErrorOutput().')</error>');
+                $this->io->writeError('<error>'.Url::sanitize('Failed to update '.$this->url.', package information from this repository may be outdated ('.$this->process->getErrorOutput().')').'</error>');
             }
         } else {
             // clean up directory and do a fresh clone into it
@@ -107,13 +108,13 @@ class FossilDriver extends VcsDriver
             if (0 !== $this->process->execute(sprintf('fossil clone -- %s %s', ProcessExecutor::escape($this->url), ProcessExecutor::escape($this->repoFile)), $output)) {
                 $output = $this->process->getErrorOutput();
 
-                throw new \RuntimeException('Failed to clone '.$this->url.' to repository ' . $this->repoFile . "\n\n" .$output);
+                throw new \RuntimeException(Url::sanitize('Failed to clone '.$this->url.' to repository ' . $this->repoFile . "\n\n" .$output));
             }
 
             if (0 !== $this->process->execute(sprintf('fossil open --nested -- %s', ProcessExecutor::escape($this->repoFile)), $output, $this->checkoutDir)) {
                 $output = $this->process->getErrorOutput();
 
-                throw new \RuntimeException('Failed to open repository '.$this->repoFile.' in ' . $this->checkoutDir . "\n\n" .$output);
+                throw new \RuntimeException(Url::sanitize('Failed to open repository '.$this->repoFile.' in ' . $this->checkoutDir . "\n\n" .$output));
             }
         }
     }
