@@ -197,7 +197,6 @@ class EventDispatcher
                     $scriptName = $script[0];
                     unset($script[0]);
 
-                    $args = array_merge($script, $event->getArguments());
                     $flags = $event->getFlags();
                     if (strpos($callable, '@composer ') === 0) {
                         // the additional args come from the command line so they must be escaped, unlike the script's own args
@@ -209,6 +208,11 @@ class EventDispatcher
                             throw new ScriptExecutionException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
                         }
                     } else {
+                        // the fixed args are passed on as arguments of the referenced script, which escapes them, so they need to be unquoted
+                        $script = self::splitScriptArgs(substr($callable, 1));
+                        $scriptName = (string) array_shift($script);
+                        $args = array_merge($script, $event->getArguments());
+
                         if (!$this->getListeners(new Event($scriptName))) {
                             $this->io->writeError(sprintf('<warning>You made a reference to a non-existent script %s</warning>', $callable), true, IOInterface::QUIET);
                         }
@@ -530,6 +534,23 @@ class EventDispatcher
     protected function isPhpScript($callable)
     {
         return false === strpos($callable, ' ') && false !== strpos($callable, '::');
+    }
+
+    /**
+     * Splits on whitespace, keeping quoted parts together and unquoting them
+     *
+     * @param  string       $command
+     * @return list<string>
+     */
+    private static function splitScriptArgs($command)
+    {
+        Preg::matchAll('{(?:[^\s"\']+|"[^"]*"|\'[^\']*\'|["\'])+}', $command, $matches);
+
+        return array_map(function ($token) {
+            return Preg::replaceCallback('{(["\'])(.*?)\1}s', function ($match) {
+                return (string) $match[2];
+            }, $token);
+        }, $matches[0]);
     }
 
     /**

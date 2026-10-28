@@ -358,15 +358,82 @@ class EventDispatcherTest extends TestCase
             ->method('getListeners')
             ->will($this->returnValue(array('@composer show --format=json')));
 
-        $dispatcher->dispatchScript('foo', false, array('; echo foo', '$(echo bar)'));
+        try {
+            $dispatcher->dispatchScript('foo', false, array('; echo foo', '$(echo bar)'));
+        } catch (\Exception $e) {
+        }
+        $this->restoreComposerBinary($composerBinaryBkp);
+        if (isset($e)) {
+            throw $e;
+        }
 
+        $process->assertComplete($this);
+    }
+
+    /**
+     * @return void
+     */
+    public function testDispatcherPassesScriptReferenceArgsToComposerScripts()
+    {
+        $process = new ProcessExecutorMock;
+        $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
+            ->setConstructorArgs(array(
+                $composer = $this->createComposerInstance(),
+                $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
+                $process,
+            ))
+            ->setMethods(array(
+                'getListeners',
+            ))
+            ->getMock();
+
+        $reflMethod = new \ReflectionMethod($dispatcher, 'getPhpExecCommand');
+        $reflMethod->setAccessible(true);
+        $composerBinaryBkp = Platform::getEnv('COMPOSER_BINARY');
+        Platform::putEnv('COMPOSER_BINARY', '/path/to/composer');
+        $composerCmd = $reflMethod->invoke($dispatcher).' '.ProcessExecutor::escape('/path/to/composer');
+
+        $process->expects(array(
+            $composerCmd.' validate '.implode(' ', array_map(array('Composer\Util\ProcessExecutor', 'escape'), array('--working-dir', 'my project', '--opt=a b', "it's", 'ARG'))),
+        ), true);
+
+        $dispatcher->expects($this->atLeastOnce())
+            ->method('getListeners')
+            ->will($this->returnCallback(function (Event $event) {
+                if ($event->getName() === 'outer') {
+                    return array('@inner --working-dir "my project" --opt="a b" "it\'s"');
+                }
+
+                if ($event->getName() === 'inner') {
+                    return array('@composer validate');
+                }
+
+                return array();
+            }));
+
+        try {
+            $dispatcher->dispatch('outer', new ScriptEvent('outer', $composer, $io, false, array('ARG')));
+        } catch (\Exception $e) {
+        }
+        $this->restoreComposerBinary($composerBinaryBkp);
+        if (isset($e)) {
+            throw $e;
+        }
+
+        $process->assertComplete($this);
+    }
+
+    /**
+     * @param  string|false $composerBinaryBkp
+     * @return void
+     */
+    private function restoreComposerBinary($composerBinaryBkp)
+    {
         if (false !== $composerBinaryBkp) {
             Platform::putEnv('COMPOSER_BINARY', $composerBinaryBkp);
         } else {
             Platform::clearEnv('COMPOSER_BINARY');
         }
-
-        $process->assertComplete($this);
     }
 
     public static function createsVendorBinFolderChecksEnvDoesNotContainsBin()
