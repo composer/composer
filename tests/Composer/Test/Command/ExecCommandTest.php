@@ -12,10 +12,31 @@
 
 namespace Composer\Test\Command;
 
+use Composer\Installer\BinaryInstaller;
+use Composer\IO\NullIO;
 use Composer\Test\TestCase;
+use Symfony\Component\Process\Process;
 
 class ExecCommandTest extends TestCase
 {
+    public function testExecFindsInstalledBinaryOnPath(): void
+    {
+        $directory = $this->initTempComposer();
+        $package = self::getPackage('vendor/tool');
+        $package->setBinaries(['fixture-tool']);
+        $this->createInstalledJson([$package]);
+        file_put_contents('vendor/vendor/tool/fixture-tool', '<?php file_put_contents("binary-result.txt", "executed");');
+        $installer = new BinaryInstaller(new NullIO(), 'vendor/bin', 'auto');
+        $installer->installBinaries($package, 'vendor/vendor/tool');
+        $process = new Process([
+            PHP_BINARY, dirname(__DIR__, 4).'/bin/composer', 'exec', 'fixture-tool', '--no-interaction',
+        ], $directory);
+        $process->run();
+
+        self::assertSame(0, $process->getExitCode(), $process->getErrorOutput());
+        self::assertSame('executed', file_get_contents('binary-result.txt'));
+    }
+
     public function testListThrowsIfNoBinariesExist(): void
     {
         $composerDir = $this->initTempComposer();
