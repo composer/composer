@@ -54,7 +54,7 @@ class HgDriver extends VcsDriver
             $fs->ensureDirectoryExists($cacheDir);
 
             if (!is_writable(dirname($this->repoDir))) {
-                throw new \RuntimeException('Can not clone '.$this->url.' to access package information. The "'.$cacheDir.'" directory is not writable by the current user.');
+                throw new \RuntimeException('Can not clone '.Url::sanitize($this->url).' to access package information. The "'.$cacheDir.'" directory is not writable by the current user.');
             }
 
             // Ensure we are allowed to use this URL by config
