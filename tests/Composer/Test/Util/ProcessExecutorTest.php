@@ -101,17 +101,18 @@ class ProcessExecutorTest extends TestCase
         $process->execute($command, $output);
         $expected = implode(' ', array_map([ProcessExecutor::class, 'escape'], $expectedCommand));
         self::assertEquals('Executing command (CWD): ' . $expected, trim($buffer->getOutput()));
+        self::assertStringNotContainsString('s3cr3t', $buffer->getOutput());
     }
 
     public static function hidePasswordInArrayCommandsProvider(): array
     {
         return [
             [
-                ['echo', '--username', 'foo', '--password', 'bar', '--', 'https://foo.example.org/svn/'],
+                ['echo', '--username', 'foo', '--password', 's3cr3t', '--', 'https://foo.example.org/svn/'],
                 ['echo', '--username', 'foo', '--password', '***', '--', 'https://foo.example.org/svn/'],
             ],
             [
-                ['echo', '--username', 'foo', '--password=bar', '--', 'https://foo.example.org/svn/'],
+                ['echo', '--username', 'foo', '--password=s3cr3t', '--', 'https://foo.example.org/svn/'],
                 ['echo', '--username', 'foo', '--password=***', '--', 'https://foo.example.org/svn/'],
             ],
         ];
