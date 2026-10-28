@@ -486,8 +486,19 @@ class ProcessExecutor
             return;
         }
 
+        if (is_array($command)) {
+            foreach ($command as $index => $arg) {
+                if ($arg === '--password' && isset($command[$index + 1])) {
+                    $command[$index + 1] = '***';
+                } elseif (str_starts_with($arg, '--password=')) {
+                    $command[$index] = '--password=***';
+                }
+            }
+        }
+
         $commandString = is_string($command) ? $command : implode(' ', array_map(self::class.'::escape', $command));
         $safeCommand = Url::sanitize($commandString);
+        // array commands are redacted above, this covers string commands e.g. from plugins
         $safeCommand = Preg::replace("{--password (.*[^\\\\]\') }", '--password \'***\' ', $safeCommand);
         $this->io->writeError('Executing'.($async ? ' async' : '').' command ('.($cwd ?: 'CWD').'): '.$safeCommand);
     }
