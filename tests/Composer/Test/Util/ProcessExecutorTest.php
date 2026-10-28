@@ -90,12 +90,31 @@ class ProcessExecutorTest extends TestCase
         ];
     }
 
-    public function testHidePasswordsInArrayCommands(): void
+    /**
+     * @dataProvider hidePasswordInArrayCommandsProvider
+     * @param list<string> $command
+     * @param list<string> $expectedCommand
+     */
+    public function testHidePasswordsInArrayCommands(array $command, array $expectedCommand): void
     {
         $process = new ProcessExecutor($buffer = new BufferIO('', StreamOutput::VERBOSITY_DEBUG));
-        $process->execute(['echo', '--username', 'foo', '--password', 'bar', '--', 'https://foo.example.org/svn/'], $output);
-        $expected = implode(' ', array_map([ProcessExecutor::class, 'escape'], ['echo', '--username', 'foo', '--password', '***', '--', 'https://foo.example.org/svn/']));
+        $process->execute($command, $output);
+        $expected = implode(' ', array_map([ProcessExecutor::class, 'escape'], $expectedCommand));
         self::assertEquals('Executing command (CWD): ' . $expected, trim($buffer->getOutput()));
+    }
+
+    public static function hidePasswordInArrayCommandsProvider(): array
+    {
+        return [
+            [
+                ['echo', '--username', 'foo', '--password', 'bar', '--', 'https://foo.example.org/svn/'],
+                ['echo', '--username', 'foo', '--password', '***', '--', 'https://foo.example.org/svn/'],
+            ],
+            [
+                ['echo', '--username', 'foo', '--password=bar', '--', 'https://foo.example.org/svn/'],
+                ['echo', '--username', 'foo', '--password=***', '--', 'https://foo.example.org/svn/'],
+            ],
+        ];
     }
 
     public function testDoesntHidePorts(): void

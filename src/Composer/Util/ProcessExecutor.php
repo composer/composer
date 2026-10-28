@@ -490,6 +490,8 @@ class ProcessExecutor
             foreach ($command as $index => $arg) {
                 if ($arg === '--password' && isset($command[$index + 1])) {
                     $command[$index + 1] = '***';
+                } elseif (str_starts_with($arg, '--password=')) {
+                    $command[$index] = '--password=***';
                 }
             }
         }
