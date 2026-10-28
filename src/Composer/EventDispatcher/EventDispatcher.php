@@ -680,7 +680,7 @@ class EventDispatcher
 
         return array_map(static function (string $token): string {
             return Preg::replaceCallback('{(["\'])(.*?)\1}s', static function (array $match): string {
-                return (string) $match[2];
+                return $match[2];
             }, $token);
         }, $matches[0]);
     }
