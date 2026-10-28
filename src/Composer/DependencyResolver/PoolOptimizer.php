@@ -63,6 +63,11 @@ class PoolOptimizer
      */
     private $removedVersionsByPackage = [];
 
+    /**
+     * @var array<string, ConstraintInterface[]>
+     */
+    private $expandedConstraints = [];
+
     public function __construct(PolicyInterface $policy)
     {
         $this->policy = $policy;
@@ -89,6 +94,7 @@ class PoolOptimizer
         $this->packagesToRemove = [];
         $this->aliasesPerPackage = [];
         $this->removedVersionsByPackage = [];
+        $this->expandedConstraints = [];
 
         return $optimizedPool;
     }
@@ -481,15 +487,20 @@ class PoolOptimizer
      */
     private function expandDisjunctiveMultiConstraints(ConstraintInterface $constraint)
     {
+        $key = (string) $constraint;
+        if (isset($this->expandedConstraints[$key])) {
+            return $this->expandedConstraints[$key];
+        }
+
         $constraint = Intervals::compactConstraint($constraint);
 
         if ($constraint instanceof MultiConstraint && $constraint->isDisjunctive()) {
             // No need to call ourselves recursively here because Intervals::compactConstraint() ensures that there
             // are no nested disjunctive MultiConstraint instances possible
-            return $constraint->getConstraints();
+            return $this->expandedConstraints[$key] = $constraint->getConstraints();
         }
 
         // Regular constraints and conjunctive MultiConstraints
-        return [$constraint];
+        return $this->expandedConstraints[$key] = [$constraint];
     }
 }
