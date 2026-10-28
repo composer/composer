@@ -394,11 +394,13 @@ class EventDispatcherTest extends TestCase
         $process->expects([
             $composerCmd.' show --format=json '.$args,
             $composerCmd.' show '.$args.' --format=json',
+            $composerCmd.' show '.$args.' && echo '.$args,
         ], true);
 
         $listeners = [
             '@composer show --format=json',
             '@composer show @additional_args --format=json',
+            '@composer show @additional_args && echo @additional_args',
         ];
 
         $dispatcher->expects($this->atLeastOnce())
@@ -414,6 +416,96 @@ class EventDispatcherTest extends TestCase
                 Platform::clearEnv('COMPOSER_BINARY');
             }
         }
+    }
+
+    public function testDispatcherPassesScriptReferenceArgsToComposerScripts(): void
+    {
+        $process = $this->getProcessExecutorMock();
+        $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
+            ->setConstructorArgs([
+                $composer = $this->createComposerInstance(),
+                $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
+                $process,
+            ])
+            ->onlyMethods([
+                'getListeners',
+            ])
+            ->getMock();
+
+        $reflMethod = new \ReflectionMethod($dispatcher, 'getPhpExecCommand');
+        if (PHP_VERSION_ID < 80100) {
+            $reflMethod->setAccessible(true);
+        }
+        $composerBinaryBkp = Platform::getEnv('COMPOSER_BINARY');
+        Platform::putEnv('COMPOSER_BINARY', '/path/to/composer');
+        $composerCmd = $reflMethod->invoke($dispatcher).' '.ProcessExecutor::escape('/path/to/composer');
+
+        $process->expects([
+            $composerCmd.' validate '.implode(' ', array_map([ProcessExecutor::class, 'escape'], ['--working-dir', 'my project', '--opt=a b', "it's", 'ARG'])),
+        ], true);
+
+        $dispatcher->expects($this->atLeastOnce())
+            ->method('getListeners')
+            ->will($this->returnCallback(static function (Event $event): array {
+                if ($event->getName() === 'outer') {
+                    return ['@inner --working-dir "my project" --opt="a b" "it\'s"'];
+                }
+
+                if ($event->getName() === 'inner') {
+                    return ['@composer validate'];
+                }
+
+                return [];
+            }));
+
+        try {
+            $dispatcher->dispatch('outer', new ScriptEvent('outer', $composer, $io, false, ['ARG']));
+        } finally {
+            if (false !== $composerBinaryBkp) {
+                Platform::putEnv('COMPOSER_BINARY', $composerBinaryBkp);
+            } else {
+                Platform::clearEnv('COMPOSER_BINARY');
+            }
+        }
+    }
+
+    public function testDispatcherSupportsAdditionalArgsInScriptReferences(): void
+    {
+        $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
+            ->setConstructorArgs([
+                $composer = $this->createComposerInstance(),
+                $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
+                $this->getProcessExecutorMock(),
+            ])
+            ->onlyMethods([
+                'getListeners',
+            ])
+            ->getMock();
+
+        $innerEvents = [];
+        $dispatcher->expects($this->atLeastOnce())
+            ->method('getListeners')
+            ->will($this->returnCallback(static function (Event $event) use (&$innerEvents): array {
+                if ($event->getName() === 'outer') {
+                    return ['@inner @additional_args --x @additional_args', '@inner --y'];
+                }
+
+                if ($event->getName() === 'inner') {
+                    return [static function (Event $event) use (&$innerEvents): void {
+                        $innerEvents[] = $event;
+                    }];
+                }
+
+                return [];
+            }));
+
+        $dispatcher->dispatch('outer', new ScriptEvent('outer', $composer, $io, false, ['ARG', 'ARG 2'], ['script-alias-input' => "ARG 'ARG 2'"]));
+
+        self::assertCount(2, $innerEvents);
+        self::assertSame(['ARG', 'ARG 2', '--x', 'ARG', 'ARG 2'], $innerEvents[0]->getArguments());
+        self::assertSame("ARG 'ARG 2' ".ProcessExecutor::escape('--x')." ARG 'ARG 2'", $innerEvents[0]->getFlags()['script-alias-input']);
+        self::assertSame(['--y', 'ARG', 'ARG 2'], $innerEvents[1]->getArguments());
+        self::assertSame(ProcessExecutor::escape('--y')." ARG 'ARG 2'", $innerEvents[1]->getFlags()['script-alias-input']);
     }
 
     public static function createsVendorBinFolderChecksEnvDoesNotContainsBin(): void
