@@ -383,10 +383,19 @@ class Platform
             return false;
         }
 
-        $mounts = (string) Silencer::call('file_get_contents', '/proc/mounts');
+        return self::isDrvfsMount($realPath, (string) Silencer::call('file_get_contents', '/proc/mounts'));
+    }
+
+    /**
+     * @internal
+     * @param string $realPath An absolute path with symlinks resolved
+     * @param string $procMounts The contents of /proc/mounts
+     */
+    public static function isDrvfsMount(string $realPath, string $procMounts): bool
+    {
         $bestMatch = '';
         $isDrvfs = false;
-        foreach (explode("\n", $mounts) as $line) {
+        foreach (explode("\n", $procMounts) as $line) {
             $parts = explode(' ', $line);
             if (count($parts) < 4) {
                 continue;
