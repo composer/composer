@@ -118,7 +118,7 @@ class GitDownloaderTest extends TestCase
         $process = $this->getProcessExecutorMock();
         $expectedPath = Platform::isWindows() ? Platform::getCwd().'/composerPath' : 'composerPath';
         $process->expects([
-            ['git', 'clone', '--no-checkout', '--', 'https://example.com/composer/composer', $expectedPath],
+            ['git', 'clone', '--no-checkout', '--filter=blob:none', '--', 'https://example.com/composer/composer', $expectedPath],
             ['git', 'remote', 'add', 'composer', '--', 'https://example.com/composer/composer'],
             ['git', 'fetch', 'composer'],
             ['git', 'remote', 'set-url', 'origin', '--', 'https://example.com/composer/composer'],
@@ -173,7 +173,7 @@ class GitDownloaderTest extends TestCase
             ['git', 'remote', 'set-url', 'origin', '--', 'https://example.com/composer/composer'],
             ['cmd' => ['git', 'rev-parse', '--git-dir'], 'stdout' => '.'],
             ['git', 'rev-parse', '--quiet', '--verify', '1234567890123456789012345678901234567890^{commit}'],
-            ['git', 'clone', '--no-checkout', $cachePath, $expectedPath, '--dissociate', '--reference', $cachePath],
+            ['git', 'clone', '--no-checkout', '--filter=blob:none', $cachePath, $expectedPath, '--dissociate', '--reference', $cachePath],
             ['git', 'remote', 'set-url', 'origin', '--', 'https://example.com/composer/composer'],
             ['git', 'remote', 'add', 'composer', '--', 'https://example.com/composer/composer'],
             ['git', 'branch', '-r'],
@@ -209,9 +209,9 @@ class GitDownloaderTest extends TestCase
         $process = $this->getProcessExecutorMock();
         $expectedPath = Platform::isWindows() ? Platform::getCwd().'/composerPath' : 'composerPath';
         $process->expects([
-            ['cmd' => ['git', 'clone', '--no-checkout', '--', 'https://github.com/mirrors/composer', $expectedPath], 'return' => 1, 'stderr' => 'Error1'],
+            ['cmd' => ['git', 'clone', '--no-checkout', '--filter=blob:none', '--', 'https://github.com/mirrors/composer', $expectedPath], 'return' => 1, 'stderr' => 'Error1'],
 
-            ['git', 'clone', '--no-checkout', '--', 'git@github.com:mirrors/composer', $expectedPath],
+            ['git', 'clone', '--no-checkout', '--filter=blob:none', '--', 'git@github.com:mirrors/composer', $expectedPath],
             ['git', 'remote', 'add', 'composer', '--', 'git@github.com:mirrors/composer'],
             ['git', 'fetch', 'composer'],
             ['git', 'remote', 'set-url', 'origin', '--', 'git@github.com:mirrors/composer'],
@@ -266,7 +266,7 @@ class GitDownloaderTest extends TestCase
         $process = $this->getProcessExecutorMock();
         $expectedPath = Platform::isWindows() ? Platform::getCwd().'/composerPath' : 'composerPath';
         $process->expects([
-            ['git', 'clone', '--no-checkout', '--', $url, $expectedPath],
+            ['git', 'clone', '--no-checkout', '--filter=blob:none', '--', $url, $expectedPath],
             ['git', 'remote', 'add', 'composer', '--', $url],
             ['git', 'fetch', 'composer'],
             ['git', 'remote', 'set-url', 'origin', '--', $url],
@@ -308,7 +308,7 @@ class GitDownloaderTest extends TestCase
         $expectedPath = Platform::isWindows() ? Platform::getCwd().'/composerPath' : 'composerPath';
         $process->expects([
             [
-                'cmd' => ['git', 'clone', '--no-checkout', '--', 'https://example.com/composer/composer', $expectedPath],
+                'cmd' => ['git', 'clone', '--no-checkout', '--filter=blob:none', '--', 'https://example.com/composer/composer', $expectedPath],
                 'return' => 1,
             ],
         ]);
