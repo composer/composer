@@ -1912,6 +1912,13 @@ EOF;
                 array(),
                 array('php', 'ext-fil*'),
             ),
+            'Extensions with normalized names are checked against normalized loaded extensions' => array(
+                array(
+                    'ext-xml' => new Link('a', 'ext-xml', $versionParser->parseConstraints('*')),
+                    'ext-acme-corp-some-extension' => new Link('a', 'ext-acme-corp-some-extension', $versionParser->parseConstraints('*')),
+                ),
+                'normalized_extension_names',
+            ),
             'No extensions required' => array(
                 array(
                     'php' => new Link('a', 'php', $versionParser->parseConstraints('^7.2')),

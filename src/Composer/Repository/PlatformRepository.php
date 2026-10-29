@@ -640,6 +640,11 @@ class PlatformRepository extends ArrayRepository
         }
 
         $packageName = $this->buildPackageName($name);
+        // skip extensions whose name cannot be turned into a valid platform package name
+        if (!self::isPlatformPackage($packageName)) {
+            return;
+        }
+
         $ext = new CompletePackage($packageName, $version, $prettyVersion);
         $ext->setDescription('The '.$name.' PHP extension'.$extraDescription);
 
@@ -658,7 +663,13 @@ class PlatformRepository extends ArrayRepository
      */
     private function buildPackageName($name)
     {
-        return 'ext-' . str_replace(' ', '-', strtolower($name));
+        // extension names are arbitrary strings (e.g. "Zend OPcache" or "Acme Corp - Some Extension"),
+        // so any invalid characters and runs of separators are collapsed into a single dash
+        // this must be kept in sync with the normalization in AutoloadGenerator::getPlatformCheck()
+        $name = Preg::replace('{[^a-z0-9_.-]+}', '-', strtolower($name));
+        $name = Preg::replace('{[_.-]{2,}}', '-', $name);
+
+        return 'ext-' . trim($name, '_.-');
     }
 
     /**

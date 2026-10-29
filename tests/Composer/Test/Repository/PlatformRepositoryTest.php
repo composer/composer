@@ -1235,6 +1235,35 @@ Linked Version => 1.2.11',
         self::assertNotNull($package, 'Composer package exists');
     }
 
+    public function testExtensionNamesAreNormalized()
+    {
+        $runtime = $this->getMockBuilder('Composer\Platform\Runtime')->getMock();
+        $runtime
+            ->method('getExtensions')
+            ->willReturn(array('Zend OPcache', 'Acme Corp - Some Extension', ' (weird) ', '---'));
+        $runtime
+            ->method('getExtensionVersion')
+            ->willReturn('1.0.0');
+        $runtime
+            ->method('getConstant')
+            ->willReturnMap(
+                array(
+                    array('PHP_VERSION', null, '7.0.0'),
+                    array('PHP_DEBUG', null, false),
+                )
+            );
+
+        $platformRepository = new PlatformRepository(array(), array(), $runtime);
+
+        self::assertNotNull($platformRepository->findPackage('ext-zend-opcache', '*'));
+        self::assertNotNull($platformRepository->findPackage('ext-acme-corp-some-extension', '*'));
+        self::assertNotNull($platformRepository->findPackage('ext-weird', '*'));
+
+        foreach ($platformRepository->getPackages() as $package) {
+            self::assertTrue(PlatformRepository::isPlatformPackage($package->getName()), $package->getName().' is not a valid platform package name');
+        }
+    }
+
     public static function providePlatformPackages()
     {
         return array(

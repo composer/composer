@@ -761,6 +761,7 @@ EOF;
     {
         $lowestPhpVersion = Bound::zero();
         $requiredExtensions = array();
+        $needsNormalizedExtensions = false;
         $extensionProviders = array();
 
         foreach ($packageMap as $item) {
@@ -808,6 +809,13 @@ EOF;
                     $extension = var_export($match[1], true);
                     if ($match[1] === 'pcntl' || $match[1] === 'readline') {
                         $requiredExtensions[$extension] = "PHP_SAPI !== 'cli' || extension_loaded($extension) || \$missingExtensions[] = $extension;\n";
+                    } elseif (false !== strpos($match[1], '-')) {
+                        // the package name may have been normalized from the actual extension name by the
+                        // PlatformRepository (e.g. "Acme Corp - Some Extension" => "acme-corp-some-extension"),
+                        // so compare against the normalized names of the loaded extensions as well
+                        $needsNormalizedExtensions = true;
+                        $normalizedExtension = var_export(strtolower($match[1]), true);
+                        $requiredExtensions[$extension] = "extension_loaded($extension) || isset(\$normalizedExtensions[$normalizedExtension]) || \$missingExtensions[] = $extension;\n";
                     } else {
                         $requiredExtensions[$extension] = "extension_loaded($extension) || \$missingExtensions[] = $extension;\n";
                     }
@@ -867,6 +875,16 @@ PHP_CHECK;
         }
 
         $requiredExtensions = implode('', $requiredExtensions);
+        if ($needsNormalizedExtensions) {
+            // must be kept in sync with PlatformRepository::buildPackageName()
+            $requiredExtensions = <<<EXT_NORMALIZATION
+\$normalizedExtensions = array();
+foreach (get_loaded_extensions() as \$loadedExtension) {
+    \$normalizedExtensions[trim(preg_replace(array('{[^a-z0-9_.-]+}', '{[_.-]{2,}}'), '-', strtolower(\$loadedExtension)), '_.-')] = true;
+}
+$requiredExtensions
+EXT_NORMALIZATION;
+        }
         if ('' !== $requiredExtensions) {
             $requiredExtensions = <<<EXT_CHECKS
 
