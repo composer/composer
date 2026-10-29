@@ -365,13 +365,14 @@ class Platform
      */
     public static function isWindowsMountInWsl(string $path): bool
     {
-        if (!self::isWindowsSubsystemForLinux() || !is_readable('/proc/mounts')) {
+        // relative paths would end up resolving against the CWD below
+        if (!str_starts_with($path, '/') || !self::isWindowsSubsystemForLinux() || !is_readable('/proc/mounts')) {
             return false;
         }
 
         // resolve symlinks, walking up to the closest existing parent if the dir does not exist yet
         $realPath = false;
-        while ($path !== '' && false === ($realPath = realpath($path))) {
+        while (false === ($realPath = realpath($path))) {
             $parent = dirname($path);
             if ($parent === $path) {
                 break;
