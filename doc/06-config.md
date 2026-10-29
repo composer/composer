@@ -1116,7 +1116,9 @@ private repositories on gitlab. Using `{"gitlab.com": {"username": "gitlabuser",
 token functionality (https://docs.gitlab.com/ee/user/project/deploy_tokens/)
 Using `gitlab-ci-token` as the username instead stores a
 [GitLab CI job token](https://docs.gitlab.com/ci/jobs/ci_job_token/), which Composer sends as a
-`JOB-TOKEN` header, and which requires GitLab 19.3 or newer to download dist archives.
+`JOB-TOKEN` header (downloading dist archives from `vcs` repositories that way requires GitLab
+19.3 or newer), except for GitLab's Composer package registry, which only accepts job tokens via
+HTTP basic auth with the `gitlab-ci-token` username, so Composer uses that there.
 Please note: If the package is not hosted at
 gitlab.com the domain names must be also specified with the
 [`gitlab-domains`](06-config.md#gitlab-domains) option. The token must have

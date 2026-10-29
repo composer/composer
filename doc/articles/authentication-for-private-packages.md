@@ -357,8 +357,10 @@ access token, by storing it with `gitlab-ci-token` as the username:
 php composer.phar config [--global] -- gitlab-token.gitlab.example.org gitlab-ci-token "${CI_JOB_TOKEN}"
 ```
 
-Composer then authenticates using GitLab's `JOB-TOKEN` header. Note that downloading dist archives
-this way requires GitLab 19.3 or newer, and that the job token must be
+Composer then sends the job token as a `JOB-TOKEN` header (downloading dist archives from `vcs`
+repositories that way requires GitLab 19.3 or newer), except for GitLab's Composer package registry,
+which only accepts job tokens via HTTP basic auth with the `gitlab-ci-token` username, so Composer
+uses that there. Note that the job token must be
 [allowed to access](https://docs.gitlab.com/ci/jobs/ci_job_token/#control-job-token-access-to-your-project)
 the projects it fetches packages from.
 
