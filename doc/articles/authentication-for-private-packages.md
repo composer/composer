@@ -47,7 +47,11 @@ command line or manually edit or create it.
 
 If you don't want to supply credentials for every project you work on, storing your credentials
 globally might be a better idea. These credentials are stored in a global `auth.json` in your
-Composer home directory.
+Composer home directory by default.
+
+Optionally, you may also set the `COMPOSER_AUTH_FILE` environment variable to specify a custom
+location for the global authentication file. This is useful in cases where you might be running
+Composer in a container runtime (e.g., Docker) and would like to mount the file as a secret.
 
 ### Command line global credential editing
 
