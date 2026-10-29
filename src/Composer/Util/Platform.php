@@ -361,6 +361,7 @@ class Platform
     }
 
     /**
+     * @internal
      * @return bool Whether the path is on a Windows drive mounted into WSL (e.g. /mnt/c), where filesystem IO is very slow
      */
     public static function isWindowsMountInWsl(string $path): bool
