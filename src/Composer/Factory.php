@@ -52,6 +52,9 @@ use ZipArchive;
  */
 class Factory
 {
+    /** @var bool */
+    private static $wslCacheDirChecked = false;
+
     /**
      * @throws \RuntimeException
      */
@@ -355,6 +358,14 @@ class Factory
         if ($fullLoad) {
             // load auth configs into the IO instance
             $io->loadConfiguration($config);
+
+            if (!self::$wslCacheDirChecked) {
+                self::$wslCacheDirChecked = true;
+                $cacheDir = $config->get('cache-dir');
+                if (Platform::isWindowsMountInWsl($cacheDir)) {
+                    $io->writeError('<warning>Your Composer cache directory ('.$cacheDir.') is on a Windows drive while Composer runs in WSL, which makes filesystem operations very slow. Move it to the WSL filesystem for better performance, e.g. by running: composer config --global cache-dir ~/.cache/composer</warning>');
+                }
+            }
 
             // load existing Composer\InstalledVersions instance if available and scripts/plugins are allowed, as they might need it
             // we only load if the InstalledVersions class wasn't defined yet so that this is only loaded once

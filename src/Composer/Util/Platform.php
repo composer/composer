@@ -361,6 +361,51 @@ class Platform
     }
 
     /**
+     * @return bool Whether the path is on a Windows drive mounted into WSL (e.g. /mnt/c), where filesystem IO is very slow
+     */
+    public static function isWindowsMountInWsl(string $path): bool
+    {
+        if (!self::isWindowsSubsystemForLinux() || !is_readable('/proc/mounts')) {
+            return false;
+        }
+
+        // resolve symlinks, walking up to the closest existing parent if the dir does not exist yet
+        $realPath = false;
+        while ($path !== '' && false === ($realPath = realpath($path))) {
+            $parent = dirname($path);
+            if ($parent === $path) {
+                break;
+            }
+            $path = $parent;
+        }
+        if (false === $realPath) {
+            return false;
+        }
+
+        $mounts = (string) Silencer::call('file_get_contents', '/proc/mounts');
+        $bestMatch = '';
+        $isDrvfs = false;
+        foreach (explode("\n", $mounts) as $line) {
+            $parts = explode(' ', $line);
+            if (count($parts) < 4) {
+                continue;
+            }
+            // /proc/mounts octal-escapes spaces and other special chars
+            $mountPoint = stripcslashes($parts[1]);
+            if (
+                strlen($mountPoint) > strlen($bestMatch)
+                && ($realPath === $mountPoint || str_starts_with($realPath, rtrim($mountPoint, '/').'/'))
+            ) {
+                $bestMatch = $mountPoint;
+                // WSL1 uses drvfs directly, WSL2 mounts drvfs over 9p
+                $isDrvfs = $parts[2] === 'drvfs' || ($parts[2] === '9p' && str_contains($parts[3], 'aname=drvfs'));
+            }
+        }
+
+        return $isDrvfs;
+    }
+
+    /**
      * @return bool Whether the host machine is running a Windows OS
      */
     public static function isWindows(): bool
