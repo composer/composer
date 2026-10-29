@@ -586,10 +586,16 @@ EOT
         $composerDefinition = $this->json->read();
         foreach ($new as $package => $version) {
             $composerDefinition[$requireKey][$package] = $version;
-            unset($composerDefinition[$removeKey][$package]);
-            if (isset($composerDefinition[$removeKey]) && count($composerDefinition[$removeKey]) === 0) {
-                unset($composerDefinition[$removeKey]);
+            if (isset($composerDefinition[$removeKey][$package])) {
+                unset($composerDefinition[$removeKey][$package]);
+                if (count($composerDefinition[$removeKey]) === 0) {
+                    unset($composerDefinition[$removeKey]);
+                }
             }
+        }
+        // keep a key that was already empty, as {} rather than []
+        if (isset($composerDefinition[$removeKey]) && count($composerDefinition[$removeKey]) === 0) {
+            $composerDefinition[$removeKey] = new \stdClass();
         }
         $this->json->write($composerDefinition);
     }
@@ -612,7 +618,10 @@ EOT
             }
         }
 
-        $manipulator->removeMainKeyIfEmpty($removeKey);
+        // remove the key if moving the packages emptied it, but keep it if it was already empty
+        if ([] !== ($json->read()[$removeKey] ?? [])) {
+            $manipulator->removeMainKeyIfEmpty($removeKey);
+        }
 
         Filesystem::safeFilePutContents($json->getPath(), $manipulator->getContents());
 

@@ -298,6 +298,39 @@ OUTPUT
     }
 
     /**
+     * @dataProvider provideRequireKeepsEmptyRemoveKey
+     */
+    public function testRequireKeepsEmptyRemoveKey(bool $isDev): void
+    {
+        $requireKey = $isDev ? 'require-dev' : 'require';
+        $removeKey = $isDev ? 'require' : 'require-dev';
+
+        $dir = $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'required/pkg', 'version' => '1.0.0'],
+                    ],
+                ],
+            ],
+            $removeKey => new \stdClass(),
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'require', '--no-audit' => true, '--no-install' => true, '--dev' => $isDev, 'packages' => ['required/pkg']]);
+
+        self::assertStringContainsString('"'.$removeKey.'": {}', (string) file_get_contents($dir.'/composer.json'));
+        self::assertSame(['required/pkg' => '^1.0'], (new JsonFile($dir.'/composer.json'))->read()[$requireKey]);
+    }
+
+    public static function provideRequireKeepsEmptyRemoveKey(): \Generator
+    {
+        yield 'require' => [false];
+        yield 'require --dev' => [true];
+    }
+
+    /**
      * @dataProvider provideInconsistentRequireKeys
      */
     public function testInconsistentRequireKeys(bool $isDev, bool $isInteractive, string $expectedWarning): void
