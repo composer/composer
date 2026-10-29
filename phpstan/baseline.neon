@@ -8350,7 +8350,7 @@ parameters:
 
 		-
 			message: "#^Parameter \\#4 \\$composerFileContents of class Composer\\\\Package\\\\Locker constructor expects string, string\\|false given\\.$#"
-			count: 9
+			count: 11
 			path: ../tests/Composer/Test/Package/LockerTest.php
 
 		-
@@ -8510,7 +8510,7 @@ parameters:
 
 		-
 			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 1
+			count: 2
 			path: ../tests/Composer/Test/Repository/FilesystemRepositoryTest.php
 
 		-
