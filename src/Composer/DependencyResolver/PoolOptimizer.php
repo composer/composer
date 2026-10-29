@@ -279,10 +279,8 @@ class PoolOptimizer
             $subhash = [];
 
             foreach ($links as $link) {
-                // To get the best dependency hash matches we should use Intervals::compactConstraint() here.
-                // However, the majority of projects are going to specify their constraints already pretty
-                // much in the best variant possible. In other words, we'd be wasting time here and it would actually hurt
-                // performance more than the additional few packages that could be filtered out would benefit the process.
+                // Intervals::compactConstraint() would let equivalent constraints hash the same, but constraints are
+                // nearly always written in their compact form already, so it only adds overhead without grouping more packages.
                 $subhash[$link->getTarget()] = (string) $link->getConstraint();
             }
 
