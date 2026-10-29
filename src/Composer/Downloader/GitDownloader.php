@@ -105,14 +105,14 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             }
 
             $commands = [
-                array_merge(['git', 'clone', '--no-checkout', $cachePath, $path], $cloneFlags),
+                array_merge(['git', 'clone', '--no-checkout', '--filter=blob:none', $cachePath, $path], $cloneFlags),
                 ['git', 'remote', 'set-url', 'origin', '--', '%sanitizedUrl%'],
                 ['git', 'remote', 'add', 'composer', '--', '%sanitizedUrl%'],
             ];
         } else {
             $msg = "Cloning ".$this->getShortHash($ref);
             $commands = [
-                array_merge(['git', 'clone', '--no-checkout', '--', '%url%', $path]),
+                array_merge(['git', 'clone', '--no-checkout', '--filter=blob:none', '--', '%url%', $path]),
                 ['git', 'remote', 'add', 'composer', '--', '%url%'],
                 ['git', 'fetch', 'composer'],
                 ['git', 'remote', 'set-url', 'origin', '--', '%sanitizedUrl%'],
