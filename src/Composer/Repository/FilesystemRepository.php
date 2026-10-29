@@ -42,6 +42,8 @@ class FilesystemRepository extends WritableArrayRepository
     private $filesystem;
     /** @var bool|null */
     private $devMode = null;
+    /** @var ?RepositoryManager */
+    private $repositoryManager = null;
 
     /**
      * Initializes filesystem repository.
@@ -59,6 +61,16 @@ class FilesystemRepository extends WritableArrayRepository
         if ($dumpVersions && !$rootPackage) {
             throw new \InvalidArgumentException('Expected a root package instance if $dumpVersions is true');
         }
+    }
+
+    /**
+     * Enables keeping http headers out of the repository file, they are restored from the repository config when loading it
+     *
+     * @internal
+     */
+    public function setRepositoryManager(RepositoryManager $repositoryManager): void
+    {
+        $this->repositoryManager = $repositoryManager;
     }
 
     /**
@@ -105,6 +117,9 @@ class FilesystemRepository extends WritableArrayRepository
         $loader = new ArrayLoader(null, true);
         foreach ($packages as $packageData) {
             $package = $loader->load($packageData);
+            if ($this->repositoryManager !== null) {
+                $this->repositoryManager->restoreHttpHeaders($package);
+            }
             $this->addPackage($package);
         }
     }
@@ -134,6 +149,9 @@ class FilesystemRepository extends WritableArrayRepository
 
         foreach ($this->getCanonicalPackages() as $package) {
             $pkgArray = $dumper->dump($package);
+            if ($this->repositoryManager !== null) {
+                $pkgArray = $this->repositoryManager->removeRestorableHttpHeaders($package, $pkgArray);
+            }
             $path = $installationManager->getInstallPath($package);
             $installPath = null;
             if ('' !== $path && null !== $path) {

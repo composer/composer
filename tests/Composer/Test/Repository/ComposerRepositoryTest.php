@@ -1269,6 +1269,7 @@ class ComposerRepositoryTest extends TestCase
         }
         $method->invoke($repository, $package);
 
+        self::assertSame($expected, $repository->isOwnDistUrl($package));
         self::assertSame($expected ? $options : [], $package->getTransportOptions());
     }
 

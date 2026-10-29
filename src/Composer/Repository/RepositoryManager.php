@@ -15,6 +15,7 @@ namespace Composer\Repository;
 use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Util\HttpDownloader;
 use Composer\Util\ProcessExecutor;
@@ -44,6 +45,8 @@ class RepositoryManager
     private $eventDispatcher;
     /** @var ProcessExecutor */
     private $process;
+    /** @var list<ComposerRepository>|null empty if none of them have http headers configured */
+    private $headerRepositories = null;
 
     public function __construct(IOInterface $io, Config $config, HttpDownloader $httpDownloader, ?EventDispatcher $eventDispatcher = null, ?ProcessExecutor $process = null)
     {
@@ -99,6 +102,7 @@ class RepositoryManager
     public function addRepository(RepositoryInterface $repository): void
     {
         $this->repositories[] = $repository;
+        $this->headerRepositories = null;
     }
 
     /**
@@ -111,6 +115,7 @@ class RepositoryManager
     public function prependRepository(RepositoryInterface $repository): void
     {
         array_unshift($this->repositories, $repository);
+        $this->headerRepositories = null;
     }
 
     /**
@@ -184,6 +189,83 @@ class RepositoryManager
     public function getLocalRepository(): InstalledRepositoryInterface
     {
         return $this->localRepository;
+    }
+
+    /**
+     * Restores the http headers configured on the composer repository the package's dist URL belongs to
+     *
+     * Headers often contain credentials so they are not stored in composer.lock and installed.json, see removeRestorableHttpHeaders()
+     *
+     * @internal
+     */
+    public function restoreHttpHeaders(PackageInterface $package): void
+    {
+        $options = $package->getTransportOptions();
+        if ($package instanceof AliasPackage || isset($options['http']['header'])) {
+            return;
+        }
+
+        $headers = $this->findHttpHeaders($package);
+        if ($headers !== null) {
+            $options['http']['header'] = $headers;
+            $package->setTransportOptions($options);
+        }
+    }
+
+    /**
+     * Removes the http headers from a dumped package if restoreHttpHeaders() can restore them
+     *
+     * @internal
+     * @param  array<string, mixed> $data the dumped package
+     * @return array<string, mixed>
+     */
+    public function removeRestorableHttpHeaders(PackageInterface $package, array $data): array
+    {
+        if (!isset($data['transport-options']['http']['header']) || $data['transport-options']['http']['header'] !== $this->findHttpHeaders($package)) {
+            return $data;
+        }
+
+        unset($data['transport-options']['http']['header']);
+        if (\count($data['transport-options']['http']) === 0) {
+            unset($data['transport-options']['http']);
+        }
+        if (\count($data['transport-options']) === 0) {
+            unset($data['transport-options']);
+        }
+
+        return $data;
+    }
+
+    /**
+     * @return mixed the http headers of the most specific composer repository the package's dist URL belongs to
+     */
+    private function findHttpHeaders(PackageInterface $package)
+    {
+        if ($this->headerRepositories === null) {
+            $this->headerRepositories = [];
+            $hasHeaders = false;
+            foreach ($this->repositories as $repo) {
+                if ($repo instanceof FilterRepository) {
+                    $repo = $repo->getRepository();
+                }
+                if ($repo instanceof ComposerRepository) {
+                    $this->headerRepositories[] = $repo;
+                    $hasHeaders = $hasHeaders || isset($repo->getRepoConfig()['options']['http']['header']);
+                }
+            }
+            if (!$hasHeaders) {
+                $this->headerRepositories = [];
+            }
+        }
+
+        $match = null;
+        foreach ($this->headerRepositories as $repo) {
+            if (($match === null || \strlen($repo->getBaseUrl()) > \strlen($match->getBaseUrl())) && $repo->isOwnDistUrl($package)) {
+                $match = $repo;
+            }
+        }
+
+        return $match !== null ? $match->getRepoConfig()['options']['http']['header'] ?? null : null;
     }
 
     /**
