@@ -363,7 +363,10 @@ class Factory
                 self::$wslCacheDirChecked = true;
                 $cacheDir = $config->get('cache-dir');
                 if (Platform::isWindowsMountInWsl($cacheDir)) {
-                    $io->writeError('<warning>Your Composer cache directory ('.$cacheDir.') is on a Windows drive while Composer runs in WSL, which makes filesystem operations very slow. Move it to the WSL filesystem for better performance, e.g. by running: composer config --global cache-dir ~/.cache/composer</warning>');
+                    // ~/.cache is no fix if the home dir itself is on the Windows drive
+                    $home = Platform::getEnv('HOME');
+                    $suggestedDir = is_string($home) && $home !== '' && !Platform::isWindowsMountInWsl($home) ? '~/.cache/composer' : '/path/on/wsl/filesystem';
+                    $io->writeError('<warning>Your Composer cache directory ('.$cacheDir.') is on a Windows drive while Composer runs in WSL, which makes filesystem operations very slow. Move it to the WSL filesystem for better performance, e.g. by running: composer config --global cache-dir '.$suggestedDir.'</warning>');
                 }
             }
 
