@@ -407,8 +407,10 @@ class Platform
                 && ($realPath === $mountPoint || str_starts_with($realPath, rtrim($mountPoint, '/').'/'))
             ) {
                 $bestMatch = $mountPoint;
-                // WSL1 uses drvfs directly, WSL2 mounts drvfs over 9p
-                $isDrvfs = $parts[2] === 'drvfs' || ($parts[2] === '9p' && str_contains($parts[3], 'aname=drvfs'));
+                // WSL1 uses drvfs, WSL2 drvfs over 9p; otherwise (e.g. virtiofs) a drive letter device gives it away
+                $isDrvfs = $parts[2] === 'drvfs'
+                    || ($parts[2] === '9p' && str_contains($parts[3], 'aname=drvfs'))
+                    || Preg::isMatch('{^[a-z]:\\\\}i', stripcslashes($parts[0]));
             }
         }
 

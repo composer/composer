@@ -76,6 +76,7 @@ drivers /usr/lib/wsl/drivers 9p ro,nosuid,nodev,noatime,aname=drivers;fmask=222;
 /dev/sdc / ext4 rw,relatime,discard,errors=remount-ro,data=ordered 0 0
 C:\134 /mnt/c 9p rw,noatime,aname=drvfs;path=C:\;uid=1000;gid=1000;symlinkroot=/mnt/ 0 0
 D:\134 /mnt/d drvfs rw,noatime,uid=1000,gid=1000 0 0
+E:\134 /mnt/e virtiofs rw,relatime 0 0
 /dev/sdd /mnt/c/linux\040disk ext4 rw,relatime 0 0
 MOUNTS;
 
@@ -91,6 +92,7 @@ MOUNTS;
             'WSL2 9p drvfs mount' => [true, '/mnt/c/Users/foo/cache'],
             'mount point itself' => [true, '/mnt/c'],
             'WSL1 drvfs mount' => [true, '/mnt/d/cache'],
+            'drive letter device on other fs type' => [true, '/mnt/e/cache'],
             'linux root fs' => [false, '/home/foo/.cache/composer'],
             'prefix of mount point name only' => [false, '/mnt/cache'],
             'non-drvfs 9p mount' => [false, '/usr/lib/wsl/drivers/foo'],
