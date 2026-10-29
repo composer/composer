@@ -14,6 +14,7 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\AliasPackage;
 use Composer\Package\Link;
+use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Package\PackageInterface;
 use Composer\Repository\PlatformRepository;
 use Composer\DependencyResolver\Operation\OperationInterface;
@@ -52,6 +53,11 @@ class Transaction
      */
     public function __construct($presentPackages, $resultPackages)
     {
+        // present packages may come from installed.json which is loaded without validation
+        foreach (array_merge($presentPackages, $resultPackages) as $package) {
+            ValidatingArrayLoader::validatePackage($package);
+        }
+
         $this->presentPackages = $presentPackages;
         $this->setResultPackageMaps($resultPackages);
         $this->operations = $this->calculateOperations();

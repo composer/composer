@@ -1,0 +1,35 @@
+--TEST--
+Install aborts if the installed repository contains a package with an invalid name instead of removing it
+--COMPOSER--
+{
+    "require": {
+        "a/a": "1.0.0"
+    }
+}
+--LOCK--
+{
+    "packages": [
+        { "name": "a/a", "version": "1.0.0" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {},
+    "prefer-stable": false,
+    "prefer-lowest": false
+}
+--INSTALLED--
+[
+    { "name": "a/a", "version": "1.0.0" },
+    { "name": "a/../../../b", "version": "1.0.0" }
+]
+--RUN--
+install
+--EXPECT-INSTALLED--
+[
+    { "name": "a/../../../b", "version": "1.0.0", "type": "library" },
+    { "name": "a/a", "version": "1.0.0", "type": "library" }
+]
+--EXPECT-EXIT-CODE--
+1
+--EXPECT--

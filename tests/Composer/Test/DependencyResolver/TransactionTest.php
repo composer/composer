@@ -98,6 +98,20 @@ class TransactionTest extends TestCase
         $this->checkTransactionOperations($transaction, $expectedOperations);
     }
 
+    public function testRejectsInvalidPresentPackage()
+    {
+        $this->setExpectedException('Composer\Exception\SecurityException');
+
+        new Transaction(array($this->getPackage('a/../../b', '1.0.0')), array());
+    }
+
+    public function testRejectsInvalidResultPackage()
+    {
+        $this->setExpectedException('Composer\Exception\SecurityException');
+
+        new Transaction(array(), array($this->getPackage('a/../../b', '1.0.0')));
+    }
+
     /**
      * @param \Composer\DependencyResolver\Transaction $transaction
      * @param array<array<string, string>> $expected
