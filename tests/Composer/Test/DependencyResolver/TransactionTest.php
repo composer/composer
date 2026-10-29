@@ -18,6 +18,7 @@ use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Transaction;
+use Composer\Exception\SecurityException;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Test\TestCase;
@@ -97,6 +98,20 @@ class TransactionTest extends TestCase
 
         $transaction = new Transaction($presentPackages, $resultPackages);
         $this->checkTransactionOperations($transaction, $expectedOperations);
+    }
+
+    public function testRejectsInvalidPresentPackage(): void
+    {
+        self::expectException(SecurityException::class);
+
+        new Transaction([self::getPackage('a/../../b', '1.0.0')], []);
+    }
+
+    public function testRejectsInvalidResultPackage(): void
+    {
+        self::expectException(SecurityException::class);
+
+        new Transaction([], [self::getPackage('a/../../b', '1.0.0')]);
     }
 
     /**
