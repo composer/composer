@@ -63,11 +63,6 @@ class PoolOptimizer
      */
     private $removedVersionsByPackage = [];
 
-    /**
-     * @var array<string, ConstraintInterface[]>
-     */
-    private $expandedConstraints = [];
-
     public function __construct(PolicyInterface $policy)
     {
         $this->policy = $policy;
@@ -94,7 +89,6 @@ class PoolOptimizer
         $this->packagesToRemove = [];
         $this->aliasesPerPackage = [];
         $this->removedVersionsByPackage = [];
-        $this->expandedConstraints = [];
 
         return $optimizedPool;
     }
@@ -285,10 +279,8 @@ class PoolOptimizer
             $subhash = [];
 
             foreach ($links as $link) {
-                // To get the best dependency hash matches we should use Intervals::compactConstraint() here.
-                // However, the majority of projects are going to specify their constraints already pretty
-                // much in the best variant possible. In other words, we'd be wasting time here and it would actually hurt
-                // performance more than the additional few packages that could be filtered out would benefit the process.
+                // Intervals::compactConstraint() would let equivalent constraints hash the same, but constraints are
+                // nearly always written in their compact form already, so it only adds overhead without grouping more packages.
                 $subhash[$link->getTarget()] = (string) $link->getConstraint();
             }
 
@@ -487,20 +479,15 @@ class PoolOptimizer
      */
     private function expandDisjunctiveMultiConstraints(ConstraintInterface $constraint)
     {
-        $key = (string) $constraint;
-        if (isset($this->expandedConstraints[$key])) {
-            return $this->expandedConstraints[$key];
-        }
-
         $constraint = Intervals::compactConstraint($constraint);
 
         if ($constraint instanceof MultiConstraint && $constraint->isDisjunctive()) {
             // No need to call ourselves recursively here because Intervals::compactConstraint() ensures that there
             // are no nested disjunctive MultiConstraint instances possible
-            return $this->expandedConstraints[$key] = $constraint->getConstraints();
+            return $constraint->getConstraints();
         }
 
         // Regular constraints and conjunctive MultiConstraints
-        return $this->expandedConstraints[$key] = [$constraint];
+        return [$constraint];
     }
 }
