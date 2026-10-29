@@ -12,9 +12,15 @@
 
 namespace Composer\Test\Package;
 
+use Composer\IO\BufferIO;
 use Composer\Package\Locker;
+use Composer\Package\Package;
 use Composer\Plugin\PluginInterface;
 use Composer\IO\NullIO;
+use Composer\Repository\ComposerRepository;
+use Composer\Repository\FilterRepository;
+use Composer\Repository\RepositoryManager;
+use Composer\Test\Mock\FactoryMock;
 use Composer\Test\TestCase;
 
 class LockerTest extends TestCase
@@ -301,5 +307,116 @@ class LockerTest extends TestCase
         ksort($data);
 
         return json_encode($data);
+    }
+
+    public function testSetLockDataRemovesRestorableHttpHeaders()
+    {
+        $json = $this->createJsonFileMock();
+        $io = new BufferIO();
+
+        $locker = new Locker($io, $json, $this->createInstallationManagerMock(), $this->getJsonContent());
+        $locker->setRepositoryManager($this->createRepositoryManagerWithHeaders());
+
+        $packages = array(
+            $this->getPackageWithDist('a/base', 'https://example.org/dists/a.zip', array('http' => array('header' => array('API-TOKEN: base')))),
+            $this->getPackageWithDist('b/team', 'https://example.org/team/dists/b.zip', array('http' => array('header' => array('API-TOKEN: team'), 'timeout' => 10), 'ssl' => array('verify_peer' => false))),
+            $this->getPackageWithDist('c/other-header', 'https://example.org/dists/c.zip', array('http' => array('header' => array('API-TOKEN: other')))),
+            $this->getPackageWithDist('d/inline', 'https://inline.example.net/d.zip', array('http' => array('header' => array('API-TOKEN: inline')))),
+        );
+
+        $written = null;
+        $json
+            ->expects($this->once())
+            ->method('write')
+            ->will($this->returnCallback(function (array $data) use (&$written) {
+                $written = $data;
+            }));
+
+        $locker->setLockData($packages, array(), array(), array(), array(), 'dev', array(), false, false, array());
+
+        $this->assertNotNull($written);
+        $transportOptions = array();
+        foreach ($written['packages'] as $package) {
+            $transportOptions[$package['name']] = isset($package['transport-options']) ? $package['transport-options'] : null;
+        }
+        $this->assertSame(array(
+            'a/base' => null,
+            'b/team' => array('http' => array('timeout' => 10), 'ssl' => array('verify_peer' => false)),
+            'c/other-header' => array('http' => array('header' => array('API-TOKEN: other'))),
+            'd/inline' => array('http' => array('header' => array('API-TOKEN: inline'))),
+        ), $transportOptions);
+        $this->assertStringContainsString('The transport options of c/other-header, d/inline contain http headers which will be stored in composer.lock', $io->getOutput());
+        // the packages themselves keep their options for the install that follows
+        $this->assertSame(array('http' => array('header' => array('API-TOKEN: base'))), $packages[0]->getTransportOptions());
+    }
+
+    public function testGetLockedRepositoryRestoresHttpHeaders()
+    {
+        $json = $this->createJsonFileMock();
+
+        $locker = new Locker(new NullIO, $json, $this->createInstallationManagerMock(), $this->getJsonContent());
+        $locker->setRepositoryManager($this->createRepositoryManagerWithHeaders());
+
+        $ssl = array('ssl' => array('verify_peer' => false));
+        $json->expects($this->any())->method('exists')->will($this->returnValue(true));
+        $json->expects($this->any())->method('read')->will($this->returnValue(array(
+            'packages' => array(
+                array('name' => 'a/base', 'version' => '1.0.0', 'dist' => array('type' => 'zip', 'url' => 'https://example.org/dists/a.zip')),
+                array('name' => 'b/team', 'version' => '1.0.0', 'dist' => array('type' => 'zip', 'url' => 'https://example.org/team/dists/b.zip'), 'transport-options' => $ssl),
+                array('name' => 'c/stored-header', 'version' => '1.0.0', 'dist' => array('type' => 'zip', 'url' => 'https://example.org/dists/c.zip'), 'transport-options' => array('http' => array('header' => array('API-TOKEN: stored')))),
+                array('name' => 'd/no-header-repo', 'version' => '1.0.0', 'dist' => array('type' => 'zip', 'url' => 'https://no-header.example.org/dists/d.zip'), 'transport-options' => $ssl),
+                array('name' => 'e/elsewhere', 'version' => '1.0.0', 'dist' => array('type' => 'zip', 'url' => 'https://elsewhere.example.net/e.zip')),
+            ),
+        )));
+
+        $transportOptions = array();
+        foreach ($locker->getLockedRepository()->getPackages() as $package) {
+            $transportOptions[$package->getName()] = $package->getTransportOptions();
+        }
+        $this->assertSame(array(
+            'a/base' => array('http' => array('header' => array('API-TOKEN: base'))),
+            'b/team' => $ssl + array('http' => array('header' => array('API-TOKEN: team'))),
+            'c/stored-header' => array('http' => array('header' => array('API-TOKEN: stored'))),
+            'd/no-header-repo' => $ssl,
+            'e/elsewhere' => array(),
+        ), $transportOptions);
+    }
+
+    /**
+     * @return RepositoryManager
+     */
+    private function createRepositoryManagerWithHeaders()
+    {
+        $io = new NullIO;
+        $config = FactoryMock::createConfig();
+        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
+
+        $rm = new RepositoryManager($io, $config, $httpDownloader);
+        $rm->addRepository(new ComposerRepository(array('url' => 'https://example.org', 'options' => array('http' => array('header' => array('API-TOKEN: base')))), $io, $config, $httpDownloader));
+        // added after its parent URL so the longest match has to win, and filtered as only/exclude/canonical would do
+        $rm->addRepository(new FilterRepository(
+            new ComposerRepository(array('url' => 'https://example.org/team', 'options' => array('http' => array('header' => array('API-TOKEN: team')))), $io, $config, $httpDownloader),
+            array('canonical' => false)
+        ));
+        $rm->addRepository(new ComposerRepository(array('url' => 'https://no-header.example.org'), $io, $config, $httpDownloader));
+
+        return $rm;
+    }
+
+    /**
+     * @param string  $name
+     * @param string  $distUrl
+     * @param mixed[] $transportOptions
+     *
+     * @return Package
+     */
+    private function getPackageWithDist($name, $distUrl, array $transportOptions)
+    {
+        $package = new Package($name, '1.0.0.0', '1.0.0');
+        $package->setDistType('zip');
+        $package->setDistUrl($distUrl);
+        $package->setTransportOptions($transportOptions);
+
+        return $package;
     }
 }

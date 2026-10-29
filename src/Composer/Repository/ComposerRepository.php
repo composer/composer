@@ -677,14 +677,34 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      */
     protected function configurePackageTransportOptions(PackageInterface $package)
     {
+        if ($this->isOwnDistUrl($package)) {
+            $package->setTransportOptions($this->options);
+        }
+    }
+
+    /**
+     * @internal
+     * @return bool true if one of the package's dist URLs belongs to this repository
+     */
+    public function isOwnDistUrl(PackageInterface $package)
+    {
         foreach ($package->getDistUrls() as $url) {
             // require a boundary after the base URL so e.g. https://example.org.example.net does not match https://example.org
             if (Preg::isMatch('{^'.preg_quote($this->baseUrl).'(?:[/?#]|$)}', $url)) {
-                $package->setTransportOptions($this->options);
-
-                return;
+                return true;
             }
         }
+
+        return false;
+    }
+
+    /**
+     * @internal
+     * @return string
+     */
+    public function getBaseUrl()
+    {
+        return $this->baseUrl;
     }
 
     /**

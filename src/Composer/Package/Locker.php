@@ -16,6 +16,7 @@ use Composer\Json\JsonFile;
 use Composer\Installer\InstallationManager;
 use Composer\Pcre\Preg;
 use Composer\Repository\LockArrayRepository;
+use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Loader\ArrayLoader;
@@ -33,6 +34,8 @@ use Seld\JsonLint\ParsingException;
  */
 class Locker
 {
+    /** @var IOInterface */
+    private $io;
     /** @var JsonFile */
     private $lockFile;
     /** @var InstallationManager */
@@ -51,6 +54,8 @@ class Locker
     private $lockDataCache = null;
     /** @var bool */
     private $virtualFileWritten = false;
+    /** @var ?RepositoryManager */
+    private $repositoryManager = null;
 
     /**
      * Initializes packages locker.
@@ -62,6 +67,7 @@ class Locker
      */
     public function __construct(IOInterface $io, JsonFile $lockFile, InstallationManager $installationManager, $composerFileContents, ProcessExecutor $process = null)
     {
+        $this->io = $io;
         $this->lockFile = $lockFile;
         $this->installationManager = $installationManager;
         $this->hash = md5($composerFileContents);
@@ -69,6 +75,17 @@ class Locker
         $this->loader = new ArrayLoader(null, true);
         $this->dumper = new ArrayDumper();
         $this->process = $process ?: new ProcessExecutor($io);
+    }
+
+    /**
+     * Enables keeping http headers out of the lock file, they are restored from the repository config when loading it
+     *
+     * @internal
+     * @return void
+     */
+    public function setRepositoryManager(RepositoryManager $repositoryManager)
+    {
+        $this->repositoryManager = $repositoryManager;
     }
 
     /**
@@ -178,6 +195,9 @@ class Locker
             $packageByName = array();
             foreach ($lockedPackages as $info) {
                 $package = $this->loader->load($info);
+                if ($this->repositoryManager !== null) {
+                    $this->repositoryManager->restoreHttpHeaders($package);
+                }
                 $packages->addPackage($package);
                 $packageByName[$package->getName()] = $package;
 
@@ -432,6 +452,7 @@ class Locker
     private function lockPackages(array $packages)
     {
         $locked = array();
+        $packagesWithHeaders = array();
 
         foreach ($packages as $package) {
             if ($package instanceof AliasPackage) {
@@ -464,7 +485,18 @@ class Locker
 
             unset($spec['installation-source']);
 
+            if ($this->repositoryManager !== null) {
+                $spec = $this->repositoryManager->removeRestorableHttpHeaders($package, $spec);
+            }
+            if (isset($spec['transport-options']['http']['header'])) {
+                $packagesWithHeaders[] = $name;
+            }
+
             $locked[] = $spec;
+        }
+
+        if (\count($packagesWithHeaders) > 0) {
+            $this->io->writeError('<warning>The transport options of '.implode(', ', $packagesWithHeaders).' contain http headers which will be stored in composer.lock. If they contain credentials, configure them in auth.json or on a composer repository\'s options instead.</warning>');
         }
 
         usort($locked, function ($a, $b) {

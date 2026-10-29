@@ -367,6 +367,7 @@ class ComposerRepositoryTest extends TestCase
         $method->setAccessible(true);
         $method->invoke($repository, $package);
 
+        $this->assertSame($expected, $repository->isOwnDistUrl($package));
         $this->assertSame($expected ? $options : array(), $package->getTransportOptions());
     }
 

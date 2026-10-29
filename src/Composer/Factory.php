@@ -446,6 +446,7 @@ class Factory
             }
 
             $locker = new Package\Locker($io, new JsonFile($config->get('lock') ? $lockFile : Platform::getDevNull(), null, $io), $im, file_get_contents($composerFile), $process);
+            $locker->setRepositoryManager($rm);
             $composer->setLocker($locker);
         }
 
@@ -499,7 +500,9 @@ class Factory
             $fs = new Filesystem($process);
         }
 
-        $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed.json', null, $io), true, $rootPackage, $fs));
+        $localRepo = new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed.json', null, $io), true, $rootPackage, $fs);
+        $localRepo->setRepositoryManager($rm);
+        $rm->setLocalRepository($localRepo);
     }
 
     /**
