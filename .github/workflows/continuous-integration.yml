@@ -65,11 +65,11 @@ jobs:
           - php-version: "8.6"
             dependencies: lowest-ignore
             os: ubuntu-latest
-            experimental: true
+            experimental: false
           - php-version: "8.6"
             dependencies: highest-ignore
             os: ubuntu-latest
-            experimental: true
+            experimental: false
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
