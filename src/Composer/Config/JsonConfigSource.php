@@ -389,6 +389,45 @@ class JsonConfigSource implements ConfigSourceInterface
     }
 
     /**
+     * Turns empty arrays back into objects for composer.json keys that must be objects
+     *
+     * @internal
+     * @param array<mixed> $config
+     */
+    public static function restoreEmptyObjects(array &$config): void
+    {
+        // apply bottom-up so parent coercion to stdClass doesn't hide deeper sub-keys
+        if (isset($config['config']['policy']) && is_array($config['config']['policy'])) {
+            foreach ($config['config']['policy'] as $listName => $listValue) {
+                if ($listValue === []) {
+                    $config['config']['policy'][$listName] = new \stdClass;
+                }
+            }
+            if ($config['config']['policy'] === []) {
+                $config['config']['policy'] = new \stdClass;
+            }
+        }
+        foreach (['platform', 'http-basic', 'bearer', 'gitlab-token', 'gitlab-oauth', 'github-oauth', 'custom-headers', 'forgejo-token', 'preferred-install'] as $prop) {
+            if (isset($config['config'][$prop]) && $config['config'][$prop] === []) {
+                $config['config'][$prop] = new \stdClass;
+            }
+        }
+        foreach (['psr-0', 'psr-4'] as $prop) {
+            if (isset($config['autoload'][$prop]) && $config['autoload'][$prop] === []) {
+                $config['autoload'][$prop] = new \stdClass;
+            }
+            if (isset($config['autoload-dev'][$prop]) && $config['autoload-dev'][$prop] === []) {
+                $config['autoload-dev'][$prop] = new \stdClass;
+            }
+        }
+        foreach (['require', 'require-dev', 'conflict', 'provide', 'replace', 'suggest', 'config', 'autoload', 'autoload-dev', 'scripts', 'scripts-descriptions', 'scripts-aliases', 'support'] as $prop) {
+            if (isset($config[$prop]) && $config[$prop] === []) {
+                $config[$prop] = new \stdClass;
+            }
+        }
+    }
+
+    /**
      * @param mixed ...$args
      */
     private function manipulateJson(string $method, callable $fallback, ...$args): void
@@ -432,36 +471,7 @@ class JsonConfigSource implements ConfigSourceInterface
             $config = $this->file->read();
             $this->arrayUnshiftRef($args, $config);
             $fallback(...$args);
-            // avoid ending up with arrays for keys that should be objects
-            // (apply bottom-up so parent coercion to stdClass doesn't hide deeper sub-keys)
-            if (isset($config['config']['policy']) && is_array($config['config']['policy'])) {
-                foreach ($config['config']['policy'] as $listName => $listValue) {
-                    if ($listValue === []) {
-                        $config['config']['policy'][$listName] = new \stdClass;
-                    }
-                }
-                if ($config['config']['policy'] === []) {
-                    $config['config']['policy'] = new \stdClass;
-                }
-            }
-            foreach (['platform', 'http-basic', 'bearer', 'gitlab-token', 'gitlab-oauth', 'github-oauth', 'custom-headers', 'forgejo-token', 'preferred-install'] as $prop) {
-                if (isset($config['config'][$prop]) && $config['config'][$prop] === []) {
-                    $config['config'][$prop] = new \stdClass;
-                }
-            }
-            foreach (['psr-0', 'psr-4'] as $prop) {
-                if (isset($config['autoload'][$prop]) && $config['autoload'][$prop] === []) {
-                    $config['autoload'][$prop] = new \stdClass;
-                }
-                if (isset($config['autoload-dev'][$prop]) && $config['autoload-dev'][$prop] === []) {
-                    $config['autoload-dev'][$prop] = new \stdClass;
-                }
-            }
-            foreach (['require', 'require-dev', 'conflict', 'provide', 'replace', 'suggest', 'config', 'autoload', 'autoload-dev', 'scripts', 'scripts-descriptions', 'scripts-aliases', 'support'] as $prop) {
-                if (isset($config[$prop]) && $config[$prop] === []) {
-                    $config[$prop] = new \stdClass;
-                }
-            }
+            self::restoreEmptyObjects($config);
             $this->file->write($config);
         }
 

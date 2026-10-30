@@ -14,6 +14,7 @@ namespace Composer\Test\Command;
 
 use Composer\Command\RequireCommand;
 use Composer\Json\JsonFile;
+use Composer\Json\JsonManipulator;
 use Composer\Test\TestCase;
 use InvalidArgumentException;
 
@@ -355,11 +356,13 @@ OUTPUT
         $updateFile->invoke($command, new JsonFile($file), ['a/b' => '^1'], 'require', 'require-dev', false);
         self::assertSame($expected, json_encode(json_decode((string) file_get_contents($file))), 'JsonManipulator path');
 
-        // make JsonManipulator::removeSubNode fail so the fallback runs
+        // make the manipulator fail so the fallback runs
         file_put_contents($file, $contents);
         $backtrackLimit = (string) ini_get('pcre.backtrack_limit');
         ini_set('pcre.backtrack_limit', '2');
         try {
+            $manipulator = new JsonManipulator($contents);
+            self::assertFalse($manipulator->addLink('require', 'a/b', '^1') && $manipulator->removeLink('require-dev', 'a/b'));
             $updateFile->invoke($command, new JsonFile($file), ['a/b' => '^1'], 'require', 'require-dev', false);
         } finally {
             ini_set('pcre.backtrack_limit', $backtrackLimit);
@@ -371,6 +374,7 @@ OUTPUT
     {
         yield 'moving the last package removes the key' => [['require-dev' => ['a/b' => '1']], '{"require":{"a\/b":"^1"}}'];
         yield 'moving a package keeps the other ones' => [['require-dev' => ['a/b' => '1', 'c/d' => '1']], '{"require-dev":{"c\/d":"1"},"require":{"a\/b":"^1"}}'];
+        yield 'empty objects stay objects' => [['config' => new \stdClass(), 'require-dev' => ['a/b' => '1', 'c/d' => '1']], '{"config":{},"require-dev":{"c\/d":"1"},"require":{"a\/b":"^1"}}'];
     }
 
     /**

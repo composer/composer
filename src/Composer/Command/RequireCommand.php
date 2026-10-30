@@ -30,6 +30,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Factory;
 use Composer\Installer;
 use Composer\Installer\InstallerEvents;
+use Composer\Config\JsonConfigSource;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
 use Composer\Package\Version\VersionParser;
@@ -583,7 +584,7 @@ EOT
             return;
         }
 
-        $composerDefinition = $this->json->read();
+        $composerDefinition = $json->read();
         foreach ($new as $package => $version) {
             $composerDefinition[$requireKey][$package] = $version;
             if (isset($composerDefinition[$removeKey][$package])) {
@@ -593,11 +594,8 @@ EOT
                 }
             }
         }
-        // keep a key that was already empty, as {} rather than []
-        if (($composerDefinition[$removeKey] ?? null) === []) {
-            $composerDefinition[$removeKey] = new \stdClass();
-        }
-        $this->json->write($composerDefinition);
+        JsonConfigSource::restoreEmptyObjects($composerDefinition);
+        $json->write($composerDefinition);
     }
 
     /**
