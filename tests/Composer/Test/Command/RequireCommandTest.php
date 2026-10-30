@@ -12,7 +12,9 @@
 
 namespace Composer\Test\Command;
 
+use Composer\Command\RequireCommand;
 use Composer\Json\JsonFile;
+use Composer\Json\JsonManipulator;
 use Composer\Test\TestCase;
 use InvalidArgumentException;
 
@@ -295,6 +297,84 @@ Lock file operations: 1 install, 0 updates, 0 removals
 Using version 1.1.0 for required/pkg
 OUTPUT
         ];
+    }
+
+    /**
+     * @dataProvider provideRequireKeepsEmptyRemoveKey
+     */
+    public function testRequireKeepsEmptyRemoveKey(bool $isDev): void
+    {
+        $requireKey = $isDev ? 'require-dev' : 'require';
+        $removeKey = $isDev ? 'require' : 'require-dev';
+
+        $dir = $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'required/pkg', 'version' => '1.0.0'],
+                    ],
+                ],
+            ],
+            $removeKey => new \stdClass(),
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'require', '--no-audit' => true, '--no-install' => true, '--dev' => $isDev, 'packages' => ['required/pkg']]);
+
+        self::assertStringContainsString('"'.$removeKey.'": {}', (string) file_get_contents($dir.'/composer.json'));
+        self::assertSame(['required/pkg' => '^1.0'], (new JsonFile($dir.'/composer.json'))->read()[$requireKey]);
+    }
+
+    public static function provideRequireKeepsEmptyRemoveKey(): \Generator
+    {
+        yield 'require' => [false];
+        yield 'require --dev' => [true];
+    }
+
+    /**
+     * @dataProvider provideUpdateFileFallbackMatchesManipulator
+     * @param array<string, mixed> $original
+     */
+    public function testUpdateFileFallbackMatchesManipulator(array $original, string $expected): void
+    {
+        $dir = $this->initTempComposer($original);
+        $file = $dir.'/composer.json';
+        $contents = (string) file_get_contents($file);
+
+        $command = new RequireCommand();
+        $jsonProp = new \ReflectionProperty($command, 'json');
+        if (\PHP_VERSION_ID < 80100) {
+            $jsonProp->setAccessible(true);
+        }
+        $jsonProp->setValue($command, new JsonFile($file));
+        $updateFile = new \ReflectionMethod($command, 'updateFile');
+        if (\PHP_VERSION_ID < 80100) {
+            $updateFile->setAccessible(true);
+        }
+
+        $updateFile->invoke($command, new JsonFile($file), ['a/b' => '^1'], 'require', 'require-dev', false);
+        self::assertSame($expected, json_encode(json_decode((string) file_get_contents($file))), 'JsonManipulator path');
+
+        // make the manipulator fail so the fallback runs
+        file_put_contents($file, $contents);
+        $backtrackLimit = (string) ini_get('pcre.backtrack_limit');
+        ini_set('pcre.backtrack_limit', '2');
+        try {
+            $manipulator = new JsonManipulator($contents);
+            self::assertFalse($manipulator->addLink('require', 'a/b', '^1') && $manipulator->removeLink('require-dev', 'a/b'));
+            $updateFile->invoke($command, new JsonFile($file), ['a/b' => '^1'], 'require', 'require-dev', false);
+        } finally {
+            ini_set('pcre.backtrack_limit', $backtrackLimit);
+        }
+        self::assertSame($expected, json_encode(json_decode((string) file_get_contents($file))), 'fallback path');
+    }
+
+    public static function provideUpdateFileFallbackMatchesManipulator(): \Generator
+    {
+        yield 'moving the last package removes the key' => [['require-dev' => ['a/b' => '1']], '{"require":{"a\/b":"^1"}}'];
+        yield 'moving a package keeps the other ones' => [['require-dev' => ['a/b' => '1', 'c/d' => '1']], '{"require-dev":{"c\/d":"1"},"require":{"a\/b":"^1"}}'];
+        yield 'empty objects stay objects' => [['config' => new \stdClass(), 'require-dev' => ['a/b' => '1', 'c/d' => '1']], '{"config":{},"require-dev":{"c\/d":"1"},"require":{"a\/b":"^1"}}'];
     }
 
     /**

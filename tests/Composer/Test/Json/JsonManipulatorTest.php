@@ -3332,6 +3332,77 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
+    /**
+     * @dataProvider provideRemoveLink
+     */
+    public function testRemoveLink(string $json, string $type, string $package, string $expected): void
+    {
+        $manipulator = new JsonManipulator($json);
+
+        self::assertTrue($manipulator->removeLink($type, $package));
+        self::assertSame($expected, $manipulator->getContents());
+    }
+
+    /**
+     * @return iterable<string, array{string, string, string, string}>
+     */
+    public static function provideRemoveLink(): iterable
+    {
+        yield 'removes the key when emptied' => ['{
+    "require": {
+        "foo/bar": "^1"
+    },
+    "require-dev": {
+        "baz/qux": "^1"
+    }
+}', 'require-dev', 'baz/qux', '{
+    "require": {
+        "foo/bar": "^1"
+    }
+}
+'];
+        yield 'keeps the key when not emptied' => ['{
+    "require-dev": {
+        "baz/qux": "^1",
+        "foo/bar": "^1"
+    }
+}', 'require-dev', 'baz/qux', '{
+    "require-dev": {
+        "foo/bar": "^1"
+    }
+}
+'];
+        yield 'keeps an already empty key' => ['{
+    "require": {
+        "foo/bar": "^1"
+    },
+    "require-dev": {
+    }
+}', 'require-dev', 'baz/qux', '{
+    "require": {
+        "foo/bar": "^1"
+    },
+    "require-dev": {
+    }
+}
+'];
+    }
+
+    public function testRemoveRepositoryKeepsAlreadyEmptyKey(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "repositories": [
+    ]
+}');
+
+        self::assertTrue($manipulator->removeRepository('baz'));
+        self::assertSame('{
+    "repositories": [
+    ]
+}
+', $manipulator->getContents());
+    }
+
     public function testRemoveMainKeyIfEmpty(): void
     {
         $manipulator = new JsonManipulator('{

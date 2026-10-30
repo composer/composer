@@ -30,6 +30,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Factory;
 use Composer\Installer;
 use Composer\Installer\InstallerEvents;
+use Composer\Config\JsonConfigSource;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
 use Composer\Package\Version\VersionParser;
@@ -583,15 +584,18 @@ EOT
             return;
         }
 
-        $composerDefinition = $this->json->read();
+        $composerDefinition = $json->read();
         foreach ($new as $package => $version) {
             $composerDefinition[$requireKey][$package] = $version;
-            unset($composerDefinition[$removeKey][$package]);
-            if (isset($composerDefinition[$removeKey]) && count($composerDefinition[$removeKey]) === 0) {
-                unset($composerDefinition[$removeKey]);
+            if (isset($composerDefinition[$removeKey][$package])) {
+                unset($composerDefinition[$removeKey][$package]);
+                if ($composerDefinition[$removeKey] === []) {
+                    unset($composerDefinition[$removeKey]);
+                }
             }
         }
-        $this->json->write($composerDefinition);
+        JsonConfigSource::restoreEmptyObjects($composerDefinition);
+        $json->write($composerDefinition);
     }
 
     /**
@@ -607,12 +611,10 @@ EOT
             if (!$manipulator->addLink($requireKey, $package, $constraint, $sortPackages)) {
                 return false;
             }
-            if (!$manipulator->removeSubNode($removeKey, $package)) {
+            if (!$manipulator->removeLink($removeKey, $package)) {
                 return false;
             }
         }
-
-        $manipulator->removeMainKeyIfEmpty($removeKey);
 
         Filesystem::safeFilePutContents($json->getPath(), $manipulator->getContents());
 
