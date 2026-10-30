@@ -64,6 +64,125 @@ class RequireCommandTest extends TestCase
         $appTester->run(['command' => 'require', '--dry-run' => true, '--no-audit' => true, 'packages' => ['required/pkg']]);
     }
 
+    public function testRequireReportsStableVersionsHiddenByAHigherPriorityRepository(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('which has a higher repository priority. The packages from the higher priority repository do not match your minimum-stability and are therefore not installable.');
+
+        $this->initTempComposer([
+            'repositories' => [
+                'canonical' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'required/pkg', 'version' => '1.0.0-beta1'],
+                    ],
+                ],
+                'lower' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'required/pkg', 'version' => '1.0.0'],
+                    ],
+                ],
+            ],
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'require', '--dry-run' => true, '--no-audit' => true, 'packages' => ['required/pkg']]);
+    }
+
+    public function testRequireReportsPlatformAndStabilityWhenOnlyAPrereleaseExists(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Could not find package required/pkg in any version matching your PHP version, PHP extensions and Composer version:' . PHP_EOL .
+            '  - required/pkg 1.0.0-beta1 requires ext-foobar ^1 but it is not present.' . PHP_EOL . PHP_EOL .
+            'Additionally, the package was only found with a stability of "beta" while your minimum stability is "stable".'
+        );
+
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'required/pkg', 'version' => '1.0.0-beta1', 'require' => ['ext-foobar' => '^1']],
+                    ],
+                ],
+            ],
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'require', '--dry-run' => true, '--no-audit' => true, 'packages' => ['required/pkg']]);
+    }
+
+    public function testRequirePicksTheNewestVersionTheAdvisoriesPolicyAllows(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => self::getVulnerableRepository([
+                    ['name' => 'vulnerable/pkg', 'version' => '1.0.0'],
+                    ['name' => 'vulnerable/pkg', 'version' => '2.0.0'],
+                ]),
+            ],
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        self::assertSame(0, $appTester->run(['command' => 'require', '--dry-run' => true, '--no-audit' => true, 'packages' => ['vulnerable/pkg']]));
+        $output = $appTester->getDisplay(true);
+        self::assertStringContainsString('Cannot use vulnerable/pkg\'s latest version 2.0.0 as it is affected by security advisories ("PKSA-test-001").', $output);
+        self::assertStringContainsString('Using version ^1.0 for vulnerable/pkg', $output);
+    }
+
+    public function testRequireReportsVersionsBlockedByTheAdvisoriesPolicy(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('All versions of package vulnerable/pkg that would otherwise be installable are blocked by your dependency policies, because it is affected by security advisories ("PKSA-test-001").');
+
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => self::getVulnerableRepository([
+                    ['name' => 'vulnerable/pkg', 'version' => '2.0.0'],
+                ]),
+            ],
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'require', '--dry-run' => true, '--no-audit' => true, 'packages' => ['vulnerable/pkg']]);
+    }
+
+    /**
+     * A package repository with an advisory affecting vulnerable/pkg 2.x
+     *
+     * @param list<array<string, mixed>> $packages
+     * @return array<string, mixed>
+     */
+    private static function getVulnerableRepository(array $packages): array
+    {
+        return [
+            'type' => 'package',
+            'package' => $packages,
+            'security-advisories' => [
+                'vulnerable/pkg' => [
+                    [
+                        'advisoryId' => 'PKSA-test-001',
+                        'packageName' => 'vulnerable/pkg',
+                        'remoteId' => 'CVE-2024-1234',
+                        'title' => 'Test Security Vulnerability',
+                        'link' => 'https://example.com/advisory',
+                        'cve' => 'CVE-2024-1234',
+                        'affectedVersions' => '>=2.0.0,<3.0.0',
+                        'source' => 'test',
+                        'reportedAt' => '2024-01-01 00:00:00',
+                        'composerRepository' => 'Package Repository',
+                        'severity' => 'high',
+                        'sources' => [
+                            ['name' => 'test', 'remoteId' => 'CVE-2024-1234'],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+    }
+
     public function testRequireThrowsOnUnquotedInlineAlias(): void
     {
         $this->expectException(InvalidArgumentException::class);

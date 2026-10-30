@@ -12,8 +12,12 @@
 
 namespace Composer\Package\Version;
 
-use Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter;
-use Composer\Filter\PlatformRequirementFilter\IgnoreListPlatformRequirementFilter;
+use Composer\Filter\PackageFilter\CachedRule;
+use Composer\Filter\PackageFilter\PackageFilter;
+use Composer\Filter\PackageFilter\PackageFilterResult;
+use Composer\Filter\PackageFilter\PlatformRule;
+use Composer\Filter\PackageFilter\RejectionReason;
+use Composer\Filter\PackageFilter\RejectionRuleInterface;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\IO\IOInterface;
@@ -25,10 +29,9 @@ use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Pcre\Preg;
 use Composer\Policy\CooldownPolicyConfig;
-use Composer\DependencyResolver\PolicyRemovalReason;
+use Composer\Filter\PackageFilter\CooldownRule;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\PlatformRepository;
-use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
@@ -42,8 +45,8 @@ class VersionSelector
     /** @var RepositorySet */
     private $repositorySet;
 
-    /** @var array<string, ConstraintInterface[]> */
-    private $platformConstraints = [];
+    /** @var ?PlatformRepository */
+    private $platformRepo;
 
     /** @var VersionParser */
     private $parser;
@@ -51,28 +54,29 @@ class VersionSelector
     /** @var ?CooldownPolicyConfig */
     private $cooldown;
 
-    /** @var ?array{package: PackageInterface, releaseDate: \DateTimeInterface} */
-    private $firstClearingWithheldCandidate = null;
+    /** @var list<RejectionRuleInterface> */
+    private $policyRules = [];
 
-    /** @var list<array{package: PackageInterface, releaseDate: \DateTimeInterface}> */
-    private $withheldCandidates = [];
+    /** @var PackageFilterResult */
+    private $lastResult;
 
-    /** @var list<PackageInterface> */
-    private $platformRejectedCandidates = [];
+    /** @var ?array{name: string, constraint: ?ConstraintInterface, minPriority: BasePackage::STABILITY_*, platformRequirementFilter: PlatformRequirementFilterInterface} */
+    private $lastLookup = null;
 
     /**
      * @param PlatformRepository   $platformRepo If passed in, the versions found will be filtered against their requirements to eliminate any not matching the current platform packages
      * @param CooldownPolicyConfig $cooldown     If passed in, versions still within the configured cooldown are skipped
+     * @param list<RejectionRuleInterface> $policyRules @internal the other dependency policies, versions they reject are skipped too
      */
-    public function __construct(RepositorySet $repositorySet, ?PlatformRepository $platformRepo = null, ?CooldownPolicyConfig $cooldown = null)
+    public function __construct(RepositorySet $repositorySet, ?PlatformRepository $platformRepo = null, ?CooldownPolicyConfig $cooldown = null, array $policyRules = [])
     {
         $this->repositorySet = $repositorySet;
+        $this->platformRepo = $platformRepo;
         $this->cooldown = $cooldown;
-        if ($platformRepo) {
-            foreach ($platformRepo->getPackages() as $package) {
-                $this->platformConstraints[$package->getName()][] = new Constraint('==', $package->getVersion());
-            }
+        foreach ($policyRules as $rule) {
+            $this->policyRules[] = new CachedRule($rule);
         }
+        $this->lastResult = new PackageFilterResult([]);
     }
 
     /**
@@ -99,10 +103,100 @@ class VersionSelector
         }
 
         $constraint = $targetPackageVersion ? $this->getParser()->parseConstraints($targetPackageVersion) : null;
-        $candidates = $this->repositorySet->findPackages(strtolower($packageName), $constraint, $repoSetFlags);
+        $this->lastLookup = ['name' => strtolower($packageName), 'constraint' => $constraint, 'minPriority' => BasePackage::STABILITIES[$preferredStability], 'platformRequirementFilter' => $platformRequirementFilter];
+        $candidates = $this->repositorySet->findPackages($this->lastLookup['name'], $constraint, $repoSetFlags);
+        usort($candidates, self::getPreferenceComparator($this->lastLookup['minPriority']));
 
-        $minPriority = BasePackage::STABILITIES[$preferredStability];
-        usort($candidates, static function (PackageInterface $a, PackageInterface $b) use ($minPriority) {
+        // every rule checks every candidate, so callers can tell what alone keeps a version out
+        $this->lastResult = $this->createFilter($platformRequirementFilter)->filter($candidates, true);
+
+        if ($io !== null) {
+            $this->warnAboutRejections($io, $showWarnings);
+        }
+
+        $package = $this->lastResult->getAccepted()[0] ?? null;
+        if ($package === null) {
+            return false;
+        }
+
+        // if we end up with 9999999-dev as selected package, make sure we use the original version instead of the alias
+        if ($package instanceof AliasPackage && $package->getVersion() === VersionParser::DEFAULT_BRANCH_ALIAS) {
+            $package = $package->getAliasOf();
+        }
+
+        return $package;
+    }
+
+    /**
+     * The candidates of the last findBestCandidate() call in order of preference, with every reason that rejects each of them
+     *
+     * @internal
+     */
+    public function getLastResult(): PackageFilterResult
+    {
+        return $this->lastResult;
+    }
+
+    /**
+     * Looks the package of the last findBestCandidate() call up again in every repository and stability, to explain why no version was selected
+     *
+     * @internal
+     */
+    public function explainLastLookup(): PackageFilterResult
+    {
+        if ($this->lastLookup === null) {
+            throw new \LogicException('findBestCandidate() must be called before explainLastLookup()');
+        }
+
+        $result = $this->repositorySet->findPackagesWithRejections($this->lastLookup['name'], $this->lastLookup['constraint'])
+            ->sorted(self::getPreferenceComparator($this->lastLookup['minPriority']));
+
+        return $this->createFilter($this->lastLookup['platformRequirementFilter'])->apply($result, true);
+    }
+
+    /**
+     * Applies the policy rules to all versions of the given packages at once, so the data they need is fetched in bulk
+     * before the packages are looked up one by one
+     *
+     * @internal
+     * @param list<string> $packageNames
+     */
+    public function preloadPolicyData(array $packageNames): void
+    {
+        if (\count($this->policyRules) === 0) {
+            return;
+        }
+
+        $packages = [];
+        foreach ($packageNames as $packageName) {
+            foreach ($this->repositorySet->findPackages(strtolower($packageName)) as $package) {
+                $packages[] = $package;
+            }
+        }
+
+        (new PackageFilter($this->policyRules))->filter($packages, true);
+    }
+
+    private function createFilter(PlatformRequirementFilterInterface $platformRequirementFilter): PackageFilter
+    {
+        $rules = $this->policyRules;
+        if ($this->cooldown !== null) {
+            $rules[] = new CooldownRule($this->cooldown);
+        }
+        if ($this->platformRepo !== null) {
+            $rules[] = new PlatformRule($this->platformRepo, $platformRequirementFilter);
+        }
+
+        return new PackageFilter($rules);
+    }
+
+    /**
+     * @param BasePackage::STABILITY_* $minPriority the priority of the preferred stability
+     * @return callable(BasePackage, BasePackage): int
+     */
+    private static function getPreferenceComparator(int $minPriority): callable
+    {
+        return static function (BasePackage $a, BasePackage $b) use ($minPriority): int {
             $aPriority = $a->getStabilityPriority();
             $bPriority = $b->getStabilityPriority();
 
@@ -126,187 +220,96 @@ class VersionSelector
 
             // select highest version of the two
             return version_compare($b->getVersion(), $a->getVersion());
-        });
-
-        $this->firstClearingWithheldCandidate = null;
-        $this->withheldCandidates = [];
-        $this->platformRejectedCandidates = [];
-        if ($this->cooldown !== null && $this->cooldown->hasCooldown() && $this->cooldown->block) {
-            $candidates = $this->filterCooldownCandidates($this->cooldown, $candidates, $io, $showWarnings);
-        }
-
-        if (count($this->platformConstraints) > 0 && !($platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter)) {
-            /** @var array<string, true> $alreadyWarnedNames */
-            $alreadyWarnedNames = [];
-            /** @var array<string, true> $alreadySeenNames */
-            $alreadySeenNames = [];
-
-            foreach ($candidates as $pkg) {
-                $reqs = $pkg->getRequires();
-                $skip = false;
-                foreach ($reqs as $name => $link) {
-                    if (!PlatformRepository::isPlatformPackage($name) || $platformRequirementFilter->isIgnored($name)) {
-                        continue;
-                    }
-                    if (isset($this->platformConstraints[$name])) {
-                        foreach ($this->platformConstraints[$name] as $providedConstraint) {
-                            if ($link->getConstraint()->matches($providedConstraint)) {
-                                // constraint satisfied, go to next require
-                                continue 2;
-                            }
-                            if ($platformRequirementFilter instanceof IgnoreListPlatformRequirementFilter && $platformRequirementFilter->isUpperBoundIgnored($name)) {
-                                $filteredConstraint = $platformRequirementFilter->filterConstraint($name, $link->getConstraint());
-                                if ($filteredConstraint->matches($providedConstraint)) {
-                                    // constraint satisfied with the upper bound ignored, go to next require
-                                    continue 2;
-                                }
-                            }
-                        }
-
-                        // constraint not satisfied
-                        $reason = 'is not satisfied by your platform';
-                    } else {
-                        // Package requires a platform package that is unknown on current platform.
-                        // It means that current platform cannot validate this constraint and so package is not installable.
-                        $reason = 'is missing from your platform';
-                    }
-
-                    $isLatestVersion = !isset($alreadySeenNames[$pkg->getName()]);
-                    $alreadySeenNames[$pkg->getName()] = true;
-                    if ($io !== null && ($showWarnings === true || (is_callable($showWarnings) && $showWarnings($pkg)))) {
-                        $isFirstWarning = !isset($alreadyWarnedNames[$pkg->getName().'/'.$link->getTarget()]);
-                        $alreadyWarnedNames[$pkg->getName().'/'.$link->getTarget()] = true;
-                        $latest = $isLatestVersion ? "'s latest version" : '';
-                        $io->writeError(
-                            '<warning>Cannot use '.$pkg->getPrettyName().$latest.' '.$pkg->getPrettyVersion().' as it '.$link->getDescription().' '.$link->getTarget().' '.$link->getPrettyConstraint().' which '.$reason.'.</>',
-                            true,
-                            $isFirstWarning ? IOInterface::NORMAL : IOInterface::VERBOSE
-                        );
-                    }
-
-                    // skip candidate
-                    $skip = true;
-                }
-
-                if ($skip) {
-                    $this->platformRejectedCandidates[] = $pkg;
-                    continue;
-                }
-
-                $package = $pkg;
-                break;
-            }
-        } else {
-            $package = count($candidates) > 0 ? $candidates[0] : null;
-        }
-
-        if (!isset($package)) {
-            return false;
-        }
-
-        // if we end up with 9999999-dev as selected package, make sure we use the original version instead of the alias
-        if ($package instanceof AliasPackage && $package->getVersion() === VersionParser::DEFAULT_BRANCH_ALIAS) {
-            $package = $package->getAliasOf();
-        }
-
-        return $package;
+        };
     }
 
     /**
-     * Returns the candidate withheld by the cooldown in the last findBestCandidate() call that becomes available first
+     * Explains why candidates preferred over the selected one were skipped, those dependency policies reject first
      *
-     * @return ?array{package: PackageInterface, releaseDate: \DateTimeInterface}
-     * @internal
-     */
-    public function getFirstClearingWithheldCandidate(): ?array
-    {
-        return $this->firstClearingWithheldCandidate;
-    }
-
-    /**
-     * Returns every candidate withheld by the cooldown in the last findBestCandidate() call, in candidate order
-     *
-     * @return list<array{package: PackageInterface, releaseDate: \DateTimeInterface}>
-     * @internal
-     */
-    public function getWithheldCandidates(): array
-    {
-        return $this->withheldCandidates;
-    }
-
-    /**
-     * Returns every candidate skipped for its platform requirements in the last findBestCandidate() call, in candidate order
-     *
-     * @return list<PackageInterface>
-     * @internal
-     */
-    public function getPlatformRejectedCandidates(): array
-    {
-        return $this->platformRejectedCandidates;
-    }
-
-    /**
-     * Drops candidates still inside the cooldown so the selected version is one the solver will accept
-     *
-     * @param PackageInterface[] $candidates
      * @param callable(PackageInterface):bool|bool $showWarnings
-     * @return PackageInterface[]
      */
-    private function filterCooldownCandidates(CooldownPolicyConfig $cooldown, array $candidates, ?IOInterface $io, $showWarnings): array
+    private function warnAboutRejections(IOInterface $io, $showWarnings): void
     {
-        $now = new \DateTimeImmutable();
+        $candidates = $this->lastResult->getPackages();
+
         /** @var array<string, true> $alreadySeenNames */
         $alreadySeenNames = [];
         /** @var array<string, true> $acceptedNames */
         $acceptedNames = [];
-        $result = [];
-
         foreach ($candidates as $pkg) {
-            // decide on the aliased package, as the pool filter does
-            $target = $pkg instanceof AliasPackage ? $pkg->getAliasOf() : $pkg;
-            if ($target->isDev() || $cooldown->isIgnored($target, 'block')) {
-                $result[] = $pkg;
+            $reasons = $this->getPolicyReasons($pkg);
+            if (\count($reasons) === 0) {
                 $acceptedNames[$pkg->getName()] = true;
                 continue;
             }
 
-            $cooldown->assertPublishedTimeProvided($target);
-            $releaseDate = $cooldown->getEffectiveDate($target);
-            if ($releaseDate === null || !$cooldown->isWithinCooldown($releaseDate, $now)) {
-                $result[] = $pkg;
-                $acceptedNames[$pkg->getName()] = true;
-                continue;
-            }
-
-            if ($this->firstClearingWithheldCandidate === null || $releaseDate < $this->firstClearingWithheldCandidate['releaseDate']) {
-                $this->firstClearingWithheldCandidate = ['package' => $pkg, 'releaseDate' => $releaseDate];
-            }
-            $this->withheldCandidates[] = ['package' => $pkg, 'releaseDate' => $releaseDate];
-
-            // ranked below a usable candidate (e.g. an LTS backport), so withholding it does not affect the pick
+            // ranked below a candidate the policies let through (e.g. an LTS backport), so rejecting it does not affect the pick
             if (isset($acceptedNames[$pkg->getName()])) {
                 continue;
             }
 
             $isLatestVersion = !isset($alreadySeenNames[$pkg->getName()]);
             $alreadySeenNames[$pkg->getName()] = true;
-            if ($io !== null && ($showWarnings === true || (is_callable($showWarnings) && $showWarnings($pkg)))) {
-                $reason = PolicyRemovalReason::cooldown(
-                    $pkg->getName(),
-                    $pkg->getPrettyVersion(),
-                    $releaseDate->format(\DateTimeInterface::ATOM),
-                    $cooldown->formatTimeUntilAvailable($releaseDate, $now),
-                    $target->getPublishedDate() !== null ? 'published-time' : 'time'
-                );
+            if (self::shouldWarn($pkg, $showWarnings)) {
                 $io->writeError(
-                    '<warning>Cannot use '.$pkg->getPrettyName().($isLatestVersion ? "'s latest version" : '').' '.$pkg->getPrettyVersion().' as it '.$reason->getVerb(false).' '.$reason->getDescription().'.</>',
+                    '<warning>Cannot use '.$pkg->getPrettyName().($isLatestVersion ? "'s latest version" : '').' '.$pkg->getPrettyVersion().' as it '.implode(' and ', array_map(static function (RejectionReason $reason): string {
+                        return $reason->getVerb(false).' '.$reason->getDescription();
+                    }, $reasons)).'.</>',
                     true,
                     $isLatestVersion ? IOInterface::NORMAL : IOInterface::VERBOSE
                 );
             }
         }
 
-        return $result;
+        /** @var array<string, true> $alreadyWarnedNames */
+        $alreadyWarnedNames = [];
+        $alreadySeenNames = [];
+        foreach ($candidates as $pkg) {
+            $reasons = $this->lastResult->getReasons($pkg);
+            if (\count($reasons) === 0) {
+                // the selected candidate
+                break;
+            }
+
+            $reason = $this->lastResult->getReason($pkg, RejectionReason::PLATFORM);
+            if ($reason === null || \count($this->getPolicyReasons($pkg)) > 0) {
+                continue;
+            }
+
+            foreach ($reason->getPlatformRequirements() as $requirement) {
+                $link = $requirement['link'];
+                $isLatestVersion = !isset($alreadySeenNames[$pkg->getName()]);
+                $alreadySeenNames[$pkg->getName()] = true;
+                if (self::shouldWarn($pkg, $showWarnings)) {
+                    $isFirstWarning = !isset($alreadyWarnedNames[$pkg->getName().'/'.$link->getTarget()]);
+                    $alreadyWarnedNames[$pkg->getName().'/'.$link->getTarget()] = true;
+                    $latest = $isLatestVersion ? "'s latest version" : '';
+                    $io->writeError(
+                        '<warning>Cannot use '.$pkg->getPrettyName().$latest.' '.$pkg->getPrettyVersion().' as it '.$link->getDescription().' '.$link->getTarget().' '.$link->getPrettyConstraint().' which '.$requirement['problem'].'.</>',
+                        true,
+                        $isFirstWarning ? IOInterface::NORMAL : IOInterface::VERBOSE
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * @return list<RejectionReason>
+     */
+    private function getPolicyReasons(BasePackage $package): array
+    {
+        return array_values(array_filter($this->lastResult->getReasons($package), static function (RejectionReason $reason): bool {
+            return $reason->isPolicy();
+        }));
+    }
+
+    /**
+     * @param callable(PackageInterface):bool|bool $showWarnings
+     */
+    private static function shouldWarn(PackageInterface $package, $showWarnings): bool
+    {
+        return $showWarnings === true || (is_callable($showWarnings) && $showWarnings($package));
     }
 
     /**

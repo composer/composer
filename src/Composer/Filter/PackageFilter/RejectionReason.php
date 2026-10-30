@@ -10,29 +10,38 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\DependencyResolver;
+namespace Composer\Filter\PackageFilter;
 
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
 use Composer\FilterList\FilterListEntry;
+use Composer\Package\Link;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 
 /**
- * Why a dependency policy removed a package version from the pool, and how to render that to the user
+ * Why a package version was rejected, and how to render that to the user
  *
  * @internal
  * @final
+ * @phpstan-type RejectionType self::ABANDONED|self::ADVISORIES|self::FILTER_LIST|self::COOLDOWN|self::PLATFORM|self::STABILITY|self::CONSTRAINT|self::REPOSITORY_PRIORITY
  */
-class PolicyRemovalReason
+class RejectionReason
 {
     public const ABANDONED = 'abandoned';
     public const ADVISORIES = 'advisories';
     public const FILTER_LIST = 'filter-list';
     public const COOLDOWN = 'cooldown';
+    public const PLATFORM = 'platform';
+    public const STABILITY = 'stability';
+    public const CONSTRAINT = 'constraint';
+    public const REPOSITORY_PRIORITY = 'repository-priority';
+
+    /** The rejections caused by dependency policies, in the order the policies are applied */
+    public const POLICIES = [self::ABANDONED, self::ADVISORIES, self::FILTER_LIST, self::COOLDOWN];
 
     public const COOLDOWN_REMEDY = 'To exempt the package from the cooldown policy, add it to the "policy.cooldown.ignore" config, or run the command with --no-cooldown for a one-off bypass.';
 
-    /** @var self::* */
+    /** @var RejectionType */
     private $type;
     /** @var string */
     private $packageName;
@@ -44,9 +53,13 @@ class PolicyRemovalReason
     private $filterListEntries = [];
     /** @var array{releaseDate: string, availableIn: string, source: string}|null */
     private $cooldown = null;
+    /** @var list<array{link: Link, problem: string}> */
+    private $platformRequirements = [];
+    /** @var ?string */
+    private $canonicalRepositoryName = null;
 
     /**
-     * @param self::* $type
+     * @param RejectionType $type
      */
     private function __construct(string $type, string $packageName, string $prettyVersion)
     {
@@ -94,6 +107,38 @@ class PolicyRemovalReason
     }
 
     /**
+     * @param array<array{link: Link, problem: string}> $unsatisfied the platform requirements that are not met, with why
+     */
+    public static function platform(string $packageName, string $prettyVersion, array $unsatisfied): self
+    {
+        $reason = new self(self::PLATFORM, $packageName, $prettyVersion);
+        $reason->platformRequirements = array_values($unsatisfied);
+
+        return $reason;
+    }
+
+    public static function stability(string $packageName, string $prettyVersion): self
+    {
+        return new self(self::STABILITY, $packageName, $prettyVersion);
+    }
+
+    public static function constraint(string $packageName, string $prettyVersion): self
+    {
+        return new self(self::CONSTRAINT, $packageName, $prettyVersion);
+    }
+
+    /**
+     * @param string $canonicalRepositoryName the higher priority repository the package was found in, which hides it in the others
+     */
+    public static function repositoryPriority(string $packageName, string $prettyVersion, string $canonicalRepositoryName): self
+    {
+        $reason = new self(self::REPOSITORY_PRIORITY, $packageName, $prettyVersion);
+        $reason->canonicalRepositoryName = $canonicalRepositoryName;
+
+        return $reason;
+    }
+
+    /**
      * Merges the reasons of several versions removed by the same policy, so one sentence can explain them all
      *
      * @param non-empty-array<self> $reasons
@@ -105,7 +150,7 @@ class PolicyRemovalReason
         $seen = [];
         foreach ($reasons as $reason) {
             if ($reason->type !== $first->type) {
-                throw new \LogicException('Cannot combine reasons of different policies: '.$first->type.' and '.$reason->type);
+                throw new \LogicException('Cannot combine reasons of different types: '.$first->type.' and '.$reason->type);
             }
 
             foreach ($reason->advisories as $advisory) {
@@ -122,6 +167,14 @@ class PolicyRemovalReason
                 }
             }
 
+            foreach ($reason->platformRequirements as $requirement) {
+                $key = $requirement['link']->getTarget().' '.$requirement['link']->getPrettyConstraint().' '.$requirement['problem'];
+                if (!isset($seen[$key])) {
+                    $seen[$key] = true;
+                    $combined->platformRequirements[] = $requirement;
+                }
+            }
+
             // point at the version that becomes available soonest
             if ($reason->cooldown !== null && ($combined->cooldown === null || new \DateTimeImmutable($reason->cooldown['releaseDate']) < new \DateTimeImmutable($combined->cooldown['releaseDate']))) {
                 $combined->cooldown = $reason->cooldown;
@@ -133,11 +186,61 @@ class PolicyRemovalReason
     }
 
     /**
-     * @return self::*
+     * Explains why policies rejected the versions, as "because ..." followed by the remedies
+     *
+     * When several policies rejected different versions, one sentence would attribute every reason to
+     * every version, so the versions are then listed grouped by their own reason
+     *
+     * @param non-empty-array<self> $reasons policy rejections, in version order
+     * @param bool $decorated whether to link advisories to their details, which only works in console output and not in exception messages
+     */
+    public static function explainPolicyRejections(array $reasons, bool $plural, bool $decorated = true): string
+    {
+        $policies = array_unique(array_map(static function (self $reason): string {
+            return $reason->getType();
+        }, $reasons));
+        if (\count($policies) === 1) {
+            $reason = self::combine($reasons);
+            $remedy = $reason->getRemedy();
+
+            return 'because '.($plural ? 'they ' : 'it ').$reason->getVerb($plural).' '.$reason->getDescription($decorated).'.'.($remedy !== '' ? ' '.$remedy : '').' To turn the feature off entirely, you can set '.$reason->getOffSwitch().' to false.';
+        }
+
+        $versionsByReason = [];
+        $remedies = [];
+        $offSwitches = [];
+        foreach ($reasons as $reason) {
+            $versionsByReason[$reason->getDescription($decorated)][$reason->getPrettyVersion()] = true;
+            if ($reason->getRemedy() !== '') {
+                $remedies[$reason->getRemedy()] = true;
+            }
+            $offSwitches[$reason->getOffSwitch()] = true;
+        }
+
+        $lines = [];
+        foreach ($versionsByReason as $description => $versions) {
+            $lines[] = implode(', ', array_keys($versions)) . ': ' . $description;
+        }
+
+        $remedies['To turn a policy off entirely, you can set ' . implode(' or ', array_keys($offSwitches)) . ' to false.'] = true;
+
+        return "because:\n      - " . implode("\n      - ", $lines) . "\n      " . implode(' ', array_keys($remedies));
+    }
+
+    /**
+     * @return RejectionType
      */
     public function getType(): string
     {
         return $this->type;
+    }
+
+    /**
+     * Whether a dependency policy caused the rejection, which can then be turned off in the policy config
+     */
+    public function isPolicy(): bool
+    {
+        return \in_array($this->type, self::POLICIES, true);
     }
 
     public function getPackageName(): string
@@ -167,6 +270,19 @@ class PolicyRemovalReason
     }
 
     /**
+     * @return list<array{link: Link, problem: string}>
+     */
+    public function getPlatformRequirements(): array
+    {
+        return $this->platformRequirements;
+    }
+
+    public function getCanonicalRepositoryName(): ?string
+    {
+        return $this->canonicalRepositoryName;
+    }
+
+    /**
      * The verb that makes the description a sentence, e.g. "they are" + "abandoned"
      */
     public function getVerb(bool $plural): string
@@ -174,17 +290,28 @@ class PolicyRemovalReason
         if ($this->type === self::FILTER_LIST) {
             return $plural ? 'were' : 'was';
         }
+        if ($this->type === self::PLATFORM) {
+            return $plural ? 'require' : 'requires';
+        }
+        if ($this->type === self::STABILITY || $this->type === self::CONSTRAINT) {
+            return $plural ? 'do' : 'does';
+        }
 
         return $plural ? 'are' : 'is';
     }
 
-    public function getDescription(): string
+    /**
+     * @param bool $decorated whether to link advisories to their details, which only works in console output and not in exception messages
+     */
+    public function getDescription(bool $decorated = true): string
     {
         switch ($this->type) {
             case self::ABANDONED:
                 return 'abandoned';
             case self::ADVISORIES:
-                return 'affected by security advisories ("' . implode('", "', $this->getLinkedAdvisoryIdentifiers()) . '")';
+                return 'affected by security advisories ("' . implode('", "', $decorated ? $this->getLinkedAdvisoryIdentifiers() : array_map(static function (PartialSecurityAdvisory $advisory): string {
+                    return $advisory->advisoryId;
+                }, $this->advisories)) . '")';
             case self::FILTER_LIST:
                 return implode(', ', $this->getFilterListDescriptions());
             case self::COOLDOWN:
@@ -196,10 +323,20 @@ class PolicyRemovalReason
                 }
 
                 return 'still in the cooldown period configured in "policy.cooldown"' . $availableIn;
+            case self::PLATFORM:
+                return implode(' and ', array_map(static function (array $requirement): string {
+                    return $requirement['link']->getTarget().' '.$requirement['link']->getPrettyConstraint().' which '.$requirement['problem'];
+                }, $this->platformRequirements));
+            case self::STABILITY:
+                return 'not match your minimum-stability';
+            case self::CONSTRAINT:
+                return 'not match the constraint';
+            case self::REPOSITORY_PRIORITY:
+                return 'hidden by '.$this->canonicalRepositoryName.', a repository with a higher priority';
         }
 
         // @phpstan-ignore deadCode.unreachable
-        throw new \LogicException('Unknown policy: '.$this->type);
+        throw new \LogicException('Unknown rejection type: '.$this->type);
     }
 
     /**
@@ -218,10 +355,29 @@ class PolicyRemovalReason
                 }, $this->getFilterListNames())) . ' config.';
             case self::COOLDOWN:
                 return self::COOLDOWN_REMEDY;
+            case self::PLATFORM:
+            case self::STABILITY:
+            case self::CONSTRAINT:
+            case self::REPOSITORY_PRIORITY:
+                return '';
         }
 
         // @phpstan-ignore deadCode.unreachable
-        throw new \LogicException('Unknown policy: '.$this->type);
+        throw new \LogicException('Unknown rejection type: '.$this->type);
+    }
+
+    /**
+     * The names of the policies that caused the rejection as configured under "policy", e.g. advisories or malware
+     *
+     * @return list<string>
+     */
+    public function getPolicyNames(): array
+    {
+        if (!$this->isPolicy()) {
+            throw new \LogicException('Only policy rejections have a policy name, got '.$this->type);
+        }
+
+        return $this->type === self::FILTER_LIST ? $this->getFilterListNames() : [$this->type];
     }
 
     /**
@@ -229,6 +385,10 @@ class PolicyRemovalReason
      */
     public function getOffSwitch(): string
     {
+        if (!$this->isPolicy()) {
+            throw new \LogicException('Only policy rejections can be turned off, got '.$this->type);
+        }
+
         if ($this->type === self::FILTER_LIST) {
             return implode(' and ', array_map(static function (string $listName): string {
                 return '"policy.' . $listName . '.block"';

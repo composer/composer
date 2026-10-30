@@ -273,7 +273,8 @@ php composer.phar require "vendor/package:2.*" vendor/package2:dev-master
 ```
 
 If you do not specify a version constraint, composer will choose a suitable one based
-on the available package versions.
+on the available package versions. Versions your [dependency policies](06-config.md#policy) would
+block during the update, for example those affected by security advisories, are skipped.
 
 ```shell
 php composer.phar require vendor/package vendor/package2
@@ -632,9 +633,17 @@ allows installing, so the output matches what `composer update` would do. A newe
 the cooldown period is shown next to it with the time left, or in its place once you are on the newest
 installable version. When several are waiting, the one that becomes installable first is shown.
 
-A dependency whose versions all have platform requirements your platform cannot satisfy is considered
-up to date, as there is nothing it can be updated to. A dependency that is not found in any repository
-is shown as `[none matched]` and counts as outdated for `--strict`.
+The other [dependency policies](06-config.md#policy) are applied the same way, so the latest version
+shown is the newest one they allow installing. The newest release a policy blocks, for example one
+affected by security advisories, is shown next to it along with that policy, e.g.
+`1.1.0 (2.0.0 blocked by advisories)`, and as `blocked-latest` and `blocked-by` in the JSON output.
+Such releases do not count as outdated for `--strict`. Abandoned packages are flagged as abandoned
+instead, so the abandoned policy does not change the latest version shown.
+
+A dependency whose versions all have platform requirements your platform cannot satisfy, or are all
+blocked by dependency policies, is considered up to date, as there is nothing it can be updated to.
+A dependency that is not found in any repository is shown as `[none matched]` and counts as outdated
+for `--strict`.
 
 ### Options
 

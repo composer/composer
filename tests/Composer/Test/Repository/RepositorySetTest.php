@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Repository;
 
+use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\RepositorySet;
@@ -40,5 +41,31 @@ class RepositorySetTest extends TestCase
         $repositorySet->addRepository(new CompositeRepository([$first, $second, $third, $fourth]));
 
         $repositorySet->preloadPackages(['acme/private', 'foo/bar']);
+    }
+
+    public function testFindPackagesWithRejectionsExplainsWhatFindPackagesSkips(): void
+    {
+        $canonical = new ArrayRepository();
+        $canonical->addPackage($beta = self::getPackage('foo/bar', '1.1.0-beta1'));
+        $canonical->addPackage($major = self::getPackage('foo/bar', '2.0.0'));
+        $canonical->addPackage($stable = self::getPackage('foo/bar', '1.0.0'));
+        $lower = new ArrayRepository();
+        $lower->addPackage($shadowed = self::getPackage('foo/bar', '1.2.0'));
+
+        $repositorySet = new RepositorySet();
+        $repositorySet->addRepository($canonical);
+        $repositorySet->addRepository($lower);
+
+        $constraint = self::getVersionConstraint('<', '2.0.0.0');
+        $result = $repositorySet->findPackagesWithRejections('foo/bar', $constraint);
+
+        self::assertSame([$beta, $major, $stable, $shadowed], $result->getPackages());
+        self::assertSame($repositorySet->findPackages('foo/bar', $constraint), $result->getAccepted());
+        self::assertSame([$beta], $result->getRejectedOnlyBy(RejectionReason::STABILITY));
+        self::assertSame([$major], $result->getRejectedOnlyBy(RejectionReason::CONSTRAINT));
+        self::assertSame([$shadowed], $result->getRejectedOnlyBy(RejectionReason::REPOSITORY_PRIORITY));
+        $priority = $result->getReason($shadowed, RejectionReason::REPOSITORY_PRIORITY);
+        self::assertNotNull($priority);
+        self::assertSame($canonical->getRepoName(), $priority->getCanonicalRepositoryName());
     }
 }
