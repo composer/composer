@@ -310,7 +310,7 @@ class AuthHelper
             ) {
                 // the marker ends up in either slot depending on whether GitLab::authorizeOAuth normalized the credentials
                 $jobToken = $auth['password'] === 'gitlab-ci-token' ? $auth['username'] : $auth['password'];
-                if (Preg::isMatch('{/api/v4/(?:group/[^/]+/-|projects/[^/]+)/packages/composer/}i', $url)) {
+                if (Preg::isMatch('{/api/v4/(?:group/[^/]+/-|projects/[^/]+)/packages/composer/}i', (string) parse_url($url, PHP_URL_PATH))) {
                     $headers[] = 'Authorization: Basic '.base64_encode('gitlab-ci-token:'.$jobToken);
                     $authenticationDisplayMessage = 'Using HTTP basic authentication with username "gitlab-ci-token"';
                 } else {

@@ -150,6 +150,7 @@ class AuthHelperTest extends TestCase
             'CI job token, slots swapped, repository API' => [['username' => 'my_token', 'password' => 'gitlab-ci-token'], 'Using GitLab CI job token authentication', 'JOB-TOKEN: my_token', 'https://gitlab.com/api/v4/projects/foo%2Fbar/repository/files/composer%2Ejson/raw?ref=abc'],
             'CI job token, repository API on sub-path install' => [['username' => 'gitlab-ci-token', 'password' => 'my_token'], 'Using GitLab CI job token authentication', 'JOB-TOKEN: my_token', 'https://gitlab.com/gitlab/api/v4/projects/123/repository/tags?per_page=100'],
             'CI job token, job artifacts' => [['username' => 'gitlab-ci-token', 'password' => 'my_token'], 'Using GitLab CI job token authentication', 'JOB-TOKEN: my_token', 'https://gitlab.com/api/v4/projects/123/jobs/artifacts/main/download?job=build'],
+            'CI job token, registry-like query string' => [['username' => 'gitlab-ci-token', 'password' => 'my_token'], 'Using GitLab CI job token authentication', 'JOB-TOKEN: my_token', 'https://gitlab.com/api/v4/projects/123/repository/files/foo/raw?ref=/api/v4/projects/x/packages/composer/'],
             'CI job token, project root' => [['username' => 'gitlab-ci-token', 'password' => 'my_token'], 'Using GitLab CI job token authentication', 'JOB-TOKEN: my_token', 'https://gitlab.com/api/v4/projects/foo%2Fbar'],
         ];
     }
