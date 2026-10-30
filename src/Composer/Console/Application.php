@@ -905,10 +905,15 @@ class Application extends BaseApplication
         // ~/.cache is no fix if the home dir itself is on the Windows drive
         $home = Platform::getEnv('HOME');
         $suggestedDir = is_string($home) && $home !== '' && !Platform::isWindowsMountInWsl($home) ? '~/.cache/composer' : '/path/on/wsl/filesystem';
-        // the env var overrides the config so changing the config would not help
-        $fix = $config->getSourceOfValue('cache-dir') === 'COMPOSER_CACHE_DIR'
-            ? 'by changing the COMPOSER_CACHE_DIR env var to e.g. '.$suggestedDir
-            : 'e.g. by running: composer config --global cache-dir '.$suggestedDir;
+        // point at wherever the value comes from, as env and project config override the global config
+        $source = $config->getSourceOfValue('cache-dir');
+        if ($source === 'COMPOSER_CACHE_DIR') {
+            $fix = 'by changing the COMPOSER_CACHE_DIR env var to e.g. '.$suggestedDir;
+        } elseif (is_file($source) && realpath(dirname($source)) !== realpath($config->get('home'))) {
+            $fix = 'by changing the cache-dir config in '.$source.' to e.g. '.$suggestedDir;
+        } else {
+            $fix = 'e.g. by running: composer config --global cache-dir '.$suggestedDir;
+        }
         $io->writeError('<warning>Your Composer cache directory ('.$cacheDir.') is on a Windows drive while Composer runs in WSL, which makes filesystem operations very slow. Move it to the WSL filesystem for better performance, '.$fix.'</warning>');
     }
 
