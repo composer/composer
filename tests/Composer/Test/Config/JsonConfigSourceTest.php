@@ -241,7 +241,7 @@ class JsonConfigSourceTest extends TestCase
 
     /**
      * @dataProvider providePropertyManipulations
-     * @param 'addProperty'|'removeProperty' $method
+     * @param 'addProperty'|'removeProperty'|'removeLink' $method
      * @param list<string> $args
      */
     public function testPropertyFallbackMatchesManipulator(string $original, string $method, array $args, string $expected): void
@@ -267,7 +267,7 @@ class JsonConfigSourceTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{string, 'addProperty'|'removeProperty', list<string>, string}>
+     * @return iterable<string, array{string, 'addProperty'|'removeProperty'|'removeLink', list<string>, string}>
      */
     public static function providePropertyManipulations(): iterable
     {
@@ -281,6 +281,9 @@ class JsonConfigSourceTest extends TestCase
         yield 'remove below a scalar is a no-op' => ['{"extra": {"foo": "bar", "z": 1}}', 'removeProperty', ['extra.foo.0.x'], '{"extra":{"foo":"bar","z":1}}'];
         yield 'remove suggest' => ['{"suggest": {"foo/bar": "x", "a/b": "y"}}', 'removeProperty', ['suggest.foo/bar'], '{"suggest":{"a\/b":"y"}}'];
         yield 'remove autoload type' => ['{"autoload": {"psr-4": {"A\\\\": "src/"}, "files": ["x.php"]}}', 'removeProperty', ['autoload.psr-4'], '{"autoload":{"files":["x.php"]}}'];
+        yield 'remove last link removes the key' => ['{"require": {"a/b": "1"}, "require-dev": {"c/d": "1"}}', 'removeLink', ['require-dev', 'c/d'], '{"require":{"a\/b":"1"}}'];
+        yield 'remove link keeps the other links' => ['{"require-dev": {"a/b": "1", "c/d": "1"}}', 'removeLink', ['require-dev', 'c/d'], '{"require-dev":{"a\/b":"1"}}'];
+        yield 'remove missing link keeps the key' => ['{"require-dev": {"a/b": "1"}}', 'removeLink', ['require-dev', 'c/d'], '{"require-dev":{"a\/b":"1"}}'];
     }
 
     public function testRemovePolicyListFieldCascadesEmptyAncestors(): void

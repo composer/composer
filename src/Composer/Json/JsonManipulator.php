@@ -117,6 +117,16 @@ class JsonManipulator
     }
 
     /**
+     * Removes a link, and the link type key if this removal emptied it (an already empty key is kept)
+     */
+    public function removeLink(string $type, string $package): bool
+    {
+        $contents = $this->contents;
+
+        return $this->removeSubNode($type, $package) && ($contents === $this->contents || $this->removeMainKeyIfEmpty($type));
+    }
+
+    /**
      * Sorts packages by importance (platform packages first, then PHP dependencies) and alphabetically.
      *
      * @link https://getcomposer.org/doc/01-basic-usage.md#platform-packages
@@ -316,7 +326,10 @@ class JsonManipulator
 
     public function removeRepository(string $name): bool
     {
-        return $this->doRemoveRepository($name) && $this->removeMainKeyIfEmpty('repositories');
+        $contents = $this->contents;
+
+        // only drop the key if this removal emptied it
+        return $this->doRemoveRepository($name) && ($contents === $this->contents || $this->removeMainKeyIfEmpty('repositories'));
     }
 
     private function doRemoveRepository(string $name): bool

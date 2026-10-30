@@ -378,14 +378,14 @@ class JsonConfigSource implements ConfigSourceInterface
      */
     public function removeLink(string $type, string $name): void
     {
-        $this->manipulateJson('removeSubNode', static function (&$config, $type, $name): void {
-            unset($config[$type][$name]);
-        }, $type, $name);
-        $this->manipulateJson('removeMainKeyIfEmpty', static function (&$config, $type): void {
-            if (0 === count($config[$type])) {
-                unset($config[$type]);
+        $this->manipulateJson('removeLink', static function (&$config, $type, $name): void {
+            if (isset($config[$type][$name])) {
+                unset($config[$type][$name]);
+                if ($config[$type] === []) {
+                    unset($config[$type]);
+                }
             }
-        }, $type);
+        }, $type, $name);
     }
 
     /**

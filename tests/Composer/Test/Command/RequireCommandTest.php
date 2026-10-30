@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Command;
 
+use Composer\Command\RequireCommand;
 use Composer\Json\JsonFile;
 use Composer\Test\TestCase;
 use InvalidArgumentException;
@@ -328,6 +329,48 @@ OUTPUT
     {
         yield 'require' => [false];
         yield 'require --dev' => [true];
+    }
+
+    /**
+     * @dataProvider provideUpdateFileFallbackMatchesManipulator
+     * @param array<string, mixed> $original
+     */
+    public function testUpdateFileFallbackMatchesManipulator(array $original, string $expected): void
+    {
+        $dir = $this->initTempComposer($original);
+        $file = $dir.'/composer.json';
+        $contents = (string) file_get_contents($file);
+
+        $command = new RequireCommand();
+        $jsonProp = new \ReflectionProperty($command, 'json');
+        if (\PHP_VERSION_ID < 80100) {
+            $jsonProp->setAccessible(true);
+        }
+        $jsonProp->setValue($command, new JsonFile($file));
+        $updateFile = new \ReflectionMethod($command, 'updateFile');
+        if (\PHP_VERSION_ID < 80100) {
+            $updateFile->setAccessible(true);
+        }
+
+        $updateFile->invoke($command, new JsonFile($file), ['a/b' => '^1'], 'require', 'require-dev', false);
+        self::assertSame($expected, json_encode(json_decode((string) file_get_contents($file))), 'JsonManipulator path');
+
+        // make JsonManipulator::removeSubNode fail so the fallback runs
+        file_put_contents($file, $contents);
+        $backtrackLimit = (string) ini_get('pcre.backtrack_limit');
+        ini_set('pcre.backtrack_limit', '2');
+        try {
+            $updateFile->invoke($command, new JsonFile($file), ['a/b' => '^1'], 'require', 'require-dev', false);
+        } finally {
+            ini_set('pcre.backtrack_limit', $backtrackLimit);
+        }
+        self::assertSame($expected, json_encode(json_decode((string) file_get_contents($file))), 'fallback path');
+    }
+
+    public static function provideUpdateFileFallbackMatchesManipulator(): \Generator
+    {
+        yield 'moving the last package removes the key' => [['require-dev' => ['a/b' => '1']], '{"require":{"a\/b":"^1"}}'];
+        yield 'moving a package keeps the other ones' => [['require-dev' => ['a/b' => '1', 'c/d' => '1']], '{"require-dev":{"c\/d":"1"},"require":{"a\/b":"^1"}}'];
     }
 
     /**
