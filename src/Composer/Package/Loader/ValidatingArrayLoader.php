@@ -684,7 +684,9 @@ class ValidatingArrayLoader implements LoaderInterface
         // The root package's name/metadata is locally controlled and already validated by
         // RootPackageLoader (and its "__root__" placeholder name would be a false positive here).
         // RootPackageInterface covers both RootPackage and RootAliasPackage.
-        if ($package instanceof RootPackageInterface) {
+        // Platform packages are built locally from the runtime, and extension names can be
+        // arbitrary strings which do not always map to a valid platform package name.
+        if ($package instanceof RootPackageInterface || $package->getRepository() instanceof PlatformRepository) {
             return;
         }
 

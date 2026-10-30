@@ -16,6 +16,8 @@ use Composer\Exception\SecurityException;
 use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Package\Loader\InvalidPackageException;
 use Composer\Package\PackageInterface;
+use Composer\Platform\Runtime;
+use Composer\Repository\PlatformRepository;
 use Composer\Test\TestCase;
 
 class ValidatingArrayLoaderTest extends TestCase
@@ -986,6 +988,23 @@ class ValidatingArrayLoaderTest extends TestCase
         ValidatingArrayLoader::validatePackage(self::getRootPackage());
 
         $this->expectNotToPerformAssertions();
+    }
+
+    public function testValidatePackageSkipsPlatformRepositoryPackages(): void
+    {
+        $runtime = $this->getMockBuilder(Runtime::class)->getMock();
+        $runtime->method('getExtensions')->willReturn(['Acme Corp - Some Extension']);
+        $runtime->method('getExtensionVersion')->willReturn('1.0.0');
+        $runtime->method('getConstant')->willReturnMap([
+            ['PHP_VERSION', null, '8.2.0'],
+            ['PHP_DEBUG', null, false],
+        ]);
+
+        $platformRepository = new PlatformRepository([], [], $runtime);
+        $package = $platformRepository->findPackage('ext-acme-corp---some-extension', '*');
+        self::assertNotNull($package);
+
+        ValidatingArrayLoader::validatePackage($package);
     }
 
     /**
