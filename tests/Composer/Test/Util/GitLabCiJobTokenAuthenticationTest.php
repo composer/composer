@@ -65,8 +65,7 @@ class GitLabCiJobTokenAuthenticationTest extends TestCase
     }
 
     /**
-     * Covers a mixed setup on one host: a vcs repository (which triggers GitLabDriver and thus
-     * GitLab::authorizeOAuth, swapping the credential slots) plus the Composer package registry.
+     * Mixed vcs + registry setup on one host, where GitLab::authorizeOAuth swaps the credential slots
      *
      * @dataProvider urlProvider
      */
