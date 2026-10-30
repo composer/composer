@@ -17,33 +17,35 @@ use Composer\IO\BufferIO;
 use Composer\Test\TestCase;
 use Composer\Util\AuthHelper;
 use Composer\Util\GitLab;
-use Composer\Pcre\Preg;
 
 class GitLabCiJobTokenAuthenticationTest extends TestCase
 {
     private const ORIGIN = 'gitlab.example.com';
     private const JOB_TOKEN = 'job-token-value';
 
+    private const BASIC_AUTH = 'basic';
+    private const JOB_TOKEN_HEADER = 'header';
+
     /**
-     * @return array<string, array{string}>
+     * @return array<string, array{string, self::BASIC_AUTH|self::JOB_TOKEN_HEADER}>
      */
     public static function urlProvider(): array
     {
         return [
-            'registry: group packages.json' => ['https://gitlab.example.com/api/v4/group/123/-/packages/composer/packages.json'],
-            'registry: group p2 provider' => ['https://gitlab.example.com/api/v4/group/123/-/packages/composer/p2/acme/package.json'],
-            'registry: project dist archive' => ['https://gitlab.example.com/api/v4/projects/123/packages/composer/archives/acme/package.zip?sha=abc123'],
-            'repository API: archive' => ['https://gitlab.example.com/api/v4/projects/acme%2Fpackage/repository/archive.zip?sha=abc123'],
-            'repository API: raw file' => ['https://gitlab.example.com/api/v4/projects/acme%2Fpackage/repository/files/composer%2Ejson/raw?ref=abc123'],
-            'repository API: tags' => ['https://gitlab.example.com/api/v4/projects/acme%2Fpackage/repository/tags?per_page=100'],
-            'job artifacts' => ['https://gitlab.example.com/api/v4/projects/123/jobs/artifacts/main/download?job=build'],
+            'registry: group packages.json' => ['https://gitlab.example.com/api/v4/group/123/-/packages/composer/packages.json', self::BASIC_AUTH],
+            'registry: group p2 provider' => ['https://gitlab.example.com/api/v4/group/123/-/packages/composer/p2/acme/package.json', self::BASIC_AUTH],
+            'registry: project dist archive' => ['https://gitlab.example.com/api/v4/projects/123/packages/composer/archives/acme/package.zip?sha=abc123', self::BASIC_AUTH],
+            'repository API: archive' => ['https://gitlab.example.com/api/v4/projects/acme%2Fpackage/repository/archive.zip?sha=abc123', self::JOB_TOKEN_HEADER],
+            'repository API: raw file' => ['https://gitlab.example.com/api/v4/projects/acme%2Fpackage/repository/files/composer%2Ejson/raw?ref=abc123', self::JOB_TOKEN_HEADER],
+            'repository API: tags' => ['https://gitlab.example.com/api/v4/projects/acme%2Fpackage/repository/tags?per_page=100', self::JOB_TOKEN_HEADER],
+            'job artifacts' => ['https://gitlab.example.com/api/v4/projects/123/jobs/artifacts/main/download?job=build', self::JOB_TOKEN_HEADER],
         ];
     }
 
     /**
      * @dataProvider urlProvider
      */
-    public function testJobTokenFromGitlabTokenConfigIsAcceptedByGitLab(string $url): void
+    public function testJobTokenFromGitlabTokenConfigIsAcceptedByGitLab(string $url, string $acceptedAuth): void
     {
         $config = self::createConfig([
             'gitlab-token' => [
@@ -57,7 +59,7 @@ class GitLabCiJobTokenAuthenticationTest extends TestCase
         $options = $authHelper->addAuthenticationOptions([], self::ORIGIN, $url);
 
         self::assertTrue(
-            self::fakeGitLabAcceptsJobToken($url, $options['http']['header']),
+            self::fakeGitLabAcceptsJobToken($acceptedAuth, $options['http']['header']),
             sprintf('GitLab would reject the headers sent for %s: %s', $url, implode(', ', $options['http']['header']))
         );
     }
@@ -68,7 +70,7 @@ class GitLabCiJobTokenAuthenticationTest extends TestCase
      *
      * @dataProvider urlProvider
      */
-    public function testJobTokenAfterAuthorizeOAuthIsAcceptedByGitLab(string $url): void
+    public function testJobTokenAfterAuthorizeOAuthIsAcceptedByGitLab(string $url, string $acceptedAuth): void
     {
         $config = self::createConfig([
             'gitlab-token' => [
@@ -94,7 +96,7 @@ class GitLabCiJobTokenAuthenticationTest extends TestCase
         $options = $authHelper->addAuthenticationOptions([], self::ORIGIN, $url);
 
         self::assertTrue(
-            self::fakeGitLabAcceptsJobToken($url, $options['http']['header']),
+            self::fakeGitLabAcceptsJobToken($acceptedAuth, $options['http']['header']),
             sprintf('GitLab would reject the headers sent for %s: %s', $url, implode(', ', $options['http']['header']))
         );
     }
@@ -102,7 +104,7 @@ class GitLabCiJobTokenAuthenticationTest extends TestCase
     /**
      * @dataProvider urlProvider
      */
-    public function testJobTokenFromHttpBasicConfigIsAcceptedByGitLab(string $url): void
+    public function testJobTokenFromHttpBasicConfigIsAcceptedByGitLab(string $url, string $acceptedAuth): void
     {
         $config = self::createConfig([
             'http-basic' => [
@@ -116,7 +118,7 @@ class GitLabCiJobTokenAuthenticationTest extends TestCase
         $options = $authHelper->addAuthenticationOptions([], self::ORIGIN, $url);
 
         self::assertTrue(
-            self::fakeGitLabAcceptsJobToken($url, $options['http']['header']),
+            self::fakeGitLabAcceptsJobToken($acceptedAuth, $options['http']['header']),
             sprintf('GitLab would reject the headers sent for %s: %s', $url, implode(', ', $options['http']['header']))
         );
     }
@@ -157,25 +159,18 @@ class GitLabCiJobTokenAuthenticationTest extends TestCase
     }
 
     /**
-     * Emulates GitLab's authentication rules for job tokens, as defined in
-     * lib/api/composer_packages.rb (`job_token_allowed: :basic_auth`, basic auth only,
-     * the only Composer-relevant API that works this way) and lib/api/repositories.rb
-     * plus lib/api/ci/job_artifacts.rb (`job_token_allowed: true`, JOB-TOKEN header
-     * only, like almost all other API routes). Any other route does not accept job
-     * tokens at all.
+     * GitLab accepts job tokens only via basic auth on the Composer registry (lib/api/composer_packages.rb)
+     * and only via the JOB-TOKEN header on the repository and job artifacts APIs.
      *
+     * @param self::BASIC_AUTH|self::JOB_TOKEN_HEADER $acceptedAuth
      * @param string[] $headers
      */
-    private static function fakeGitLabAcceptsJobToken(string $url, array $headers): bool
+    private static function fakeGitLabAcceptsJobToken(string $acceptedAuth, array $headers): bool
     {
-        if (Preg::isMatch('{/api/v4/(?:group/[^/]+/-|projects/[^/]+)/packages/composer/}i', $url)) {
+        if ($acceptedAuth === self::BASIC_AUTH) {
             return in_array('Authorization: Basic '.base64_encode('gitlab-ci-token:'.self::JOB_TOKEN), $headers, true);
         }
 
-        if (Preg::isMatch('{/api/v4/projects/[^/]+/(?:repository|jobs/artifacts)/}i', $url)) {
-            return in_array('JOB-TOKEN: '.self::JOB_TOKEN, $headers, true);
-        }
-
-        return false;
+        return in_array('JOB-TOKEN: '.self::JOB_TOKEN, $headers, true);
     }
 }
