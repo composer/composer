@@ -397,8 +397,12 @@ class AuthHelper
             $headers[] = 'Authorization: Bearer '.$auth['username'];
             return 'Using GitLab OAuth token authentication';
         }
-        $headers[] = 'PRIVATE-TOKEN: '.$auth['username'];
-        return 'Using GitLab private token authentication';
+        if ($auth['password'] === 'private-token') {
+            $headers[] = 'PRIVATE-TOKEN: '.$auth['username'];
+            return 'Using GitLab private token authentication';
+        }
+
+        throw new \LogicException('Unhandled GitLab token marker, hasGitLabTokenMarker() and addGitLabAuthentication() are out of sync');
     }
 
     private function displayAuthenticationMessage(string $origin, ?string $message): void
