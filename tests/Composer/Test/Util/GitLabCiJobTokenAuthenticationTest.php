@@ -161,7 +161,6 @@ class GitLabCiJobTokenAuthenticationTest extends TestCase
      * GitLab accepts job tokens only via basic auth on the Composer registry (lib/api/composer_packages.rb)
      * and only via the JOB-TOKEN header on the repository and job artifacts APIs.
      *
-     * @param self::BASIC_AUTH|self::JOB_TOKEN_HEADER $acceptedAuth
      * @param string[] $headers
      */
     private static function fakeGitLabAcceptsJobToken(string $acceptedAuth, array $headers): bool
