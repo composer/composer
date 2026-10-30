@@ -403,8 +403,9 @@ class Platform
             }
             // /proc/mounts octal-escapes spaces and other special chars
             $mountPoint = stripcslashes($parts[1]);
+            // >= as a later entry for the same mount point is mounted over the earlier one
             if (
-                strlen($mountPoint) > strlen($bestMatch)
+                strlen($mountPoint) >= strlen($bestMatch)
                 && ($realPath === $mountPoint || str_starts_with($realPath, rtrim($mountPoint, '/').'/'))
             ) {
                 $bestMatch = $mountPoint;

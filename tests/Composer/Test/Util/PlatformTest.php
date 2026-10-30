@@ -78,6 +78,10 @@ C:\134 /mnt/c 9p rw,noatime,aname=drvfs;path=C:\;uid=1000;gid=1000;symlinkroot=/
 D:\134 /mnt/d drvfs rw,noatime,uid=1000,gid=1000 0 0
 E:\134 /mnt/e virtiofs rw,relatime 0 0
 /dev/sdd /mnt/c/linux\040disk ext4 rw,relatime 0 0
+F:\134 /mnt/f 9p rw,noatime,aname=drvfs;path=F:\ 0 0
+/dev/sde /mnt/f ext4 rw,relatime 0 0
+/dev/sdf /mnt/g ext4 rw,relatime 0 0
+G:\134 /mnt/g 9p rw,noatime,aname=drvfs;path=G:\ 0 0
 MOUNTS;
 
         self::assertSame($expected, Platform::isDrvfsMount($path, $mounts));
@@ -97,6 +101,8 @@ MOUNTS;
             'prefix of mount point name only' => [false, '/mnt/cache'],
             'non-drvfs 9p mount' => [false, '/usr/lib/wsl/drivers/foo'],
             'nested ext4 mount with escaped space' => [false, '/mnt/c/linux disk/cache'],
+            'drvfs mount overmounted by ext4' => [false, '/mnt/f/cache'],
+            'ext4 mount overmounted by drvfs' => [true, '/mnt/g/cache'],
         ];
     }
 
