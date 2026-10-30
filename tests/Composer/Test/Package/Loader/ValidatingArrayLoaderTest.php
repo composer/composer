@@ -15,6 +15,7 @@ namespace Composer\Test\Package\Loader;
 use Composer\Package\CompletePackage;
 use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Package\Loader\InvalidPackageException;
+use Composer\Repository\PlatformRepository;
 use Composer\Test\TestCase;
 
 class ValidatingArrayLoaderTest extends TestCase
@@ -572,6 +573,23 @@ class ValidatingArrayLoaderTest extends TestCase
         ValidatingArrayLoader::validatePackage($this->getPackage('--evil/root', '1.0.0', 'Composer\Package\RootPackage'));
 
         $this->assertTrue(true);
+    }
+
+    public function testValidatePackageSkipsPlatformRepositoryPackages()
+    {
+        $runtime = $this->getMockBuilder('Composer\Platform\Runtime')->getMock();
+        $runtime->method('getExtensions')->willReturn(array('Acme Corp - Some Extension'));
+        $runtime->method('getExtensionVersion')->willReturn('1.0.0');
+        $runtime->method('getConstant')->willReturnMap(array(
+            array('PHP_VERSION', null, '8.2.0'),
+            array('PHP_DEBUG', null, false),
+        ));
+
+        $platformRepository = new PlatformRepository(array(), array(), $runtime);
+        $package = $platformRepository->findPackage('ext-acme-corp---some-extension', '*');
+        $this->assertNotNull($package);
+
+        ValidatingArrayLoader::validatePackage($package);
     }
 
     public function testValidatePackageRejectsInvalidName()
