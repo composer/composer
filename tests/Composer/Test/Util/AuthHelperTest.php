@@ -79,6 +79,10 @@ class AuthHelperTest extends TestCase
 
         $this->expectsAuthentication($origin, $auth);
 
+        $this->io->expects($this->once())
+            ->method('writeError')
+            ->with('Using Bearer token authentication', true, IOInterface::DEBUG);
+
         $expectedHeaders = array_merge($headers, ['Authorization: Bearer ' . $auth['username']]);
 
         $options = $this->authHelper->addAuthenticationOptions($options, $origin, $url);
@@ -376,6 +380,28 @@ class AuthHelperTest extends TestCase
             $expectedHeaders,
             $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
         );
+    }
+
+    public function testAddAuthenticationOptionsWarnsAndIgnoresNonStringCustomHeaders(): void
+    {
+        $origin = 'example.org';
+        $this->io->expects($this->exactly(2))
+            ->method('hasAuthentication')
+            ->with($origin)
+            ->willReturn(true);
+        $this->io->expects($this->exactly(2))
+            ->method('getAuthentication')
+            ->with($origin)
+            ->willReturn(['username' => '{"X-Foo": 1, "X-Bar": ["a"]}', 'password' => 'custom-headers']);
+
+        $this->io->expects($this->once())
+            ->method('writeError')
+            ->with('<warning>Ignoring custom-headers authentication for example.org as it is not a list of header strings</warning>');
+
+        $options = $this->authHelper->addAuthenticationOptions([], $origin, 'https://example.org/packages.json');
+        $this->authHelper->addAuthenticationOptions([], $origin, 'https://example.org/p2/foo/bar.json');
+
+        self::assertSame([], $options['http']['header']);
     }
 
     /**
