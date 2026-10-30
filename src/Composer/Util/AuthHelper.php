@@ -30,6 +30,8 @@ class AuthHelper
     protected $config;
     /** @var array<string, string> Map of origins to message displayed */
     private $displayedOriginAuthentications = [];
+    /** @var array<string, true> Map of origins already warned about invalid custom headers */
+    private $warnedInvalidCustomHeaders = [];
     /** @var array<string, bool> Map of URLs and whether they already retried with authentication from Bitbucket */
     private $bitbucketRetry = [];
 
@@ -308,7 +310,7 @@ class AuthHelper
 
         if ($auth['password'] === 'custom-headers') {
             // Handle custom HTTP headers from auth.json
-            return $this->addCustomHeaders($headers, $auth['username']);
+            return $this->addCustomHeaders($headers, $origin, $auth['username']);
         }
 
         if ('github.com' === $origin && 'x-oauth-basic' === $auth['password']) {
@@ -350,10 +352,15 @@ class AuthHelper
      * @param string[] $headers
      * @param-out string[] $headers
      */
-    private function addCustomHeaders(array &$headers, ?string $encodedHeaders): ?string
+    private function addCustomHeaders(array &$headers, string $origin, ?string $encodedHeaders): ?string
     {
         $customHeaders = is_string($encodedHeaders) ? json_decode($encodedHeaders, true) : null;
         if (!is_array($customHeaders) || array_filter($customHeaders, 'is_string') !== $customHeaders) {
+            if (!isset($this->warnedInvalidCustomHeaders[$origin])) {
+                $this->io->writeError('<warning>Ignoring custom-headers authentication for '.$origin.' as it is not a list of header strings</warning>');
+                $this->warnedInvalidCustomHeaders[$origin] = true;
+            }
+
             return null;
         }
 
