@@ -65,6 +65,47 @@ class PlatformTest extends TestCase
         self::assertEquals((getenv('HOME') ?: getenv('USERPROFILE')) . '/test', Platform::expandPath('~/test'));
     }
 
+    /**
+     * @dataProvider drvfsMountProvider
+     */
+    public function testIsDrvfsMount(bool $expected, string $path): void
+    {
+        $mounts = <<<'MOUNTS'
+none /mnt/wsl tmpfs rw,relatime 0 0
+drivers /usr/lib/wsl/drivers 9p ro,nosuid,nodev,noatime,aname=drivers;fmask=222;dmask=222 0 0
+/dev/sdc / ext4 rw,relatime,discard,errors=remount-ro,data=ordered 0 0
+C:\134 /mnt/c 9p rw,noatime,aname=drvfs;path=C:\;uid=1000;gid=1000;symlinkroot=/mnt/ 0 0
+D:\134 /mnt/d drvfs rw,noatime,uid=1000,gid=1000 0 0
+E:\134 /mnt/e virtiofs rw,relatime 0 0
+/dev/sdd /mnt/c/linux\040disk ext4 rw,relatime 0 0
+F:\134 /mnt/f 9p rw,noatime,aname=drvfs;path=F:\ 0 0
+/dev/sde /mnt/f ext4 rw,relatime 0 0
+/dev/sdf /mnt/g ext4 rw,relatime 0 0
+G:\134 /mnt/g 9p rw,noatime,aname=drvfs;path=G:\ 0 0
+MOUNTS;
+
+        self::assertSame($expected, Platform::isDrvfsMount($path, $mounts));
+    }
+
+    /**
+     * @return array<array{bool, string}>
+     */
+    public static function drvfsMountProvider(): array
+    {
+        return [
+            'WSL2 9p drvfs mount' => [true, '/mnt/c/Users/foo/cache'],
+            'mount point itself' => [true, '/mnt/c'],
+            'WSL1 drvfs mount' => [true, '/mnt/d/cache'],
+            'drive letter device on other fs type' => [true, '/mnt/e/cache'],
+            'linux root fs' => [false, '/home/foo/.cache/composer'],
+            'prefix of mount point name only' => [false, '/mnt/cache'],
+            'non-drvfs 9p mount' => [false, '/usr/lib/wsl/drivers/foo'],
+            'nested ext4 mount with escaped space' => [false, '/mnt/c/linux disk/cache'],
+            'drvfs mount overmounted by ext4' => [false, '/mnt/f/cache'],
+            'ext4 mount overmounted by drvfs' => [true, '/mnt/g/cache'],
+        ];
+    }
+
     public function testIsWindows(): void
     {
         // Compare 2 common tests for Windows to the built-in Windows test

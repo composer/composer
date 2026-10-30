@@ -361,6 +361,65 @@ class Platform
     }
 
     /**
+     * @internal
+     * @return bool Whether the path is on a Windows drive mounted into WSL (e.g. /mnt/c), where filesystem IO is very slow
+     */
+    public static function isWindowsMountInWsl(string $path): bool
+    {
+        // relative paths would end up resolving against the CWD below
+        if (!str_starts_with($path, '/') || !self::isWindowsSubsystemForLinux() || !is_readable('/proc/mounts')) {
+            return false;
+        }
+
+        // resolve symlinks, walking up to the closest existing parent if the dir does not exist yet
+        $realPath = false;
+        while (false === ($realPath = realpath($path))) {
+            $parent = dirname($path);
+            if ($parent === $path) {
+                break;
+            }
+            $path = $parent;
+        }
+        if (false === $realPath) {
+            return false;
+        }
+
+        return self::isDrvfsMount($realPath, (string) Silencer::call('file_get_contents', '/proc/mounts'));
+    }
+
+    /**
+     * @internal
+     * @param string $realPath An absolute path with symlinks resolved
+     * @param string $procMounts The contents of /proc/mounts
+     */
+    public static function isDrvfsMount(string $realPath, string $procMounts): bool
+    {
+        $bestMatch = '';
+        $isDrvfs = false;
+        foreach (explode("\n", $procMounts) as $line) {
+            $parts = explode(' ', $line);
+            if (count($parts) < 4) {
+                continue;
+            }
+            // /proc/mounts octal-escapes spaces and other special chars
+            $mountPoint = stripcslashes($parts[1]);
+            // >= as a later entry for the same mount point is mounted over the earlier one
+            if (
+                strlen($mountPoint) >= strlen($bestMatch)
+                && ($realPath === $mountPoint || str_starts_with($realPath, rtrim($mountPoint, '/').'/'))
+            ) {
+                $bestMatch = $mountPoint;
+                // WSL1 uses drvfs, WSL2 drvfs over 9p; otherwise (e.g. virtiofs) a drive letter device gives it away
+                $isDrvfs = $parts[2] === 'drvfs'
+                    || ($parts[2] === '9p' && str_contains($parts[3], 'aname=drvfs'))
+                    || Preg::isMatch('{^[a-z]:\\\\}i', stripcslashes($parts[0]));
+            }
+        }
+
+        return $isDrvfs;
+    }
+
+    /**
      * @return bool Whether the host machine is running a Windows OS
      */
     public static function isWindows(): bool
