@@ -305,7 +305,7 @@ class AuthHelper
 
         if ($auth['password'] === 'bearer') {
             $headers[] = 'Authorization: Bearer '.$auth['username'];
-            return null;
+            return 'Using Bearer token authentication';
         }
 
         if ($auth['password'] === 'custom-headers') {

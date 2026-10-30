@@ -79,6 +79,10 @@ class AuthHelperTest extends TestCase
 
         $this->expectsAuthentication($origin, $auth);
 
+        $this->io->expects($this->once())
+            ->method('writeError')
+            ->with('Using Bearer token authentication', true, IOInterface::DEBUG);
+
         $expectedHeaders = array_merge($headers, ['Authorization: Bearer ' . $auth['username']]);
 
         $options = $this->authHelper->addAuthenticationOptions($options, $origin, $url);
