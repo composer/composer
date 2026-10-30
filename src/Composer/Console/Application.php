@@ -503,6 +503,10 @@ class Application extends BaseApplication
 
             $result = parent::doRun($input, $output);
 
+            if (!$isProxyCommand && ($commandName ?? null) !== '_complete' && Platform::isWindowsSubsystemForLinux()) {
+                $this->warnIfCacheDirIsOnWindowsDrive($io);
+            }
+
             if (true === $input->hasParameterOption(['--version', '-V'], true)) {
                 $io->writeError(sprintf('<info>PHP</info> version <comment>%s</comment> (%s)', \PHP_VERSION, \PHP_BINARY));
                 $io->writeError('Run the "diagnose" command to get more detailed diagnostics output.');
@@ -887,6 +891,25 @@ class Application extends BaseApplication
         $config = Factory::createConfig($this->io);
 
         return $config->get('use-parent-dir');
+    }
+
+    private function warnIfCacheDirIsOnWindowsDrive(IOInterface $io): void
+    {
+        // reuse the loaded Composer instance if any so project-level config is taken into account
+        $config = $this->composer !== null ? $this->composer->getConfig() : Factory::createConfig($io);
+        $cacheDir = $config->get('cache-dir');
+        if (!Platform::isWindowsMountInWsl($cacheDir)) {
+            return;
+        }
+
+        // ~/.cache is no fix if the home dir itself is on the Windows drive
+        $home = Platform::getEnv('HOME');
+        $suggestedDir = is_string($home) && $home !== '' && !Platform::isWindowsMountInWsl($home) ? '~/.cache/composer' : '/path/on/wsl/filesystem';
+        // the env var overrides the config so changing the config would not help
+        $fix = $config->getSourceOfValue('cache-dir') === 'COMPOSER_CACHE_DIR'
+            ? 'by changing the COMPOSER_CACHE_DIR env var to e.g. '.$suggestedDir
+            : 'e.g. by running: composer config --global cache-dir '.$suggestedDir;
+        $io->writeError('<warning>Your Composer cache directory ('.$cacheDir.') is on a Windows drive while Composer runs in WSL, which makes filesystem operations very slow. Move it to the WSL filesystem for better performance, '.$fix.'</warning>');
     }
 
     private function isRunningAsRoot(): bool

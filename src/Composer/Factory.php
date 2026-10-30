@@ -52,9 +52,6 @@ use ZipArchive;
  */
 class Factory
 {
-    /** @var bool */
-    private static $wslCacheDirChecked = false;
-
     /**
      * @throws \RuntimeException
      */
@@ -358,21 +355,6 @@ class Factory
         if ($fullLoad) {
             // load auth configs into the IO instance
             $io->loadConfiguration($config);
-
-            if (!self::$wslCacheDirChecked) {
-                self::$wslCacheDirChecked = true;
-                $cacheDir = $config->get('cache-dir');
-                if (Platform::isWindowsMountInWsl($cacheDir)) {
-                    // ~/.cache is no fix if the home dir itself is on the Windows drive
-                    $home = Platform::getEnv('HOME');
-                    $suggestedDir = is_string($home) && $home !== '' && !Platform::isWindowsMountInWsl($home) ? '~/.cache/composer' : '/path/on/wsl/filesystem';
-                    // the env var overrides the config so changing the config would not help
-                    $fix = $config->getSourceOfValue('cache-dir') === 'COMPOSER_CACHE_DIR'
-                        ? 'by changing the COMPOSER_CACHE_DIR env var to e.g. '.$suggestedDir
-                        : 'e.g. by running: composer config --global cache-dir '.$suggestedDir;
-                    $io->writeError('<warning>Your Composer cache directory ('.$cacheDir.') is on a Windows drive while Composer runs in WSL, which makes filesystem operations very slow. Move it to the WSL filesystem for better performance, '.$fix.'</warning>');
-                }
-            }
 
             // load existing Composer\InstalledVersions instance if available and scripts/plugins are allowed, as they might need it
             // we only load if the InstalledVersions class wasn't defined yet so that this is only loaded once
