@@ -347,24 +347,21 @@ class AuthHelper
     }
 
     /**
-     * @param mixed[] $headers
-     * @param-out mixed[] $headers
-     * @param string|null $encodedHeaders
+     * @param string[] $headers
+     * @param-out string[] $headers
      */
-    private function addCustomHeaders(array &$headers, $encodedHeaders): ?string
+    private function addCustomHeaders(array &$headers, ?string $encodedHeaders): ?string
     {
-        $customHeaders = null;
-        if (is_string($encodedHeaders)) {
-            $customHeaders = json_decode($encodedHeaders, true);
-        }
-        if (is_array($customHeaders)) {
-            foreach ($customHeaders as $header) {
-                $headers[] = $header;
-            }
-            return 'Using custom HTTP headers for authentication';
+        $customHeaders = is_string($encodedHeaders) ? json_decode($encodedHeaders, true) : null;
+        if (!is_array($customHeaders) || array_filter($customHeaders, 'is_string') !== $customHeaders) {
+            return null;
         }
 
-        return null;
+        foreach ($customHeaders as $header) {
+            $headers[] = $header;
+        }
+
+        return 'Using custom HTTP headers for authentication';
     }
 
     /**
@@ -377,8 +374,8 @@ class AuthHelper
     }
 
     /**
-     * @param mixed[] $headers
-     * @param-out mixed[] $headers
+     * @param string[] $headers
+     * @param-out string[] $headers
      * @param array{username: string|null, password: string|null} $auth
      */
     private function addGitLabAuthentication(array &$headers, string $url, array $auth): string

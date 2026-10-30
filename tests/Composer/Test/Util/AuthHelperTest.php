@@ -378,6 +378,19 @@ class AuthHelperTest extends TestCase
         );
     }
 
+    public function testAddAuthenticationOptionsIgnoresNonStringCustomHeaders(): void
+    {
+        $origin = 'example.org';
+        $this->expectsAuthentication($origin, [
+            'username' => '{"X-Foo": 1, "X-Bar": ["a"]}',
+            'password' => 'custom-headers',
+        ]);
+
+        $options = $this->authHelper->addAuthenticationOptions([], $origin, 'https://example.org/packages.json');
+
+        self::assertSame([], $options['http']['header']);
+    }
+
     /**
      * @dataProvider bitbucketPublicUrlProvider
      */
