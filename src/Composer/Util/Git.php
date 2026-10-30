@@ -505,6 +505,20 @@ class Git
     }
 
     /**
+     * Checks if git version supports --filter=blob:none (git 2.19+)
+     */
+    public static function supportsPartialClone(ProcessExecutor $process): bool
+    {
+        $gitVersion = self::getVersion($process);
+
+        if ($gitVersion !== null && version_compare($gitVersion, '2.19', '>=')) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Parses git rev-list output, removing 'commit <hash>' header lines for git < 2.33.
      *
      * When --no-commit-header is not available (git < 2.33), git rev-list --format outputs
