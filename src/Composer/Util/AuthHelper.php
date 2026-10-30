@@ -309,8 +309,14 @@ class AuthHelper
                 && in_array($origin, $this->config->get('gitlab-domains'), true)
             ) {
                 // the marker ends up in either slot depending on whether GitLab::authorizeOAuth normalized the credentials
-                $headers[] = 'JOB-TOKEN: '.($auth['password'] === 'gitlab-ci-token' ? $auth['username'] : $auth['password']);
-                $authenticationDisplayMessage = 'Using GitLab CI job token authentication';
+                $jobToken = $auth['password'] === 'gitlab-ci-token' ? $auth['username'] : $auth['password'];
+                if (Preg::isMatch('{/api/v4/(?:group/[^/]+/-|projects/[^/]+)/packages/composer(?:/|$)}i', (string) parse_url($url, PHP_URL_PATH))) {
+                    $headers[] = 'Authorization: Basic '.base64_encode('gitlab-ci-token:'.$jobToken);
+                    $authenticationDisplayMessage = 'Using HTTP basic authentication with username "gitlab-ci-token"';
+                } else {
+                    $headers[] = 'JOB-TOKEN: '.$jobToken;
+                    $authenticationDisplayMessage = 'Using GitLab CI job token authentication';
+                }
             } elseif (
                 in_array($auth['password'], ['oauth2', 'private-token'], true)
                 && in_array($origin, $this->config->get('gitlab-domains'), true)

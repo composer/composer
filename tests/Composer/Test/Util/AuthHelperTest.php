@@ -133,16 +133,26 @@ class AuthHelperTest extends TestCase
     }
 
     /**
-     * @return array<string, array{array{username: string, password: string}, string, string}>
+     * @return array<string, array{array{username: string, password: string}, string, string, string}>
      */
     public static function gitlabAuthenticationProvider(): array
     {
         return [
-            'oauth token' => [['username' => 'my_token', 'password' => 'oauth2'], 'Using GitLab OAuth token authentication', 'Authorization: Bearer my_token'],
-            'private token' => [['username' => 'my_token', 'password' => 'private-token'], 'Using GitLab private token authentication', 'PRIVATE-TOKEN: my_token'],
-            'CI job token' => [['username' => 'gitlab-ci-token', 'password' => 'my_token'], 'Using GitLab CI job token authentication', 'JOB-TOKEN: my_token'],
+            'oauth token' => [['username' => 'my_token', 'password' => 'oauth2'], 'Using GitLab OAuth token authentication', 'Authorization: Bearer my_token', 'https://gitlab.com/api/v4/projects/foo%2Fbar/repository/archive.zip?sha=abc'],
+            'private token' => [['username' => 'my_token', 'password' => 'private-token'], 'Using GitLab private token authentication', 'PRIVATE-TOKEN: my_token', 'https://gitlab.com/api/v4/projects/foo%2Fbar/repository/archive.zip?sha=abc'],
+            // GitLab's Composer package registry only accepts job tokens via basic auth
+            'CI job token, registry' => [['username' => 'gitlab-ci-token', 'password' => 'my_token'], 'Using HTTP basic authentication with username "gitlab-ci-token"', 'Authorization: Basic Z2l0bGFiLWNpLXRva2VuOm15X3Rva2Vu', 'https://gitlab.com/api/v4/group/123/-/packages/composer/packages.json'],
             // GitLab::authorizeOAuth swaps the slots, so both orderings must work
-            'CI job token, slots swapped' => [['username' => 'my_token', 'password' => 'gitlab-ci-token'], 'Using GitLab CI job token authentication', 'JOB-TOKEN: my_token'],
+            'CI job token, slots swapped, registry' => [['username' => 'my_token', 'password' => 'gitlab-ci-token'], 'Using HTTP basic authentication with username "gitlab-ci-token"', 'Authorization: Basic Z2l0bGFiLWNpLXRva2VuOm15X3Rva2Vu', 'https://gitlab.com/api/v4/projects/123/packages/composer/archives/foo/bar.zip?sha=abc'],
+            'CI job token, registry on sub-path install' => [['username' => 'gitlab-ci-token', 'password' => 'my_token'], 'Using HTTP basic authentication with username "gitlab-ci-token"', 'Authorization: Basic Z2l0bGFiLWNpLXRva2VuOm15X3Rva2Vu', 'https://gitlab.com/gitlab/api/v4/group/123/-/packages/composer/p2/foo/bar.json'],
+            'CI job token, project registry root' => [['username' => 'gitlab-ci-token', 'password' => 'my_token'], 'Using HTTP basic authentication with username "gitlab-ci-token"', 'Authorization: Basic Z2l0bGFiLWNpLXRva2VuOm15X3Rva2Vu', 'https://gitlab.com/api/v4/projects/123/packages/composer'],
+            // everywhere else GitLab accepts job tokens via the JOB-TOKEN header
+            'CI job token, repository API' => [['username' => 'gitlab-ci-token', 'password' => 'my_token'], 'Using GitLab CI job token authentication', 'JOB-TOKEN: my_token', 'https://gitlab.com/api/v4/projects/foo%2Fbar/repository/archive.zip?sha=abc'],
+            'CI job token, slots swapped, repository API' => [['username' => 'my_token', 'password' => 'gitlab-ci-token'], 'Using GitLab CI job token authentication', 'JOB-TOKEN: my_token', 'https://gitlab.com/api/v4/projects/foo%2Fbar/repository/files/composer%2Ejson/raw?ref=abc'],
+            'CI job token, repository API on sub-path install' => [['username' => 'gitlab-ci-token', 'password' => 'my_token'], 'Using GitLab CI job token authentication', 'JOB-TOKEN: my_token', 'https://gitlab.com/gitlab/api/v4/projects/123/repository/tags?per_page=100'],
+            'CI job token, job artifacts' => [['username' => 'gitlab-ci-token', 'password' => 'my_token'], 'Using GitLab CI job token authentication', 'JOB-TOKEN: my_token', 'https://gitlab.com/api/v4/projects/123/jobs/artifacts/main/download?job=build'],
+            'CI job token, registry-like query string' => [['username' => 'gitlab-ci-token', 'password' => 'my_token'], 'Using GitLab CI job token authentication', 'JOB-TOKEN: my_token', 'https://gitlab.com/api/v4/projects/123/repository/files/foo/raw?ref=/api/v4/projects/x/packages/composer/'],
+            'CI job token, project root' => [['username' => 'gitlab-ci-token', 'password' => 'my_token'], 'Using GitLab CI job token authentication', 'JOB-TOKEN: my_token', 'https://gitlab.com/api/v4/projects/foo%2Fbar'],
         ];
     }
 
@@ -153,7 +163,7 @@ class AuthHelperTest extends TestCase
      *
      * @phpstan-param array{username: string, password: string} $auth
      */
-    public function testAddAuthenticationHeaderWithGitlabToken(array $auth, string $expectedMessage, string $expectedHeader): void
+    public function testAddAuthenticationHeaderWithGitlabToken(array $auth, string $expectedMessage, string $expectedHeader, string $url): void
     {
         $headers = [
             'Accept-Encoding: gzip',
@@ -161,7 +171,6 @@ class AuthHelperTest extends TestCase
         ];
         $options = ['http' => ['header' => $headers]];
         $origin = 'gitlab.com';
-        $url = 'https://api.gitlab.com/';
 
         $this->expectsAuthentication($origin, $auth);
 
