@@ -1,3 +1,12 @@
+### [2.11.1] 2026-10-30
+
+  * Added a warning when the cache dir is on a Windows drive while running in WSL, as this makes filesystem operations very slow (#13175)
+  * Fixed GitLab CI job tokens failing to authenticate against the GitLab Composer package registry, which requires HTTP Basic auth rather than the `JOB-TOKEN` header (#13180)
+  * Fixed every update aborting with a `SecurityException` when a PHP extension reports a name that is not a valid platform package name (#13184)
+  * Fixed `require` and `remove` dropping empty `require`/`require-dev`/`repositories` keys from composer.json when the command had not emptied them itself (#13178)
+  * Fixed a PHP 8.6 deprecation warning from composer/ca-bundle (8bf8c27)
+  * Fixed invalid `custom-headers` auth entries being sent as-is, they are now ignored with a warning (#13181)
+
 ### [2.11.0] 2026-10-29
 
   * Security: Fixed package names in `vendor/composer/installed.json` being able to escape the vendor directory during install and reinstall (GHSA-c968-33g3-wh7p)
@@ -2280,6 +2289,7 @@
 
   * Initial release
 
+[2.11.1]: https://github.com/composer/composer/compare/2.11.0...2.11.1
 [2.11.0]: https://github.com/composer/composer/compare/2.11.0-RC1...2.11.0
 [2.11.0-RC1]: https://github.com/composer/composer/compare/2.10.3...2.11.0-RC1
 [2.10.3]: https://github.com/composer/composer/compare/2.10.2...2.10.3
