@@ -35,6 +35,28 @@ class ConfigValidatorTest extends TestCase
         );
     }
 
+    public function testConfigValidatorWarnsOnNumericRepositoryName(): void
+    {
+        $configValidator = new ConfigValidator(new NullIO());
+        [, , $warnings] = $configValidator->validate(__DIR__ . '/Fixtures/composer_numeric-repository-name.json');
+
+        self::assertContains(
+            'Repository name "1" is numeric. Numbers address repositories by their position in the list, so a numeric name is ambiguous, rename it to something descriptive.',
+            $warnings
+        );
+    }
+
+    public function testConfigValidatorDoesNotWarnOnNumericRepositoryKey(): void
+    {
+        // in the object format the key is a name, so a numeric one is not ambiguous with a position
+        $configValidator = new ConfigValidator(new NullIO());
+        [, , $warnings] = $configValidator->validate(__DIR__ . '/Fixtures/composer_numeric-repository-key.json');
+
+        foreach ($warnings as $warning) {
+            self::assertStringNotContainsString('is numeric', $warning);
+        }
+    }
+
     public function testConfigValidatorWarnsOnScriptDescriptionForNonexistentScript(): void
     {
         $configValidator = new ConfigValidator(new NullIO());
