@@ -82,23 +82,20 @@ abstract class BaseExcludeFilter
      */
     protected function parseLines(array $lines, callable $lineParser): array
     {
-        return array_filter(
-            array_map(
-                static function ($line) use ($lineParser) {
-                    $line = trim($line);
-
-                    if (!$line || 0 === strpos($line, '#')) {
-                        return null;
-                    }
-
-                    return $lineParser($line);
-                },
-                $lines
-            ),
-            static function ($pattern): bool {
-                return $pattern !== null;
+        $patterns = [];
+        foreach ($lines as $key => $line) {
+            $line = trim($line);
+            if (!$line || 0 === strpos($line, '#')) {
+                continue;
             }
-        );
+
+            $pattern = $lineParser($line);
+            if ($pattern !== null) {
+                $patterns[$key] = $pattern;
+            }
+        }
+
+        return $patterns;
     }
 
     /**
