@@ -133,6 +133,10 @@ class Url
         // e.g. https://api.github.com/repositories/9999999999?access_token=github_token
         $url = Preg::replace('{([&?]access_token=)[^&]+}', '$1***', $url);
 
+        if (strpos($url, '@') === false) {
+            return $url;
+        }
+
         // matches every scheme://user:pass@ in the string as URLs are usually embedded in a longer
         // message, plus a scheme-less one at the very start for URLs passed in on their own
         $url = Preg::replaceCallback('{(?:(?P<prefix>[a-z0-9][a-z0-9+.-]*://)|\A)(?P<user>[^:/\s?#]*)(?::(?P<password>[^\s/?#]*))?@}i', static function ($m): string {
