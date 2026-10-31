@@ -35,6 +35,18 @@ class RepositoryUtils
      */
     public static function filterRequiredPackages(array $packages, PackageInterface $requirer, bool $includeRequireDev = false, array $bucket = []): array
     {
+        self::collectRequiredPackages($packages, $requirer, $includeRequireDev, $bucket);
+
+        return $bucket;
+    }
+
+    /**
+     * @template T of PackageInterface
+     * @param array<T> $packages
+     * @param list<T> $bucket
+     */
+    private static function collectRequiredPackages(array $packages, PackageInterface $requirer, bool $includeRequireDev, array &$bucket): void
+    {
         $requires = $requirer->getRequires();
         if ($includeRequireDev) {
             $requires = array_merge($requires, $requirer->getDevRequires());
@@ -45,14 +57,12 @@ class RepositoryUtils
                 if (isset($requires[$name])) {
                     if (!in_array($candidate, $bucket, true)) {
                         $bucket[] = $candidate;
-                        $bucket = self::filterRequiredPackages($packages, $candidate, false, $bucket);
+                        self::collectRequiredPackages($packages, $candidate, false, $bucket);
                     }
                     break;
                 }
             }
         }
-
-        return $bucket;
     }
 
     /**
