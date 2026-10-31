@@ -73,11 +73,29 @@ class RepositoryUtils
 
         $repos = [];
         foreach ($repo->getRepositories() as $r) {
-            foreach (self::flattenRepositories($r, $unwrapFilterRepos) as $r2) {
-                $repos[] = $r2;
-            }
+            self::collectFlattenedRepositories($r, $unwrapFilterRepos, $repos);
         }
 
         return $repos;
+    }
+
+    /**
+     * @param list<RepositoryInterface> $repos
+     */
+    private static function collectFlattenedRepositories(RepositoryInterface $repo, bool $unwrapFilterRepos, array &$repos): void
+    {
+        if ($unwrapFilterRepos && $repo instanceof FilterRepository) {
+            $repo = $repo->getRepository();
+        }
+
+        if (!$repo instanceof CompositeRepository) {
+            $repos[] = $repo;
+
+            return;
+        }
+
+        foreach ($repo->getRepositories() as $r) {
+            self::collectFlattenedRepositories($r, $unwrapFilterRepos, $repos);
+        }
     }
 }
