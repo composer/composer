@@ -107,23 +107,27 @@ class Locker
         $content = JsonFile::parseJson($composerFileContents, 'composer.json');
 
         $relevantKeys = [
-            'name',
-            'version',
-            'require',
-            'require-dev',
-            'conflict',
-            'replace',
-            'provide',
-            'minimum-stability',
-            'prefer-stable',
-            'repositories',
-            'extra',
+            'name' => true,
+            'version' => true,
+            'require' => true,
+            'require-dev' => true,
+            'conflict' => true,
+            'replace' => true,
+            'provide' => true,
+            'minimum-stability' => true,
+            'prefer-stable' => true,
+            'repositories' => true,
+            'extra' => true,
         ];
 
-        $relevantContent = [];
-
-        foreach (array_intersect($relevantKeys, array_keys($content)) as $key) {
-            $relevantContent[$key] = $content[$key];
+        if (is_array($content)) {
+            $relevantContent = array_intersect_key($content, $relevantKeys);
+        } else {
+            // Preserve the existing diagnostics and handling of non-array JSON roots.
+            $relevantContent = [];
+            foreach (array_intersect(array_keys($relevantKeys), array_keys($content)) as $key) { // @phpstan-ignore-line
+                $relevantContent[$key] = $content[$key];
+            }
         }
         if (isset($content['config']['platform'])) {
             $relevantContent['config']['platform'] = $content['config']['platform'];
