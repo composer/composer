@@ -244,7 +244,18 @@ REGEX;
      */
     private function dumpToPhpCode(array $array = [], int $level = 0): string
     {
-        $lines = "array(\n";
+        $lines = '';
+        $this->appendPhpCode($array, $level, $lines);
+
+        return $lines;
+    }
+
+    /**
+     * @param array<mixed> $array
+     */
+    private function appendPhpCode(array $array, int $level, string &$lines): void
+    {
+        $lines .= "array(\n";
         $level++;
 
         foreach ($array as $key => $value) {
@@ -253,7 +264,7 @@ REGEX;
 
             if (is_array($value)) {
                 if (!empty($value)) {
-                    $lines .= $this->dumpToPhpCode($value, $level);
+                    $this->appendPhpCode($value, $level, $lines);
                 } else {
                     $lines .= "array(),\n";
                 }
@@ -275,8 +286,6 @@ REGEX;
         }
 
         $lines .= str_repeat('    ', $level - 1) . ')' . ($level - 1 === 0 ? '' : ",\n");
-
-        return $lines;
     }
 
     /**
