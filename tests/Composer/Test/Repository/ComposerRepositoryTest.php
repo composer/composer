@@ -649,6 +649,70 @@ class ComposerRepositoryTest extends TestCase
         self::assertSame($advisory['advisoryId'], $result['advisories']['foo/pkg1100'][0]->advisoryId);
     }
 
+    public function testGetSecurityAdvisoriesOnlyQueriesTheApiOncePerPackageName(): void
+    {
+        $fooAdvisory = $this->generateSecurityAdvisory('foo/bar', 'CVE-1999-1000', '>=1.0.0');
+        $bazAdvisory = $this->generateSecurityAdvisory('baz/qux', 'CVE-1999-2000', '>=2.0.0');
+
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader->expects([
+            [
+                'url' => 'https://example.org/packages.json',
+                'body' => JsonFile::encode([
+                    'metadata-url' => 'https://example.org/p2/%package%.json',
+                    'security-advisories' => [
+                        'api-url' => 'https://example.org/security-advisories',
+                    ],
+                ]),
+                'options' => ['http' => ['verify_peer' => false]],
+            ],
+            [
+                'url' => 'https://example.org/security-advisories',
+                'body' => JsonFile::encode(['advisories' => ['foo/bar' => [$fooAdvisory]]]),
+                'options' => ['http' => [
+                    'verify_peer' => false,
+                    'method' => 'POST',
+                    'header' => ['Content-type: application/x-www-form-urlencoded'],
+                    'timeout' => 10,
+                    'content' => http_build_query(['packages' => ['foo/bar', 'nope/missing']]),
+                ]],
+            ],
+            [
+                'url' => 'https://example.org/security-advisories',
+                'body' => JsonFile::encode(['advisories' => ['baz/qux' => [$bazAdvisory]]]),
+                'options' => ['http' => [
+                    'verify_peer' => false,
+                    'method' => 'POST',
+                    'header' => ['Content-type: application/x-www-form-urlencoded'],
+                    'timeout' => 10,
+                    'content' => http_build_query(['packages' => ['baz/qux']]),
+                ]],
+            ],
+        ], true);
+
+        $repository = new ComposerRepository(
+            ['url' => 'https://example.org/packages.json', 'options' => ['http' => ['verify_peer' => false]]],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        $first = $repository->getSecurityAdvisories(['foo/bar' => new MatchAllConstraint(), 'nope/missing' => new MatchAllConstraint()]);
+        self::assertSame(['foo/bar'], $first['namesFound']);
+        self::assertSame($fooAdvisory['advisoryId'], $first['advisories']['foo/bar'][0]->advisoryId);
+
+        $second = $repository->getSecurityAdvisories(['foo/bar' => new Constraint('==', '0.9.0.0')]);
+        self::assertSame(['foo/bar'], $second['namesFound']);
+        self::assertSame([], $second['advisories']);
+
+        $third = $repository->getSecurityAdvisories(['foo/bar' => new MatchAllConstraint(), 'nope/missing' => new MatchAllConstraint(), 'baz/qux' => new MatchAllConstraint()]);
+        self::assertSame(['foo/bar', 'baz/qux'], $third['namesFound']);
+        self::assertSame($fooAdvisory['advisoryId'], $third['advisories']['foo/bar'][0]->advisoryId);
+        self::assertSame($bazAdvisory['advisoryId'], $third['advisories']['baz/qux'][0]->advisoryId);
+
+        $httpDownloader->assertComplete();
+    }
+
     public function testGetFilterWithMatchingLists(): void
     {
         $httpDownloader = $this->getHttpDownloaderMock();

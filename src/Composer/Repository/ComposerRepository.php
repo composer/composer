@@ -151,6 +151,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $packagesNotFoundCache = [];
 
     /**
+     * @var array security-advisories API responses by package name, null if the API returned nothing for the name
+     * @phpstan-var array<string, list<array<mixed>>|null>
+     */
+    private $securityAdvisoryApiResults = [];
+
+    /**
      * @var VersionParser
      */
     private $versionParser;
@@ -785,7 +791,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $this->loop->wait($promises);
         }
 
-        if ($apiUrl !== null && count($packageConstraintMap) > 0) {
+        $namesToQuery = $apiUrl !== null ? array_diff_key($packageConstraintMap, $this->securityAdvisoryApiResults) : [];
+        if ($apiUrl !== null && count($namesToQuery) > 0) {
             $options = $this->options;
             $options['http']['method'] = 'POST';
             if (isset($options['http']['header'])) {
@@ -796,7 +803,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
             $responses = [];
             $promises = [];
-            foreach (array_chunk(array_keys($packageConstraintMap), self::ADVISORY_API_BATCH_SIZE) as $batchIndex => $batch) {
+            foreach (array_chunk(array_keys($namesToQuery), self::ADVISORY_API_BATCH_SIZE) as $batchIndex => $batch) {
                 $batchOptions = $options;
                 $batchOptions['http']['content'] = http_build_query(['packages' => $batch]);
 
@@ -818,9 +825,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
                 /** @var string $name */
                 foreach ($advisoryData['advisories'] as $name => $list) {
-                    if (!isset($packageConstraintMap[$name])) {
+                    if (!isset($namesToQuery[$name])) {
                         if (!$warnedAboutUnrequestedNames) {
-                            $requested = array_keys($packageConstraintMap);
+                            $requested = array_keys($namesToQuery);
                             $requestedList = count($requested) > 20
                                 ? implode(', ', array_slice($requested, 0, 20)).' and '.(count($requested) - 20).' more'
                                 : implode(', ', $requested);
@@ -829,16 +836,32 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                         }
                         continue;
                     }
-                    if (count($list) > 0) {
-                        $advisories[$name] = array_values(array_filter(array_map(
-                            static function ($data) use ($name, $create) {
-                                return $create($data, $name);
-                            },
-                            $list
-                        )));
-                    }
-                    $namesFound[$name] = true;
+                    $this->securityAdvisoryApiResults[$name] = $list;
                 }
+            }
+
+            foreach (array_keys($namesToQuery) as $name) {
+                if (!array_key_exists($name, $this->securityAdvisoryApiResults)) {
+                    $this->securityAdvisoryApiResults[$name] = null;
+                }
+            }
+        }
+
+        if ($apiUrl !== null) {
+            foreach ($packageConstraintMap as $name => $constraint) {
+                $list = $this->securityAdvisoryApiResults[$name] ?? null;
+                if ($list === null) {
+                    continue;
+                }
+                if (count($list) > 0) {
+                    $advisories[$name] = array_values(array_filter(array_map(
+                        static function ($data) use ($name, $create) {
+                            return $create($data, $name);
+                        },
+                        $list
+                    )));
+                }
+                $namesFound[$name] = true;
             }
         }
 
