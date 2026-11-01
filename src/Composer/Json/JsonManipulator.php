@@ -555,7 +555,7 @@ class JsonManipulator
             assert(is_string($matches['end']));
 
             if ($subName !== null) {
-                $curVal = json_decode($matches['content'], true);
+                $curVal = self::objectToArray(json_decode($matches['content']));
                 if (!is_array($curVal)) {
                     $curVal = [];
                 }
@@ -678,7 +678,8 @@ class JsonManipulator
 
                 // we have a subname, so we restore the rest of $name
                 if ($subName !== null) {
-                    $curVal = json_decode($children, true);
+                    $curVal = self::objectToArray(json_decode($children));
+                    $curVal[$name] = self::objectToArray($curVal[$name]);
                     unset($curVal[$name][$subName]);
                     if ($curVal[$name] === []) {
                         $curVal[$name] = new \ArrayObject();
@@ -693,7 +694,8 @@ class JsonManipulator
         $this->contents = Preg::replaceCallback($nodeRegex, function ($matches) use ($name, $subName, $childrenClean): string {
             assert(is_string($matches['content']));
             if ($subName !== null) {
-                $curVal = json_decode($matches['content'], true);
+                $curVal = self::objectToArray(json_decode($matches['content']));
+                $curVal[$name] = self::objectToArray($curVal[$name]);
                 unset($curVal[$name][$subName]);
                 if ($curVal[$name] === []) {
                     $curVal[$name] = new \ArrayObject();
@@ -1077,6 +1079,18 @@ class JsonManipulator
     }
 
     /**
+     * Turns a decoded object into an array but leaves the objects nested in it as they are,
+     * so that format() writes them back as objects (an empty {} would otherwise become [])
+     *
+     * @param mixed $value
+     * @return mixed
+     */
+    private static function objectToArray($value)
+    {
+        return $value instanceof \stdClass ? (array) $value : $value;
+    }
+
+    /**
      * @param mixed $data
      */
     public function format($data, int $depth = 0, bool $wasObject = false): string
@@ -1091,7 +1105,7 @@ class JsonManipulator
                 return $wasObject ? '{' . $this->newline . str_repeat($this->indent, $depth + 1) . '}' : '[]';
             }
 
-            if (array_is_list($data)) {
+            if (!$wasObject && array_is_list($data)) {
                 foreach ($data as $key => $val) {
                     $data[$key] = $this->format($val, $depth + 1);
                 }

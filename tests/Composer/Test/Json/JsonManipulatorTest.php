@@ -3160,6 +3160,89 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
+    public function testRemoveConfigSettingKeepsEmptyObjectsInSiblings(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "config": {
+        "platform": {
+            "php": "8.2.0"
+        },
+        "allow-plugins": {},
+        "preferred-install": {
+            "*": "dist"
+        }
+    }
+}');
+
+        self::assertTrue($manipulator->removeConfigSetting('platform.php'));
+        self::assertEquals('{
+    "config": {
+        "platform": {
+        },
+        "allow-plugins": {
+        },
+        "preferred-install": {
+            "*": "dist"
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testRemovePropertyKeepsNestedObjects(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "extra": {
+        "foo": {
+            "bar": "baz",
+            "map": {"0": "a"},
+            "empty": {}
+        }
+    }
+}');
+
+        self::assertTrue($manipulator->removeProperty('extra.foo.bar'));
+        self::assertEquals('{
+    "extra": {
+        "foo": {
+            "map": {
+                "0": "a"
+            },
+            "empty": {
+            }
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddPropertyKeepsNestedObjects(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "extra": {
+        "foo": {
+            "map": {"0": "a"},
+            "empty": {}
+        }
+    }
+}');
+
+        self::assertTrue($manipulator->addProperty('extra.foo.bar', 'baz'));
+        self::assertEquals('{
+    "extra": {
+        "foo": {
+            "map": {
+                "0": "a"
+            },
+            "empty": {
+            },
+            "bar": "baz"
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
     public function testAddMainKey(): void
     {
         $manipulator = new JsonManipulator('{
