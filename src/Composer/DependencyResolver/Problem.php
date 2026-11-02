@@ -832,8 +832,9 @@ class Problem
 
         $packages = [];
         foreach ($versionsByName as $name => $constraints) {
-            $packages = array_merge($packages, $repositorySet->findPackages($name, MultiConstraint::create($constraints, false)));
+            $packages[] = $repositorySet->findPackages($name, MultiConstraint::create($constraints, false));
         }
+        $packages = array_merge([], ...$packages);
 
         if ($packages === []) {
             return $removals;
