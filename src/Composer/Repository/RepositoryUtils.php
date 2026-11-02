@@ -62,19 +62,8 @@ class RepositoryUtils
      */
     public static function flattenRepositories(RepositoryInterface $repo, bool $unwrapFilterRepos = true): array
     {
-        // unwrap filter repos
-        if ($unwrapFilterRepos && $repo instanceof FilterRepository) {
-            $repo = $repo->getRepository();
-        }
-
-        if (!$repo instanceof CompositeRepository) {
-            return [$repo];
-        }
-
         $repos = [];
-        foreach ($repo->getRepositories() as $r) {
-            self::collectFlattenedRepositories($r, $unwrapFilterRepos, $repos);
-        }
+        self::collectFlattenedRepositories($repo, $unwrapFilterRepos, $repos);
 
         return $repos;
     }
