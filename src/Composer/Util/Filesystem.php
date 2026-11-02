@@ -654,11 +654,9 @@ class Filesystem
      */
     public static function trimTrailingSlash(string $path)
     {
-        if (!Preg::isMatch('{^[/\\\\]+$}', $path)) {
-            $path = rtrim($path, '/\\');
-        }
+        $trimmed = rtrim($path, '/\\');
 
-        return $path;
+        return $trimmed === '' ? $path : $trimmed;
     }
 
     /**
