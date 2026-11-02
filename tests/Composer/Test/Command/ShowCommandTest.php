@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Command;
 
+use Composer\Json\JsonFile;
 use Composer\Package\Link;
 use Composer\Pcre\Preg;
 use Composer\Pcre\Regex;
@@ -22,6 +23,22 @@ use InvalidArgumentException;
 
 class ShowCommandTest extends TestCase
 {
+    public function testShowLicensedPackageAsJson(): void
+    {
+        $this->initTempComposer();
+        $package = self::getPackage('vendor/package', '1.0.0');
+        $package->setLicense(['MIT']);
+        $this->createInstalledJson([$package]);
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', 'package' => 'vendor/package', '--format' => 'json']);
+
+        $appTester->assertCommandIsSuccessful();
+        $json = JsonFile::parseJson($appTester->getDisplay(true));
+        self::assertSame([
+            ['name' => 'MIT License', 'osi' => 'MIT', 'url' => 'https://spdx.org/licenses/MIT.html#licenseText'],
+        ], $json['licenses']);
+    }
+
     /**
      * @dataProvider provideShow
      * @param array<mixed> $command
