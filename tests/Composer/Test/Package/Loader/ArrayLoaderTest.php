@@ -30,6 +30,34 @@ class ArrayLoaderTest extends TestCase
         $this->loader = new ArrayLoader(null);
     }
 
+    public function testLoadPackagesSharesLinksWithoutSharingSelfVersionLinks(): void
+    {
+        $config = ['name' => 'vendor/package', 'version' => '1.0.0'];
+        foreach (['require', 'require-dev', 'conflict', 'provide', 'replace'] as $type) {
+            $config[$type] = ['VENDOR/dep' => '^1.0', 'vendor/self' => 'self.version'];
+        }
+        $nextConfig = $config;
+        $nextConfig['version'] = '2.0.0';
+
+        [$first, $second] = $this->loader->loadPackages([$config, $nextConfig]);
+
+        foreach ([
+            [$first->getRequires(), $second->getRequires()],
+            [$first->getDevRequires(), $second->getDevRequires()],
+            [$first->getConflicts(), $second->getConflicts()],
+            [$first->getProvides(), $second->getProvides()],
+            [$first->getReplaces(), $second->getReplaces()],
+        ] as [$firstLinks, $secondLinks]) {
+            self::assertSame($firstLinks['vendor/dep'], $secondLinks['vendor/dep']);
+            self::assertSame('vendor/dep', $firstLinks['vendor/dep']->getTarget());
+            self::assertNotSame($firstLinks['vendor/self'], $secondLinks['vendor/self']);
+            self::assertSame('1.0.0', $firstLinks['vendor/self']->getConstraint()->getPrettyString());
+            self::assertSame('2.0.0', $secondLinks['vendor/self']->getConstraint()->getPrettyString());
+        }
+
+        self::assertNotSame($first->getRequires()['vendor/dep'], $first->getProvides()['vendor/dep']);
+    }
+
     public function testSelfVersion(): void
     {
         $config = [

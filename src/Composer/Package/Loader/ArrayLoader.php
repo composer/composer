@@ -335,7 +335,7 @@ class ArrayLoader implements LoaderInterface
     }
 
     /**
-     * @param array<string, array<string, array<int|string, array<int|string, array{string, Link}>>>> $linkCache
+     * @param array<string, array<string, array<int|string, array<int|string, Link>>>> $linkCache
      * @param mixed[]                                                                             $config
      */
     private function configureCachedLinks(array &$linkCache, PackageInterface $package, array $config): void
@@ -357,12 +357,8 @@ class ArrayLoader implements LoaderInterface
                     if ($constraint === 'self.version') {
                         $links[$target] = $this->createLink($name, $prettyVersion, $linkType, $target, $constraint);
                     } else {
-                        if (!isset($linkCache[$name][$type][$target][$constraint])) {
-                            $linkCache[$name][$type][$target][$constraint] = [$target, $this->createLink($name, $prettyVersion, $linkType, $target, $constraint)];
-                        }
-
-                        [$target, $link] = $linkCache[$name][$type][$target][$constraint];
-                        $links[$target] = $link;
+                        $links[$target] = $linkCache[$name][$type][$target][$constraint]
+                            ?? ($linkCache[$name][$type][$target][$constraint] = $this->createLink($name, $prettyVersion, $linkType, $target, $constraint));
                     }
                 }
 
