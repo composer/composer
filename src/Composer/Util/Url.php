@@ -133,7 +133,7 @@ class Url
         // e.g. https://api.github.com/repositories/9999999999?access_token=github_token
         $url = Preg::replace('{([&?]access_token=)[^&]+}', '$1***', $url);
 
-        if (strpos($url, '@') === false) {
+        if (!str_contains($url, '@')) {
             return $url;
         }
 
