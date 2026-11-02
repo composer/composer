@@ -13,6 +13,7 @@
 namespace Composer\Test;
 
 use Composer\Factory;
+use Composer\IO\BufferIO;
 use Composer\Util\Platform;
 
 class FactoryTest extends TestCase
@@ -21,6 +22,7 @@ class FactoryTest extends TestCase
     {
         parent::tearDown();
         Platform::clearEnv('COMPOSER');
+        Platform::clearEnv('COMPOSER_AUTH');
     }
 
     /**
@@ -62,5 +64,46 @@ class FactoryTest extends TestCase
     {
         Platform::putEnv('COMPOSER', ' foo.json ');
         self::assertSame('foo.json', Factory::getComposerFile());
+    }
+
+    public function testHomeCannotBeSetByComposerJson(): void
+    {
+        $dir = $this->initTempComposer(['config' => ['home' => 'custom-home']]);
+        $io = new BufferIO();
+
+        $composer = (new Factory())->createComposer($io, null, true, null, false);
+
+        self::assertSame($dir.'/composer-home', $composer->getConfig()->get('home'));
+        self::assertStringContainsString('Ignoring the "home" config set in ./composer.json', $io->getOutput());
+    }
+
+    public function testAuthJsonOnlyAppliesAuthConfig(): void
+    {
+        $dir = $this->initTempComposer([], [
+            'http-basic' => ['example.org' => ['username' => 'foo', 'password' => 'bar']],
+            'gitlab-domains' => ['gitlab.example.org'],
+            'vendor-dir' => 'custom-vendor',
+        ]);
+        $io = new BufferIO();
+
+        $config = (new Factory())->createComposer($io, null, true, null, false)->getConfig();
+
+        self::assertSame(['example.org' => ['username' => 'foo', 'password' => 'bar']], $config->get('http-basic'));
+        self::assertContains('gitlab.example.org', $config->get('gitlab-domains'));
+        self::assertSame($dir.'/vendor', $config->get('vendor-dir'));
+        self::assertStringContainsString('Ignoring the "vendor-dir" config set in '.$dir.'/auth.json', $io->getOutput());
+    }
+
+    public function testComposerAuthEnvOnlyAppliesAuthConfig(): void
+    {
+        $dir = $this->initTempComposer();
+        Platform::putEnv('COMPOSER_AUTH', (string) json_encode(['bearer' => ['example.org' => 'token'], 'vendor-dir' => 'custom-vendor']));
+        $io = new BufferIO();
+
+        $config = (new Factory())->createComposer($io, null, true, null, false)->getConfig();
+
+        self::assertSame(['example.org' => 'token'], $config->get('bearer'));
+        self::assertSame($dir.'/vendor', $config->get('vendor-dir'));
+        self::assertStringContainsString('Ignoring the "vendor-dir" config set in COMPOSER_AUTH', $io->getOutput());
     }
 }
