@@ -51,6 +51,9 @@ use Seld\JsonLint\JsonParser;
  */
 class Factory
 {
+    /** @var string[] */
+    private static $authConfigKeys = array('bitbucket-oauth', 'github-oauth', 'gitlab-oauth', 'gitlab-token', 'http-basic', 'bearer', 'custom-headers', 'client-certificate', 'forgejo-token', 'github-domains', 'gitlab-domains', 'forgejo-domains');
+
     /**
      * @throws \RuntimeException
      * @return string
@@ -237,7 +240,7 @@ class Factory
                 if ($io && $io->isDebug()) {
                     $io->writeError('Loading auth config from COMPOSER_AUTH');
                 }
-                $config->merge(array('config' => $authData), 'COMPOSER_AUTH');
+                $config->merge(array('config' => self::filterAuthConfig($authData, 'COMPOSER_AUTH', $io)), 'COMPOSER_AUTH');
             }
         }
 
@@ -353,6 +356,11 @@ class Factory
 
         // Load config and override with local config/auth config
         $config = static::createConfig($io, $cwd);
+        if (isset($localConfig['config']['home'])) {
+            // the home dir decides which global plugins get loaded, so it must not come from the project
+            $io->writeError('<warning>Ignoring the "home" config set in '.($localConfigSource === Config::SOURCE_UNKNOWN ? 'the root package' : $localConfigSource).', use the COMPOSER_HOME env var to change it.</warning>');
+            unset($localConfig['config']['home']);
+        }
         $config->merge($localConfig, $localConfigSource);
         if (isset($composerFile)) {
             $io->writeError('Loading config file ' . $composerFile .' ('.realpath($composerFile).')', true, IOInterface::DEBUG);
@@ -361,7 +369,7 @@ class Factory
             $localAuthFile = new JsonFile(dirname(realpath($composerFile)) . '/auth.json', null, $io);
             if ($localAuthFile->exists()) {
                 $io->writeError('Loading config file ' . $localAuthFile->getPath(), true, IOInterface::DEBUG);
-                $config->merge(array('config' => $localAuthFile->read()), $localAuthFile->getPath());
+                $config->merge(array('config' => self::filterAuthConfig($localAuthFile->read(), $localAuthFile->getPath(), $io)), $localAuthFile->getPath());
                 $config->setAuthConfigSource(new JsonConfigSource($localAuthFile, true));
             }
         }
@@ -722,6 +730,31 @@ class Factory
         }
 
         return $httpDownloader;
+    }
+
+    /**
+     * Drops any non-auth settings, as auth sources are often not reviewed like composer.json is
+     *
+     * @param mixed $authData
+     * @param string $source
+     * @return array<string, mixed>
+     */
+    private static function filterAuthConfig($authData, $source, IOInterface $io = null)
+    {
+        if (!is_array($authData)) {
+            return array();
+        }
+
+        foreach ($authData as $key => $value) {
+            if (!in_array($key, self::$authConfigKeys, true)) {
+                if (null !== $io) {
+                    $io->writeError('<warning>Ignoring the "'.$key.'" config set in '.$source.', only authentication settings can be set there.</warning>');
+                }
+                unset($authData[$key]);
+            }
+        }
+
+        return $authData;
     }
 
     /**
