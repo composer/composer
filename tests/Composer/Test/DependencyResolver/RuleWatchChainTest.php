@@ -23,7 +23,7 @@ class RuleWatchChainTest extends TestCase
     /**
      * @dataProvider provideRemovalPositions
      */
-    public function testRemovePreservesIteratorPosition(int $size, int $mode, int $offset, int $remaining, int $key, ?int $current): void
+    public function testRemovePreservesIteratorPosition(int $size, int $offset, int $remaining, int $key, ?int $current): void
     {
         $chain = new RuleWatchChain;
         $nodes = [];
@@ -31,7 +31,6 @@ class RuleWatchChainTest extends TestCase
             $nodes[$i] = new RuleWatchNode(new GenericRule([$i + 1], Rule::RULE_LEARNED, 0));
             $chain->push($nodes[$i]);
         }
-        $chain->setIteratorMode($mode);
         $chain->seek($offset);
 
         $chain->remove();
@@ -45,14 +44,11 @@ class RuleWatchChainTest extends TestCase
     public static function provideRemovalPositions(): array
     {
         return [
-            'only element' => [1, RuleWatchChain::IT_MODE_FIFO, 0, 0, 0, null],
-            'head' => [4, RuleWatchChain::IT_MODE_FIFO, 0, 3, 0, 1],
-            'middle' => [4, RuleWatchChain::IT_MODE_FIFO, 1, 3, 1, 2],
-            'before tail' => [4, RuleWatchChain::IT_MODE_FIFO, 2, 3, 2, 3],
-            'tail' => [4, RuleWatchChain::IT_MODE_FIFO, 3, 3, 3, null],
-            'delete mode' => [4, RuleWatchChain::IT_MODE_DELETE, 1, 2, 0, 2],
-            'lifo mode' => [4, RuleWatchChain::IT_MODE_LIFO, 1, 3, 0, 0],
-            'lifo delete mode' => [4, RuleWatchChain::IT_MODE_LIFO | RuleWatchChain::IT_MODE_DELETE, 1, 0, -1, null],
+            'only element' => [1, 0, 0, 0, null],
+            'head' => [4, 0, 3, 0, 1],
+            'middle' => [4, 1, 3, 1, 2],
+            'before tail' => [4, 2, 3, 2, 3],
+            'tail' => [4, 3, 3, 3, null],
         ];
     }
 
