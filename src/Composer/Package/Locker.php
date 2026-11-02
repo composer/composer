@@ -120,15 +120,7 @@ class Locker
             'extra' => true,
         ];
 
-        if (is_array($content)) {
-            $relevantContent = array_intersect_key($content, $relevantKeys);
-        } else {
-            // Preserve the existing diagnostics and handling of non-array JSON roots.
-            $relevantContent = [];
-            foreach (array_intersect(array_keys($relevantKeys), array_keys($content)) as $key) { // @phpstan-ignore-line
-                $relevantContent[$key] = $content[$key];
-            }
-        }
+        $relevantContent = array_intersect_key($content, $relevantKeys);
         if (isset($content['config']['platform'])) {
             $relevantContent['config']['platform'] = $content['config']['platform'];
         }
