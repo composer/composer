@@ -35,24 +35,56 @@ class RepositoryUtils
      */
     public static function filterRequiredPackages(array $packages, PackageInterface $requirer, bool $includeRequireDev = false, array $bucket = []): array
     {
+        $packages = array_values($packages);
+        $packagesByName = [];
+        foreach ($packages as $index => $package) {
+            foreach ($package->getNames() as $name) {
+                $packagesByName[$name][] = $index;
+            }
+        }
+
+        $seen = [];
+        foreach ($bucket as $package) {
+            $seen[spl_object_id($package)] = true;
+        }
+
+        self::collectRequiredPackages($packages, $packagesByName, $requirer, $includeRequireDev, $bucket, $seen);
+
+        return $bucket;
+    }
+
+    /**
+     * @template T of PackageInterface
+     * @param list<T> $packages
+     * @param array<string, list<int>> $packagesByName
+     * @param list<T> $bucket
+     * @param array<int, true> $seen
+     */
+    private static function collectRequiredPackages(array $packages, array $packagesByName, PackageInterface $requirer, bool $includeRequireDev, array &$bucket, array &$seen): void
+    {
         $requires = $requirer->getRequires();
         if ($includeRequireDev) {
             $requires = array_merge($requires, $requirer->getDevRequires());
         }
 
-        foreach ($packages as $candidate) {
-            foreach ($candidate->getNames() as $name) {
-                if (isset($requires[$name])) {
-                    if (!in_array($candidate, $bucket, true)) {
-                        $bucket[] = $candidate;
-                        $bucket = self::filterRequiredPackages($packages, $candidate, false, $bucket);
-                    }
-                    break;
-                }
+        $matches = [];
+        foreach ($requires as $name => $link) {
+            foreach ($packagesByName[$name] ?? [] as $index) {
+                $matches[$index] = true;
             }
         }
+        // visit in $packages order to keep the output order stable
+        ksort($matches);
 
-        return $bucket;
+        foreach ($matches as $index => $_) {
+            $candidate = $packages[$index];
+            $id = spl_object_id($candidate);
+            if (!isset($seen[$id])) {
+                $seen[$id] = true;
+                $bucket[] = $candidate;
+                self::collectRequiredPackages($packages, $packagesByName, $candidate, false, $bucket, $seen);
+            }
+        }
     }
 
     /**
