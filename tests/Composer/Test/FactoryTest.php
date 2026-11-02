@@ -26,7 +26,7 @@ class FactoryTest extends TestCase
     {
         Platform::clearEnv('COMPOSER_HOME');
         Platform::clearEnv('COMPOSER_AUTH');
-        if ($this->dir) {
+        if (null !== $this->dir) {
             $fs = new Filesystem();
             $fs->removeDirectory($this->dir);
             $this->dir = null;
@@ -108,8 +108,8 @@ class FactoryTest extends TestCase
     {
         $this->dir = self::getUniqueTmpDirectory();
         Platform::putEnv('COMPOSER_HOME', $this->dir.'/composer-home');
-        file_put_contents($this->dir.'/composer.json', $composerJson ? json_encode($composerJson) : '{}');
-        if ($authJson) {
+        file_put_contents($this->dir.'/composer.json', count($composerJson) > 0 ? json_encode($composerJson) : '{}');
+        if (count($authJson) > 0) {
             file_put_contents($this->dir.'/auth.json', json_encode($authJson));
         }
     }

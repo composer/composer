@@ -733,9 +733,6 @@ class Factory
     }
 
     /**
-     * @return bool
-     */
-    /**
      * Drops any non-auth settings, as auth sources are often not reviewed like composer.json is
      *
      * @param mixed $authData
@@ -750,7 +747,7 @@ class Factory
 
         foreach ($authData as $key => $value) {
             if (!in_array($key, self::$authConfigKeys, true)) {
-                if ($io) {
+                if (null !== $io) {
                     $io->writeError('<warning>Ignoring the "'.$key.'" config set in '.$source.', only authentication settings can be set there.</warning>');
                 }
                 unset($authData[$key]);
@@ -760,6 +757,9 @@ class Factory
         return $authData;
     }
 
+    /**
+     * @return bool
+     */
     private static function useXdg()
     {
         foreach (array_keys($_SERVER) as $key) {
