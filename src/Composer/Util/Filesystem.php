@@ -686,7 +686,7 @@ class Filesystem
             $path = Preg::replace('{^(?:file:///([a-z]):?/)}i', 'file://$1:/', $path);
         }
 
-        return Preg::replace('{^file://}i', '', $path);
+        return strncasecmp($path, 'file://', 7) === 0 ? substr($path, 7) : $path;
     }
 
     /**
