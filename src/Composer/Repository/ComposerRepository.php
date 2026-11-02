@@ -151,6 +151,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $packagesNotFoundCache = [];
 
     /**
+     * @var array security-advisories API results by package name, null if the API returned nothing for the name
+     * @phpstan-var array<string, array<PartialSecurityAdvisory>|null>
+     */
+    private $securityAdvisoryApiResults = [];
+
+    /**
      * @var VersionParser
      */
     private $versionParser;
@@ -785,60 +791,84 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $this->loop->wait($promises);
         }
 
-        if ($apiUrl !== null && count($packageConstraintMap) > 0) {
-            $options = $this->options;
-            $options['http']['method'] = 'POST';
-            if (isset($options['http']['header'])) {
-                $options['http']['header'] = (array) $options['http']['header'];
+        if ($apiUrl !== null) {
+            // lowercase names so the results cache does not depend on the caller's casing
+            $constraintsByName = [];
+            foreach ($packageConstraintMap as $name => $constraint) {
+                $constraintsByName[strtolower($name)] = $constraint;
             }
-            $options['http']['header'][] = 'Content-type: application/x-www-form-urlencoded';
-            $options['http']['timeout'] = 10;
 
-            $responses = [];
-            $promises = [];
-            foreach (array_chunk(array_keys($packageConstraintMap), self::ADVISORY_API_BATCH_SIZE) as $batchIndex => $batch) {
-                $batchOptions = $options;
-                $batchOptions['http']['content'] = http_build_query(['packages' => $batch]);
-
-                $promises[] = $this->httpDownloader->add($apiUrl, $batchOptions)
-                    ->then(static function (Response $response) use (&$responses, $batchIndex): void {
-                        $responses[$batchIndex] = $response->decodeJson();
-                    });
-            }
-            $this->loop->wait($promises);
-            ksort($responses);
-
-            $repoWarningsShown = false;
-            $warnedAboutUnrequestedNames = false;
-            foreach ($responses as $advisoryData) {
-                if (!$repoWarningsShown) {
-                    ResponseWarnings::output($this->io, $this->url, $advisoryData);
-                    $repoWarningsShown = true;
+            $namesToQuery = array_diff_key($constraintsByName, $this->securityAdvisoryApiResults);
+            if (count($namesToQuery) > 0) {
+                $options = $this->options;
+                $options['http']['method'] = 'POST';
+                if (isset($options['http']['header'])) {
+                    $options['http']['header'] = (array) $options['http']['header'];
                 }
+                $options['http']['header'][] = 'Content-type: application/x-www-form-urlencoded';
+                $options['http']['timeout'] = 10;
 
-                /** @var string $name */
-                foreach ($advisoryData['advisories'] as $name => $list) {
-                    if (!isset($packageConstraintMap[$name])) {
-                        if (!$warnedAboutUnrequestedNames) {
-                            $requested = array_keys($packageConstraintMap);
-                            $requestedList = count($requested) > 20
-                                ? implode(', ', array_slice($requested, 0, 20)).' and '.(count($requested) - 20).' more'
-                                : implode(', ', $requested);
-                            $this->io->writeError('<warning>'.$this->getRepoName().' returned names which were not requested in response to the security-advisories API. '.$name.' was not requested but is present in the response. Requested names were: '.$requestedList.'</warning>');
-                            $warnedAboutUnrequestedNames = true;
+                $responses = [];
+                $promises = [];
+                foreach (array_chunk(array_keys($namesToQuery), self::ADVISORY_API_BATCH_SIZE) as $batchIndex => $batch) {
+                    $batchOptions = $options;
+                    $batchOptions['http']['content'] = http_build_query(['packages' => $batch]);
+
+                    $promises[] = $this->httpDownloader->add($apiUrl, $batchOptions)
+                        ->then(static function (Response $response) use (&$responses, $batchIndex): void {
+                            $responses[$batchIndex] = $response->decodeJson();
+                        });
+                }
+                $this->loop->wait($promises);
+                ksort($responses);
+
+                $repoWarningsShown = false;
+                $warnedAboutUnrequestedNames = false;
+                foreach ($responses as $advisoryData) {
+                    if (!$repoWarningsShown) {
+                        ResponseWarnings::output($this->io, $this->url, $advisoryData);
+                        $repoWarningsShown = true;
+                    }
+
+                    /** @var string $name */
+                    foreach ($advisoryData['advisories'] as $name => $list) {
+                        $name = strtolower($name);
+                        if (!isset($namesToQuery[$name])) {
+                            // names the caller asked for but which were served from the cache are not unexpected
+                            if (!$warnedAboutUnrequestedNames && !isset($constraintsByName[$name])) {
+                                $requested = array_keys($namesToQuery);
+                                $requestedList = count($requested) > 20
+                                    ? implode(', ', array_slice($requested, 0, 20)).' and '.(count($requested) - 20).' more'
+                                    : implode(', ', $requested);
+                                $this->io->writeError('<warning>'.$this->getRepoName().' returned names which were not requested in response to the security-advisories API. '.$name.' was not requested but is present in the response. Requested names were: '.$requestedList.'</warning>');
+                                $warnedAboutUnrequestedNames = true;
+                            }
+                            continue;
                         }
-                        continue;
+                        $this->securityAdvisoryApiResults[$name] = array_map(static function ($data) use ($name, $parser): PartialSecurityAdvisory {
+                            return PartialSecurityAdvisory::create($name, $data, $parser);
+                        }, $list);
                     }
-                    if (count($list) > 0) {
-                        $advisories[$name] = array_values(array_filter(array_map(
-                            static function ($data) use ($name, $create) {
-                                return $create($data, $name);
-                            },
-                            $list
-                        )));
-                    }
-                    $namesFound[$name] = true;
                 }
+
+                foreach (array_keys($namesToQuery) as $name) {
+                    if (!array_key_exists($name, $this->securityAdvisoryApiResults)) {
+                        $this->securityAdvisoryApiResults[$name] = null;
+                    }
+                }
+            }
+
+            foreach ($constraintsByName as $name => $constraint) {
+                $list = $this->securityAdvisoryApiResults[$name] ?? null;
+                if ($list === null) {
+                    continue;
+                }
+                if (count($list) > 0) {
+                    $advisories[$name] = array_values(array_filter($list, static function (PartialSecurityAdvisory $advisory) use ($constraint): bool {
+                        return $advisory->affectedVersions->matches($constraint);
+                    }));
+                }
+                $namesFound[$name] = true;
             }
         }
 
