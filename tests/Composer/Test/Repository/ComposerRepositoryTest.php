@@ -14,6 +14,7 @@ namespace Composer\Test\Repository;
 
 use Composer\Advisory\SecurityAdvisory;
 use Composer\FilterList\FilterListEntry;
+use Composer\IO\BufferIO;
 use Composer\IO\NullIO;
 use Composer\Package\Package;
 use Composer\Json\JsonFile;
@@ -679,7 +680,8 @@ class ComposerRepositoryTest extends TestCase
             ],
             [
                 'url' => 'https://example.org/security-advisories',
-                'body' => JsonFile::encode(['advisories' => ['baz/qux' => [$bazAdvisory]]]),
+                // foo/bar was requested by the caller and served from the cache, so returning it must not warn
+                'body' => JsonFile::encode(['advisories' => ['baz/qux' => [$bazAdvisory], 'foo/bar' => [$fooAdvisory]]]),
                 'options' => ['http' => [
                     'verify_peer' => false,
                     'method' => 'POST',
@@ -692,7 +694,7 @@ class ComposerRepositoryTest extends TestCase
 
         $repository = new ComposerRepository(
             ['url' => 'https://example.org/packages.json', 'options' => ['http' => ['verify_peer' => false]]],
-            new NullIO(),
+            $io = new BufferIO(),
             FactoryMock::createConfig(),
             $httpDownloader
         );
@@ -711,6 +713,7 @@ class ComposerRepositoryTest extends TestCase
         self::assertSame($fooAdvisory['advisoryId'], $third['advisories']['foo/bar'][0]->advisoryId);
         self::assertSame($bazAdvisory['advisoryId'], $third['advisories']['baz/qux'][0]->advisoryId);
 
+        self::assertStringNotContainsString('not requested', $io->getOutput());
         $httpDownloader->assertComplete();
     }
 

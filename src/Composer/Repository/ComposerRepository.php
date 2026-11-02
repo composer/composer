@@ -834,7 +834,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     foreach ($advisoryData['advisories'] as $name => $list) {
                         $name = strtolower($name);
                         if (!isset($namesToQuery[$name])) {
-                            if (!$warnedAboutUnrequestedNames) {
+                            // names the caller asked for but which were served from the cache are not unexpected
+                            if (!$warnedAboutUnrequestedNames && !isset($constraintsByName[$name])) {
                                 $requested = array_keys($namesToQuery);
                                 $requestedList = count($requested) > 20
                                     ? implode(', ', array_slice($requested, 0, 20)).' and '.(count($requested) - 20).' more'
