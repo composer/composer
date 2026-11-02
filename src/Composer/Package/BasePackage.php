@@ -269,7 +269,7 @@ abstract class BasePackage implements PackageInterface
     {
         $cleanedAllowPattern = str_replace('\\*', '.*', preg_quote($allowPattern));
 
-        return sprintf($wrap, $cleanedAllowPattern);
+        return $wrap === '%s' ? $cleanedAllowPattern : sprintf($wrap, $cleanedAllowPattern);
     }
 
     /**
@@ -281,13 +281,11 @@ abstract class BasePackage implements PackageInterface
      */
     public static function packageNamesToRegexp(array $packageNames, string $wrap = '{^(?:%s)$}iD'): string
     {
-        $packageNames = array_map(
-            static function ($packageName): string {
-                return BasePackage::packageNameToRegexp($packageName, '%s');
-            },
-            $packageNames
-        );
+        $patterns = [];
+        foreach ($packageNames as $packageName) {
+            $patterns[] = BasePackage::packageNameToRegexp($packageName, '%s');
+        }
 
-        return sprintf($wrap, implode('|', $packageNames));
+        return sprintf($wrap, implode('|', $patterns));
     }
 }
