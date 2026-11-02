@@ -32,11 +32,8 @@ class PackageSorter
             return null;
         }
 
-        // Avoid copying the input array to reset its internal pointer.
-        foreach ($packages as $highest) {
-            break;
-        }
-        assert(isset($highest));
+        // reset() would copy the array to move its internal pointer
+        $highest = $packages[array_key_first($packages)];
 
         foreach ($packages as $candidate) {
             if ($candidate->isDefaultBranch()) {
