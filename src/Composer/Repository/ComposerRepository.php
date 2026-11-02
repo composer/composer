@@ -151,8 +151,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $packagesNotFoundCache = [];
 
     /**
-     * @var array security-advisories API responses by package name, null if the API returned nothing for the name
-     * @phpstan-var array<string, list<array<mixed>>|null>
+     * @var array security-advisories API results by package name, null if the API returned nothing for the name
+     * @phpstan-var array<string, array<PartialSecurityAdvisory>|null>
      */
     private $securityAdvisoryApiResults = [];
 
@@ -837,7 +837,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                             }
                             continue;
                         }
-                        $this->securityAdvisoryApiResults[$name] = $list;
+                        $this->securityAdvisoryApiResults[$name] = array_map(static function ($data) use ($name, $parser): PartialSecurityAdvisory {
+                            return PartialSecurityAdvisory::create($name, $data, $parser);
+                        }, $list);
                     }
                 }
 
@@ -854,12 +856,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     continue;
                 }
                 if (count($list) > 0) {
-                    $advisories[$name] = array_values(array_filter(array_map(
-                        static function ($data) use ($name, $create) {
-                            return $create($data, $name);
-                        },
-                        $list
-                    )));
+                    $advisories[$name] = array_values(array_filter($list, static function (PartialSecurityAdvisory $advisory) use ($constraint): bool {
+                        return $advisory->affectedVersions->matches($constraint);
+                    }));
                 }
                 $namesFound[$name] = true;
             }
