@@ -90,6 +90,33 @@ class UrlTest extends TestCase
     }
 
     /**
+     * @dataProvider sanitizeUsernameProvider
+     */
+    public function testSanitizeUsername(string $expected, string $user): void
+    {
+        self::assertSame($expected, Url::sanitizeUsername($user));
+    }
+
+    public static function sanitizeUsernameProvider(): array
+    {
+        return [
+            ['', ''],
+            ['alice', 'alice'],
+            ['fffffffffff', 'fffffffffff'],
+            ['fff***', 'ffffffffffff'],
+            ['abc***', 'abcdefghijkl'],
+            ['ghp_', 'ghp_'],
+            ['ghp***', 'ghp_a'],
+            ['ghp***', "ghp_a\n"],
+            ['GHp_a', 'GHp_a'],
+            ['git***', 'github_pat_a'],
+            ['private-token', 'private-token'],
+            ['x-token-auth', 'x-token-auth'],
+            ['gitlab-ci-token', 'gitlab-ci-token'],
+        ];
+    }
+
+    /**
      * @dataProvider sanitizeProvider
      */
     public function testSanitize(string $expected, string $url): void

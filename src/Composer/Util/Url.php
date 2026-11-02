@@ -181,7 +181,8 @@ class Url
             return $user;
         }
         // GitHub tokens and any other long (12char+) value keep only their first 3 chars
-        if (Preg::isMatch(GitHub::GITHUB_TOKEN_REGEX, $user) || strlen($user) >= 12) {
+        // Below 12 bytes, only the gh-prefixed alternative of GITHUB_TOKEN_REGEX can match.
+        if (strlen($user) >= 12 || (str_starts_with($user, 'gh') && Preg::isMatch(GitHub::GITHUB_TOKEN_REGEX, $user))) {
             return substr($user, 0, 3).'***';
         }
 
