@@ -701,7 +701,8 @@ class ComposerRepositoryTest extends TestCase
         self::assertSame(['foo/bar'], $first['namesFound']);
         self::assertSame($fooAdvisory['advisoryId'], $first['advisories']['foo/bar'][0]->advisoryId);
 
-        $second = $repository->getSecurityAdvisories(['foo/bar' => new Constraint('==', '0.9.0.0')]);
+        // different casing still hits the cache
+        $second = $repository->getSecurityAdvisories(['Foo/Bar' => new Constraint('==', '0.9.0.0')]);
         self::assertSame(['foo/bar'], $second['namesFound']);
         self::assertSame([], $second['advisories']);
 

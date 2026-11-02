@@ -792,7 +792,13 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         if ($apiUrl !== null) {
-            $namesToQuery = array_diff_key($packageConstraintMap, $this->securityAdvisoryApiResults);
+            // lowercase names so the results cache does not depend on the caller's casing
+            $constraintsByName = [];
+            foreach ($packageConstraintMap as $name => $constraint) {
+                $constraintsByName[strtolower($name)] = $constraint;
+            }
+
+            $namesToQuery = array_diff_key($constraintsByName, $this->securityAdvisoryApiResults);
             if (count($namesToQuery) > 0) {
                 $options = $this->options;
                 $options['http']['method'] = 'POST';
@@ -826,6 +832,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
                     /** @var string $name */
                     foreach ($advisoryData['advisories'] as $name => $list) {
+                        $name = strtolower($name);
                         if (!isset($namesToQuery[$name])) {
                             if (!$warnedAboutUnrequestedNames) {
                                 $requested = array_keys($namesToQuery);
@@ -850,7 +857,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 }
             }
 
-            foreach ($packageConstraintMap as $name => $constraint) {
+            foreach ($constraintsByName as $name => $constraint) {
                 $list = $this->securityAdvisoryApiResults[$name] ?? null;
                 if ($list === null) {
                     continue;
