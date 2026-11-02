@@ -220,6 +220,30 @@ class FilesystemTest extends TestCase
     }
 
     /**
+     * @dataProvider providePlatformPaths
+     */
+    public function testGetPlatformPath(string $path, string $unixPath, string $windowsPath): void
+    {
+        self::assertSame(Platform::isWindows() ? $windowsPath : $unixPath, Filesystem::getPlatformPath($path));
+    }
+
+    public static function providePlatformPaths(): array
+    {
+        return [
+            ['', '', ''],
+            ['/foo', '/foo', '/foo'],
+            ['relative/path', 'relative/path', 'relative/path'],
+            ['file:///foo', '/foo', '/foo'],
+            ['FiLe:///foo', '/foo', '/foo'],
+            ['file:///c:/foo', '/c:/foo', 'c:/foo'],
+            ['file:///C/foo', '/C/foo', 'C:/foo'],
+            ['file://', '', ''],
+            ['file:/foo', 'file:/foo', 'file:/foo'],
+            ['http://example.org', 'http://example.org', 'http://example.org'],
+        ];
+    }
+
+    /**
      * @dataProvider provideNormalizedPaths
      */
     public function testNormalizePath(string $expected, string $actual): void
