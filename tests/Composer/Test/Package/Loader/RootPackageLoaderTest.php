@@ -74,6 +74,40 @@ class RootPackageLoaderTest extends TestCase
         ], $package->getStabilityFlags());
     }
 
+    public function testExtractStabilityFlagsWithSimpleAndCompoundConstraints(): void
+    {
+        $flags = RootPackageLoader::extractStabilityFlags([
+            'vendor/stable' => "\t^1.0\n",
+            'vendor/range' => '1.0 - 2.0',
+            'VENDOR/beta' => '^1.0 || ^2.0@beta',
+            'vendor/alias' => 'dev-main#abc123 as 1.0.0',
+        ], 'stable', ['vendor/existing' => BasePackage::STABILITY_ALPHA]);
+
+        self::assertSame([
+            'vendor/existing' => BasePackage::STABILITY_ALPHA,
+            'vendor/beta' => BasePackage::STABILITY_BETA,
+            'vendor/alias' => BasePackage::STABILITY_DEV,
+        ], $flags);
+    }
+
+    public function testExtractReferencesPreservesAliasAndExistingReferenceHandling(): void
+    {
+        $references = RootPackageLoader::extractReferences([
+            'vendor/stable' => '^1.0',
+            'vendor/keep' => 'dev-main',
+            'VENDOR/pinned' => 'dev-main#abc123',
+            'vendor/alias' => 'dev-main#def456 as 1.0.0',
+            'vendor/stable-hash' => '1.0.0#abc123',
+            'vendor/alias-hash' => 'dev-main as dev-other#abc123',
+        ], ['vendor/keep' => 'existing']);
+
+        self::assertSame([
+            'vendor/keep' => 'existing',
+            'vendor/pinned' => 'abc123',
+            'vendor/alias' => 'def456',
+        ], $references);
+    }
+
     public function testNoVersionIsVisibleInPrettyVersion(): void
     {
         $manager = $this->getMockBuilder('Composer\\Repository\\RepositoryManager')

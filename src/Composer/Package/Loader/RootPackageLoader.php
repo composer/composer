@@ -247,9 +247,9 @@ class RootPackageLoader extends ArrayLoader
             $constraints = [];
 
             // extract all sub-constraints in case it is an OR/AND multi-constraint
-            $orSplit = Preg::split('{\s*\|\|?\s*}', trim($reqVersion));
+            $orSplit = str_contains($reqVersion, '|') ? Preg::split('{\s*\|\|?\s*}', trim($reqVersion)) : [trim($reqVersion)];
             foreach ($orSplit as $orConstraint) {
-                $andSplit = Preg::split('{(?<!^|as|[=>< ,]) *(?<!-)[, ](?!-) *(?!,|as|$)}', $orConstraint);
+                $andSplit = strpbrk($orConstraint, ', ') === false ? [$orConstraint] : Preg::split('{(?<!^|as|[=>< ,]) *(?<!-)[, ](?!-) *(?!,|as|$)}', $orConstraint);
                 foreach ($andSplit as $andConstraint) {
                     $constraints[] = $andConstraint;
                 }
@@ -258,7 +258,7 @@ class RootPackageLoader extends ArrayLoader
             // parse explicit stability flags to the most unstable
             $matched = false;
             foreach ($constraints as $constraint) {
-                if (Preg::isMatchStrictGroups('{^[^@]*?@('.implode('|', array_keys($stabilities)).')$}i', $constraint, $match)) {
+                if (str_contains($constraint, '@') && Preg::isMatchStrictGroups('{^[^@]*?@('.implode('|', array_keys($stabilities)).')$}i', $constraint, $match)) {
                     $name = strtolower($reqName);
                     $stability = $stabilities[VersionParser::normalizeStability($match[1])];
 
@@ -303,6 +303,10 @@ class RootPackageLoader extends ArrayLoader
     public static function extractReferences(array $requires, array $references): array
     {
         foreach ($requires as $reqName => $reqVersion) {
+            if (!str_contains($reqVersion, '#')) {
+                continue;
+            }
+
             $reqVersion = Preg::replace('{^([^,\s@]+) as .+$}', '$1', $reqVersion);
             if (Preg::isMatchStrictGroups('{^[^,\s@]+?#([a-f0-9]+)$}', $reqVersion, $match) && 'dev' === VersionParser::parseStability($reqVersion)) {
                 $name = strtolower($reqName);
