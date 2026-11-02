@@ -69,10 +69,9 @@ class Comparer
         }
 
         $string = '';
-        foreach ($changed as $sectionKey => $itemSection) {
-            foreach ($itemSection as $itemKey => $item) {
-                $string .= $item;
-                $string .= "\r\n\r\n";
+        foreach ($changed as $itemSection) {
+            foreach ($itemSection as $item) {
+                $string .= $item . "\r\n\r\n";
             }
         }
 
