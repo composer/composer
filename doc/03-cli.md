@@ -1306,7 +1306,9 @@ The `COMPOSER_AUTH` var allows you to set up authentication as an environment va
 The contents of the variable should be a JSON formatted object containing [http-basic,
 github-oauth, bitbucket-oauth, ... objects as needed](articles/authentication-for-private-packages.md),
 and following the
-[spec from the config](06-config.md).
+[spec from the config](06-config.md). Any other config setting found in there is
+ignored, except for `github-domains`, `gitlab-domains` and `forgejo-domains`. The
+same applies to a project's `auth.json` file.
 
 ### COMPOSER_BIN_COMPAT
 
