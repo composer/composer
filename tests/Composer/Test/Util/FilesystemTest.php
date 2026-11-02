@@ -196,6 +196,30 @@ class FilesystemTest extends TestCase
     }
 
     /**
+     * @dataProvider providePathsWithTrailingSlashes
+     */
+    public function testTrimTrailingSlash(string $expected, string $path): void
+    {
+        self::assertSame($expected, Filesystem::trimTrailingSlash($path));
+    }
+
+    public static function providePathsWithTrailingSlashes(): array
+    {
+        return [
+            ['', ''],
+            ['/', '/'],
+            ['//', '//'],
+            ['\\', '\\'],
+            ['/\\/', '/\\/'],
+            ['/foo', '/foo///'],
+            ['C:\\foo', 'C:\\foo\\'],
+            ['relative/path', 'relative/path'],
+            ['relative/path', 'relative/path/\\'],
+            ["/foo/\n", "/foo/\n"],
+        ];
+    }
+
+    /**
      * @dataProvider provideNormalizedPaths
      */
     public function testNormalizePath(string $expected, string $actual): void
