@@ -78,12 +78,12 @@ abstract class BaseExcludeFilter
      * @param string[] $lines A set of lines to be parsed
      * @param callable $lineParser The parser to be used on each line
      *
-     * @return array<array{0: non-empty-string, 1: bool, 2: bool}> Exclude patterns to be used in filter()
+     * @return list<array{0: non-empty-string, 1: bool, 2: bool}> Exclude patterns to be used in filter()
      */
     protected function parseLines(array $lines, callable $lineParser): array
     {
         $patterns = [];
-        foreach ($lines as $key => $line) {
+        foreach ($lines as $line) {
             $line = trim($line);
             if (!$line || 0 === strpos($line, '#')) {
                 continue;
@@ -91,7 +91,7 @@ abstract class BaseExcludeFilter
 
             $pattern = $lineParser($line);
             if ($pattern !== null) {
-                $patterns[$key] = $pattern;
+                $patterns[] = $pattern;
             }
         }
 
