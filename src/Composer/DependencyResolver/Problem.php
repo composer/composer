@@ -830,13 +830,19 @@ class Problem
             }
         }
 
-        $completeAdvisories = [];
+        $packages = [];
         foreach ($versionsByName as $name => $constraints) {
-            $packages = $repositorySet->findPackages($name, MultiConstraint::create($constraints, false));
-            foreach ($repositorySet->getMatchingSecurityAdvisories($packages, false, true)['advisories'] as $advisories) {
-                foreach ($advisories as $advisory) {
-                    $completeAdvisories[$advisory->advisoryId] = $advisory;
-                }
+            $packages = array_merge($packages, $repositorySet->findPackages($name, MultiConstraint::create($constraints, false)));
+        }
+
+        if ($packages === []) {
+            return $removals;
+        }
+
+        $completeAdvisories = [];
+        foreach ($repositorySet->getMatchingSecurityAdvisories($packages, false, true)['advisories'] as $advisories) {
+            foreach ($advisories as $advisory) {
+                $completeAdvisories[$advisory->advisoryId] = $advisory;
             }
         }
 
