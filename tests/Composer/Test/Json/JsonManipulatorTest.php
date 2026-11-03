@@ -3160,6 +3160,186 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
+    public function testRemoveConfigSettingKeepsEmptyObjectsInSiblings(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "config": {
+        "platform": {
+            "php": "8.2.0"
+        },
+        "allow-plugins": {},
+        "preferred-install": {
+            "*": "dist"
+        }
+    }
+}');
+
+        self::assertTrue($manipulator->removeConfigSetting('platform.php'));
+        self::assertEquals('{
+    "config": {
+        "platform": {
+        },
+        "allow-plugins": {
+        },
+        "preferred-install": {
+            "*": "dist"
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testRemovePropertyKeepsNestedObjects(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "extra": {
+        "foo": {
+            "bar": "baz",
+            "map": {"0": "a"},
+            "empty": {}
+        }
+    }
+}');
+
+        self::assertTrue($manipulator->removeProperty('extra.foo.bar'));
+        self::assertEquals('{
+    "extra": {
+        "foo": {
+            "map": {
+                "0": "a"
+            },
+            "empty": {
+            }
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddPropertyKeepsNestedObjects(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "extra": {
+        "foo": {
+            "map": {"0": "a"},
+            "empty": {}
+        }
+    }
+}');
+
+        self::assertTrue($manipulator->addProperty('extra.foo.bar', 'baz'));
+        self::assertEquals('{
+    "extra": {
+        "foo": {
+            "map": {
+                "0": "a"
+            },
+            "empty": {
+            },
+            "bar": "baz"
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
+    /**
+     * @dataProvider provideSubKeyEditsKeepObjectOrListShape
+     */
+    public function testSubKeyEditsKeepObjectOrListShape(string $input, string $property, ?string $value, string $expected): void
+    {
+        $manipulator = new JsonManipulator($input);
+        if ($value === null) {
+            self::assertTrue($manipulator->removeProperty($property));
+        } else {
+            self::assertTrue($manipulator->addProperty($property, $value));
+        }
+        self::assertSame($expected, $manipulator->getContents());
+    }
+
+    /**
+     * @return iterable<string, array{string, string, string|null, string}>
+     */
+    public static function provideSubKeyEditsKeepObjectOrListShape(): iterable
+    {
+        yield 'add to object with numeric keys' => [
+            '{"extra": {"foo": {"0": "a"}}}',
+            'extra.foo.1',
+            'b',
+            '{"extra": {"foo": {
+            "0": "a",
+            "1": "b"
+        }}}
+',
+        ];
+        yield 'add to list' => [
+            '{"extra": {"foo": ["a"]}}',
+            'extra.foo.1',
+            'b',
+            '{"extra": {"foo": ["a", "b"]}}
+',
+        ];
+        yield 'remove from object leaving numeric keys' => [
+            '{"extra": {"foo": {"0": "a", "1": "b", "x": "c"}, "o": 1}}',
+            'extra.foo.x',
+            null,
+            '{"extra": {
+        "foo": {
+            "0": "a",
+            "1": "b"
+        },
+        "o": 1
+    }}
+',
+        ];
+        yield 'remove from only child object leaving numeric keys' => [
+            '{"extra": {"foo": {"0": "a", "1": "b", "x": "c"}}}',
+            'extra.foo.x',
+            null,
+            '{"extra": {
+        "foo": {
+            "0": "a",
+            "1": "b"
+        }
+    }}
+',
+        ];
+        yield 'remove first list item' => [
+            '{"extra": {"foo": ["a", "b"], "o": 1}}',
+            'extra.foo.0',
+            null,
+            '{"extra": {
+        "foo": ["b"],
+        "o": 1
+    }}
+',
+        ];
+        yield 'remove last remaining list item' => [
+            '{"extra": {"foo": ["a"], "o": 1}}',
+            'extra.foo.0',
+            null,
+            '{"extra": {
+        "foo": [],
+        "o": 1
+    }}
+',
+        ];
+        yield 'remove numeric sub-key of a string is a no-op' => [
+            '{"extra": {"foo": "abc", "o": 1}}',
+            'extra.foo.0',
+            null,
+            '{"extra": {"foo": "abc", "o": 1}}
+',
+        ];
+        yield 'remove numeric sub-key of an only child string is a no-op' => [
+            '{"extra": {"foo": "abc"}}',
+            'extra.foo.0',
+            null,
+            '{"extra": {"foo": "abc"}}
+',
+        ];
+    }
+
     public function testAddMainKey(): void
     {
         $manipulator = new JsonManipulator('{
