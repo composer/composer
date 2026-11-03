@@ -183,6 +183,38 @@ GIT;
         yield 'updated mirror on git 2.48+ uses mirror HEAD' => ['2.48.0', true, false];
     }
 
+    public function testGetRootIdentifierAsksRemoteAfterFailedMirrorSync(): void
+    {
+        Platform::clearEnv('COMPOSER_DISABLE_NETWORK');
+        $this->getGitVersionProperty()->setValue(null, '2.48.0');
+
+        $url = 'https://example.org/acme.git';
+        $repoDir = $this->config->get('cache-vcs-dir').'/https---example.org-acme.git/';
+        mkdir($repoDir, 0777, true);
+
+        $process = $this->getProcessExecutorMock();
+        $process->expects([
+            ['cmd' => ['git', 'rev-parse', '--git-dir'], 'stdout' => ".\n"],
+            ['cmd' => ['git', 'remote', '-v']],
+            ['cmd' => ['git', 'remote', 'set-url', 'origin', '--', $url]],
+            ['cmd' => ['git', '-c', 'remote.origin.followRemoteHEAD=always', 'remote', 'update', '--prune', 'origin'], 'return' => 1],
+            ['cmd' => ['git', 'remote', '-v']],
+            ['cmd' => ['git', 'remote', 'set-url', 'origin', '--', $url]],
+            ['cmd' => ['git', 'show-ref', '--tags', '--dereference']],
+            ['cmd' => ['git', 'branch', '--no-color', '--no-abbrev', '-v']],
+            ['cmd' => ['git', 'remote', '-v']],
+            ['cmd' => ['git', 'remote', 'set-url', 'origin', '--', $url]],
+            ['cmd' => ['git', 'remote', 'show', 'origin'], 'stdout' => "* remote origin\n  HEAD branch: main\n"],
+            ['cmd' => ['git', 'remote', '-v']],
+            ['cmd' => ['git', 'remote', 'set-url', 'origin', '--', $url]],
+        ], true);
+
+        $driver = new GitDriver(['url' => $url], $this->getIOMock(), $this->config, $this->getHttpDownloaderMock(), $process);
+        $driver->initialize();
+
+        self::assertSame('main', $driver->getRootIdentifier());
+    }
+
     public function testGetRootIdentifierFromLocalWithNetworkDisabled(): void
     {
         Platform::putEnv('COMPOSER_DISABLE_NETWORK', '1');
