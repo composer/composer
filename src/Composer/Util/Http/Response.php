@@ -113,11 +113,7 @@ class Response
      */
     public static function findHeaderValue(array $headers, string $name): ?string
     {
-        if ($headers === []) {
-            return null;
-        }
-
-        $pattern = '{^'.preg_quote($name).':\s*(.+?)\s*$}i';
+        $pattern = '{^'.preg_quote($name).':\s*+(.+?)\s*$}i';
         $value = null;
         foreach ($headers as $header) {
             if (Preg::isMatch($pattern, $header, $match)) {
