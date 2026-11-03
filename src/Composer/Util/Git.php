@@ -389,7 +389,8 @@ class Git
                 try {
                     $commands = [
                         ['git', 'remote', 'set-url', 'origin', '--', '%url%'],
-                        ['git', 'remote', 'update', '--prune', 'origin'],
+                        // ensures HEAD follows the remote default branch even if the user disabled it globally
+                        ['git', '-c', 'remote.origin.followRemoteHEAD=always', 'remote', 'update', '--prune', 'origin'],
                         ['git', 'gc', '--auto'],
                     ];
 

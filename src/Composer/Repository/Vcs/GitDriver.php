@@ -34,6 +34,8 @@ class GitDriver extends VcsDriver
     protected $rootIdentifier;
     /** @var string */
     protected $repoDir;
+    /** @var bool */
+    private $mirrorHeadIsFresh = false;
 
     /**
      * @inheritDoc
@@ -67,12 +69,17 @@ class GitDriver extends VcsDriver
                 throw new \InvalidArgumentException('The source URL '.Url::sanitize($this->url).' is invalid, ssh URLs should have a port number after ":".'."\n".'Use ssh://git@example.com:22/path or just git@example.com:path if you do not want to provide a password or custom port.');
             }
 
+            $isFreshClone = !is_dir($this->repoDir);
             $gitUtil = new GitUtil($this->io, $this->config, $this->process, $fs);
             if (!$gitUtil->syncMirror($this->url, $this->repoDir)) {
                 if (!is_dir($this->repoDir)) {
                     throw new \RuntimeException('Failed to clone '.Url::sanitize($this->url).' to read package information from it');
                 }
                 $this->io->writeError('<error>Failed to update '.Url::sanitize($this->url).', package information from this repository may be outdated</error>');
+            } else {
+                // clone --mirror sets HEAD to the remote default branch, and since git 2.48 fetching into a mirror keeps it updated
+                $gitVersion = GitUtil::getVersion($this->process);
+                $this->mirrorHeadIsFresh = $isFreshClone || ($gitVersion !== null && version_compare($gitVersion, '2.48.0', '>='));
             }
 
             $cacheUrl = $this->url;
@@ -94,7 +101,7 @@ class GitDriver extends VcsDriver
             $this->rootIdentifier = 'master';
 
             $gitUtil = new GitUtil($this->io, $this->config, $this->process, new Filesystem());
-            if (!Filesystem::isLocalPath($this->url)) {
+            if (!$this->mirrorHeadIsFresh && !Filesystem::isLocalPath($this->url)) {
                 $defaultBranch = $gitUtil->getMirrorDefaultBranch($this->url, $this->repoDir, false);
                 if ($defaultBranch !== null) {
                     return $this->rootIdentifier = $defaultBranch;

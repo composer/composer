@@ -379,7 +379,7 @@ class GitTest extends TestCase
             ['cmd' => ['git', 'rev-parse', '--git-dir'], 'stdout' => ".\n", 'return' => 0],
             ['cmd' => ['git', 'remote', '-v'], 'return' => 0],
             ['cmd' => ['git', 'remote', 'set-url', 'origin', '--', 'https://user:secret@example.com/repo.git'], 'return' => 0],
-            ['cmd' => ['git', 'remote', 'update', '--prune', 'origin'], 'return' => 1],
+            ['cmd' => ['git', '-c', 'remote.origin.followRemoteHEAD=always', 'remote', 'update', '--prune', 'origin'], 'return' => 1],
             ['cmd' => ['git', '--version'], 'return' => 0],
             ['cmd' => ['git', 'remote', '-v'], 'return' => 0],
             ['cmd' => ['git', 'remote', 'set-url', 'origin', '--', 'https://example.com/repo.git'], 'return' => 0],

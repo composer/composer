@@ -16,6 +16,7 @@ use Composer\Config;
 use Composer\Repository\Vcs\GitDriver;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
+use Composer\Util\Git as GitUtil;
 use Composer\Util\Platform;
 
 class GitDriverTest extends TestCase
@@ -44,6 +45,7 @@ class GitDriverTest extends TestCase
         parent::tearDown();
         $fs = new Filesystem;
         $fs->removeDirectory($this->home);
+        $this->setGitVersion(false);
         if ($this->networkEnv === false) {
             Platform::clearEnv('COMPOSER_DISABLE_NETWORK');
         } else {
@@ -115,6 +117,66 @@ GIT;
             ]]);
 
         self::assertSame('main', $driver->getRootIdentifier());
+    }
+
+    /**
+     * @dataProvider provideMirrorHeadCases
+     */
+    public function testGetRootIdentifierAfterMirrorSync(string $gitVersion, bool $existingMirror, bool $expectRemoteShow): void
+    {
+        Platform::clearEnv('COMPOSER_DISABLE_NETWORK');
+        $this->setGitVersion($gitVersion);
+
+        $url = 'https://example.org/acme.git';
+        $repoDir = $this->config->get('cache-vcs-dir').'/https---example.org-acme.git/';
+        if ($existingMirror) {
+            mkdir($repoDir, 0777, true);
+        }
+
+        $process = $this->getProcessExecutorMock();
+        $expected = [];
+        if ($existingMirror) {
+            $expected[] = ['cmd' => ['git', 'rev-parse', '--git-dir'], 'stdout' => ".\n"];
+            $expected[] = ['cmd' => ['git', 'remote', '-v']];
+            $expected[] = ['cmd' => ['git', 'remote', 'set-url', 'origin', '--', $url]];
+            $expected[] = ['cmd' => ['git', '-c', 'remote.origin.followRemoteHEAD=always', 'remote', 'update', '--prune', 'origin']];
+            $expected[] = ['cmd' => ['git', 'gc', '--auto']];
+        } else {
+            $expected[] = ['cmd' => ['git', 'clone', '--mirror', '--', $url, $repoDir]];
+        }
+        $expected[] = ['cmd' => ['git', 'remote', '-v']];
+        $expected[] = ['cmd' => ['git', 'remote', 'set-url', 'origin', '--', $url]];
+        $expected[] = ['cmd' => ['git', 'show-ref', '--tags', '--dereference']];
+        $expected[] = ['cmd' => ['git', 'branch', '--no-color', '--no-abbrev', '-v']];
+        if ($expectRemoteShow) {
+            $expected[] = ['cmd' => ['git', 'remote', '-v']];
+            $expected[] = ['cmd' => ['git', 'remote', 'set-url', 'origin', '--', $url]];
+            $expected[] = ['cmd' => ['git', 'remote', 'show', 'origin'], 'stdout' => "* remote origin\n  HEAD branch: main\n"];
+            $expected[] = ['cmd' => ['git', 'remote', '-v']];
+            $expected[] = ['cmd' => ['git', 'remote', 'set-url', 'origin', '--', $url]];
+        } else {
+            $expected[] = ['cmd' => ['git', 'branch', '--no-color'], 'stdout' => "  2.2\n* main\n"];
+        }
+        $process->expects($expected, true);
+
+        // errors swallowed by GitUtil would otherwise hide unexpected commands
+        $io = $this->getIOMock();
+        $io->expects([], true);
+
+        $driver = new GitDriver(['url' => $url], $io, $this->config, $this->getHttpDownloaderMock(), $process);
+        $driver->initialize();
+
+        self::assertSame('main', $driver->getRootIdentifier());
+    }
+
+    /**
+     * @return iterable<string, array{string, bool, bool}>
+     */
+    public static function provideMirrorHeadCases(): iterable
+    {
+        yield 'fresh clone on old git uses mirror HEAD' => ['2.47.0', false, false];
+        yield 'updated mirror on old git asks the remote' => ['2.47.0', true, true];
+        yield 'updated mirror on git 2.48+ uses mirror HEAD' => ['2.48.0', true, false];
     }
 
     public function testGetRootIdentifierFromLocalWithNetworkDisabled(): void
@@ -193,6 +255,18 @@ GIT;
         $driver = new GitDriver(['url' => 'https://example.org/acme.git'], $io, $this->config, $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(), $process);
 
         $driver->getChangeDate('-n1 --format=%at HEAD');
+    }
+
+    /**
+     * @param string|false $version
+     */
+    private function setGitVersion($version): void
+    {
+        $reflectionProperty = new \ReflectionProperty(GitUtil::class, 'version');
+        if (\PHP_VERSION_ID < 80100) {
+            $reflectionProperty->setAccessible(true);
+        }
+        $reflectionProperty->setValue(null, $version);
     }
 
     private function setRepoDir(GitDriver $driver, string $path): void
