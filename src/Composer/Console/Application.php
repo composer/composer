@@ -751,6 +751,7 @@ class Application extends BaseApplication
             new Command\DiagnoseCommand(),
             new Command\RunScriptCommand(),
             new Command\LicensesCommand(),
+            new Command\SbomCommand(),
             new Command\GlobalCommand(),
             new Command\ClearCacheCommand(),
             new Command\RemoveCommand(),
