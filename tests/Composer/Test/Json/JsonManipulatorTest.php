@@ -3257,6 +3257,9 @@ class JsonManipulatorTest extends TestCase
         self::assertSame($expected, $manipulator->getContents());
     }
 
+    /**
+     * @return iterable<string, array{string, string, string|null, string}>
+     */
     public static function provideSubKeyEditsKeepObjectOrListShape(): iterable
     {
         yield 'add to object with numeric keys' => [
