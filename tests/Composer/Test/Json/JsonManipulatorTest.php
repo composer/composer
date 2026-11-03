@@ -3641,6 +3641,67 @@ class JsonManipulatorTest extends TestCase
         self::assertJsonStringEqualsJsonString($expected, $manipulator->getContents());
     }
 
+    public function testRemoveSubNodeRemovesKeyWhereValueIsNull(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "extra": {
+        "foo": null,
+        "bar": {
+            "baz": null,
+            "qux": 1
+        }
+    },
+    "config": {
+        "cache-dir": null,
+        "sort-packages": true
+    },
+    "require": {
+        "foo/bar": null
+    }
+}');
+
+        self::assertTrue($manipulator->removeProperty('extra.foo'));
+        self::assertTrue($manipulator->removeProperty('extra.bar.baz'));
+        self::assertTrue($manipulator->removeConfigSetting('cache-dir'));
+        self::assertTrue($manipulator->removeLink('require', 'foo/bar'));
+        self::assertSame('{
+    "extra": {
+        "bar": {
+            "qux": 1
+        }
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testUpdateKeyWhereValueIsNull(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "name": "foo/bar",
+    "homepage": null,
+    "extra": null,
+    "require": null
+}');
+
+        self::assertTrue($manipulator->addMainKey('homepage', 'https://example.org'));
+        self::assertTrue($manipulator->addProperty('extra.foo', 'bar'));
+        self::assertTrue($manipulator->addLink('require', 'foo/baz', '^1'));
+        self::assertSame('{
+    "name": "foo/bar",
+    "homepage": "https://example.org",
+    "extra": {
+        "foo": "bar"
+    },
+    "require": {
+        "foo/baz": "^1"
+    }
+}
+', $manipulator->getContents());
+    }
+
     public function testIndentDetection(): void
     {
         $manipulator = new JsonManipulator('{
@@ -4128,6 +4189,22 @@ class JsonManipulatorTest extends TestCase
 ',
             'main',
             2,
+        ];
+        yield 'null item (multi-line) remove first' => [
+            '{
+    "main": [
+        null,
+        2
+    ]
+}',
+            '{
+    "main": [
+        2
+    ]
+}
+',
+            'main',
+            0,
         ];
     }
 

@@ -241,7 +241,7 @@ class JsonConfigSourceTest extends TestCase
 
     /**
      * @dataProvider providePropertyManipulations
-     * @param 'addProperty'|'removeProperty'|'removeLink' $method
+     * @param 'addProperty'|'removeProperty'|'removeLink'|'removeRepository' $method
      * @param list<string> $args
      */
     public function testPropertyFallbackMatchesManipulator(string $original, string $method, array $args, string $expected): void
@@ -267,7 +267,7 @@ class JsonConfigSourceTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{string, 'addProperty'|'removeProperty'|'removeLink', list<string>, string}>
+     * @return iterable<string, array{string, 'addProperty'|'removeProperty'|'removeLink'|'removeRepository', list<string>, string}>
      */
     public static function providePropertyManipulations(): iterable
     {
@@ -284,6 +284,10 @@ class JsonConfigSourceTest extends TestCase
         yield 'remove last link removes the key' => ['{"require": {"a/b": "1"}, "require-dev": {"c/d": "1"}}', 'removeLink', ['require-dev', 'c/d'], '{"require":{"a\/b":"1"}}'];
         yield 'remove link keeps the other links' => ['{"require-dev": {"a/b": "1", "c/d": "1"}}', 'removeLink', ['require-dev', 'c/d'], '{"require-dev":{"a\/b":"1"}}'];
         yield 'remove missing link keeps the key' => ['{"require-dev": {"a/b": "1"}}', 'removeLink', ['require-dev', 'c/d'], '{"require-dev":{"a\/b":"1"}}'];
+        yield 'remove extra key set to null' => ['{"extra": {"foo": null, "z": 1}}', 'removeProperty', ['extra.foo'], '{"extra":{"z":1}}'];
+        yield 'remove nested extra key set to null' => ['{"extra": {"foo": {"bar": null, "z": 1}}}', 'removeProperty', ['extra.foo.bar'], '{"extra":{"foo":{"z":1}}}'];
+        yield 'remove link set to null' => ['{"require-dev": {"a/b": "1", "c/d": null}}', 'removeLink', ['require-dev', 'c/d'], '{"require-dev":{"a\/b":"1"}}'];
+        yield 'remove repository set to null' => ['{"repositories": {"foo": null, "bar": {"type": "vcs", "url": "x"}}}', 'removeRepository', ['foo'], '{"repositories":{"bar":{"type":"vcs","url":"x"}}}'];
     }
 
     public function testRemovePolicyListFieldCascadesEmptyAncestors(): void
