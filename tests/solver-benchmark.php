@@ -1,0 +1,69 @@
+<?php declare(strict_types=1);
+
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+/*
+ * Usage: php tests/solver-benchmark.php [--baseline=results.json] [--threshold=15] [scenario ...]
+ *
+ * Prints the results as JSON on stdout. When a baseline is given, exits with
+ * code 1 if rule counts or peak memory grew by more than the threshold percentage.
+ */
+
+use Composer\Test\Benchmark\SolverBenchmark;
+
+require __DIR__.'/../vendor/autoload.php';
+
+ini_set('memory_limit', '-1');
+
+$baselineFile = null;
+$threshold = 15.0;
+$scenarios = [];
+foreach (array_slice($argv, 1) as $arg) {
+    if (strpos($arg, '--baseline=') === 0) {
+        $baselineFile = substr($arg, strlen('--baseline='));
+    } elseif (strpos($arg, '--threshold=') === 0) {
+        $threshold = (float) substr($arg, strlen('--threshold='));
+    } elseif (isset(SolverBenchmark::SCENARIOS[$arg])) {
+        $scenarios[] = $arg;
+    } else {
+        fwrite(STDERR, 'Unknown argument "'.$arg.'", available scenarios: '.implode(', ', array_keys(SolverBenchmark::SCENARIOS)).PHP_EOL);
+        exit(2);
+    }
+}
+
+if (count($scenarios) === 0) {
+    $scenarios = array_keys(SolverBenchmark::SCENARIOS);
+}
+
+$results = [];
+foreach ($scenarios as $scenario) {
+    $results[$scenario] = SolverBenchmark::run(SolverBenchmark::SCENARIOS[$scenario]);
+}
+
+echo json_encode($results, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES).PHP_EOL;
+
+if ($baselineFile === null) {
+    exit(0);
+}
+
+$baselineJson = file_get_contents($baselineFile);
+$baseline = is_string($baselineJson) ? json_decode($baselineJson, true) : null;
+if (!is_array($baseline)) {
+    fwrite(STDERR, 'Could not read baseline results from '.$baselineFile.PHP_EOL);
+    exit(2);
+}
+
+$regressions = SolverBenchmark::findRegressions($baseline, $results, $threshold);
+foreach ($regressions as $regression) {
+    fwrite(STDERR, $regression.PHP_EOL);
+}
+
+exit(count($regressions) > 0 ? 1 : 0);
