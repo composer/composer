@@ -16,10 +16,12 @@ use Composer\Test\TestCase;
 
 class SbomCommandTest extends TestCase
 {
-    protected function setUp(): void
+    /**
+     * Not done in setUp() as some tests need their own project, and calling
+     * initTempComposer() twice in one test breaks the cwd restore on tearDown
+     */
+    private function initDefaultProject(): void
     {
-        parent::setUp();
-
         $this->initTempComposer([
             'name' => 'test/pkg',
             'version' => '1.2.3',
@@ -120,6 +122,7 @@ class SbomCommandTest extends TestCase
 
     public function testCycloneDxIsTheDefaultFormat(): void
     {
+        $this->initDefaultProject();
         $sbom = $this->runSbom();
 
         self::assertSame('CycloneDX', $sbom['bomFormat']);
@@ -133,6 +136,7 @@ class SbomCommandTest extends TestCase
 
     public function testCycloneDxSerialNumberIsUniquePerRun(): void
     {
+        $this->initDefaultProject();
         $first = $this->runSbom(['--format' => 'cyclonedx']);
         $second = $this->runSbom(['--format' => 'cyclonedx']);
 
@@ -141,6 +145,7 @@ class SbomCommandTest extends TestCase
 
     public function testCycloneDxRootComponent(): void
     {
+        $this->initDefaultProject();
         $sbom = $this->runSbom();
 
         self::assertSame([
@@ -156,6 +161,7 @@ class SbomCommandTest extends TestCase
 
     public function testCycloneDxComponentsAreSortedAndScoped(): void
     {
+        $this->initDefaultProject();
         $sbom = $this->runSbom();
 
         self::assertSame([
@@ -179,6 +185,7 @@ class SbomCommandTest extends TestCase
 
     public function testCycloneDxComponentDetails(): void
     {
+        $this->initDefaultProject();
         $components = self::componentsByPurl($this->runSbom());
 
         $first = $components['pkg:composer/first/pkg@2.3.4'];
@@ -212,6 +219,7 @@ class SbomCommandTest extends TestCase
 
     public function testCycloneDxDoesNotLeakCredentials(): void
     {
+        $this->initDefaultProject();
         $appTester = $this->getApplicationTester();
         self::assertSame(0, $appTester->run(['command' => 'sbom'], ['capture_stderr_separately' => true]));
 
@@ -220,6 +228,7 @@ class SbomCommandTest extends TestCase
 
     public function testCycloneDxDependencies(): void
     {
+        $this->initDefaultProject();
         $dependencies = self::dependenciesByRef($this->runSbom());
 
         self::assertSame([
@@ -237,6 +246,7 @@ class SbomCommandTest extends TestCase
 
     public function testCycloneDxNoDev(): void
     {
+        $this->initDefaultProject();
         $sbom = $this->runSbom(['--no-dev' => true]);
 
         self::assertSame([
@@ -253,6 +263,8 @@ class SbomCommandTest extends TestCase
 
     public function testCycloneDxLocked(): void
     {
+        $this->initDefaultProject();
+
         // remove the installed packages so only the lock file can provide them
         unlink('vendor/composer/installed.json');
 
@@ -272,6 +284,7 @@ class SbomCommandTest extends TestCase
 
     public function testCycloneDxLockedNoDev(): void
     {
+        $this->initDefaultProject();
         $sbom = $this->runSbom(['--locked' => true, '--no-dev' => true]);
 
         self::assertSame([
@@ -284,6 +297,8 @@ class SbomCommandTest extends TestCase
 
     public function testLockedWithoutLockFile(): void
     {
+        $this->initDefaultProject();
+
         $this->expectException(\UnexpectedValueException::class);
         $this->expectExceptionMessage('Valid composer.json and composer.lock files are required to run this command with --locked');
 
@@ -295,6 +310,8 @@ class SbomCommandTest extends TestCase
 
     public function testFormatUnknown(): void
     {
+        $this->initDefaultProject();
+
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Unsupported format "unknown". Must be one of: cyclonedx, spdx.');
 
@@ -304,6 +321,7 @@ class SbomCommandTest extends TestCase
 
     public function testSpdxDocument(): void
     {
+        $this->initDefaultProject();
         $sbom = $this->runSbom(['--format' => 'spdx']);
 
         self::assertSame('SPDX-2.3', $sbom['spdxVersion']);
@@ -318,6 +336,7 @@ class SbomCommandTest extends TestCase
 
     public function testSpdxPackages(): void
     {
+        $this->initDefaultProject();
         $sbom = $this->runSbom(['--format' => 'spdx']);
 
         self::assertSame(['test/pkg', 'dev/pkg', 'first/pkg', 'second/pkg', 'third/pkg'], array_column($sbom['packages'], 'name'));
@@ -356,6 +375,7 @@ class SbomCommandTest extends TestCase
 
     public function testSpdxRelationships(): void
     {
+        $this->initDefaultProject();
         $sbom = $this->runSbom(['--format' => 'spdx']);
 
         self::assertSame([
@@ -370,6 +390,7 @@ class SbomCommandTest extends TestCase
 
     public function testSpdxNoDev(): void
     {
+        $this->initDefaultProject();
         $sbom = $this->runSbom(['--format' => 'spdx', '--no-dev' => true]);
 
         self::assertSame(['test/pkg', 'first/pkg', 'second/pkg', 'third/pkg'], array_column($sbom['packages'], 'name'));

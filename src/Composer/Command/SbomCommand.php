@@ -93,10 +93,10 @@ EOT
             $devPackageNames = $repo->getDevPackageNames();
         }
 
-        $packages = array_values(array_filter($packages, static function (PackageInterface $package): bool {
+        $packages = array_filter($packages, static function (PackageInterface $package): bool {
             return !$package instanceof AliasPackage;
-        }));
-        $packages = PackageSorter::sortPackagesAlphabetically($packages);
+        });
+        $packages = array_values(PackageSorter::sortPackagesAlphabetically($packages));
 
         $packagesByName = [];
         foreach ($packages as $package) {
