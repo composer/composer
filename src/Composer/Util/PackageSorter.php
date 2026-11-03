@@ -32,7 +32,9 @@ class PackageSorter
             return null;
         }
 
-        $highest = reset($packages);
+        // reset() would copy the array to move its internal pointer
+        $highest = $packages[array_key_first($packages)];
+
         foreach ($packages as $candidate) {
             if ($candidate->isDefaultBranch()) {
                 return $candidate;
