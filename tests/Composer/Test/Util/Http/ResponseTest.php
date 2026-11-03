@@ -18,6 +18,32 @@ use Seld\JsonLint\ParsingException;
 
 class ResponseTest extends TestCase
 {
+    /**
+     * @param string[] $headers
+     * @dataProvider provideHeaderValues
+     */
+    public function testFindHeaderValue(array $headers, string $name, ?string $expected): void
+    {
+        self::assertSame($expected, Response::findHeaderValue($headers, $name));
+    }
+
+    public static function provideHeaderValues(): array
+    {
+        return [
+            [[], 'Content-Type', null],
+            [['X-Other: value'], 'Content-Type', null],
+            [['content-type: application/json'], 'Content-Type', 'application/json'],
+            [['Content-Type: text/plain', 'HTTP/1.1 200 OK', 'CONTENT-TYPE: application/json'], 'Content-Type', 'application/json'],
+            [["Content-Type: \tapplication/json \t"], 'Content-Type', 'application/json'],
+            [['Content-Type:'], 'Content-Type', null],
+            [['Content-Type: '], 'Content-Type', null],
+            [["Content-Type: \t "], 'Content-Type', null],
+            [['Content-Type:  text/html; charset=utf-8 '], 'Content-Type', 'text/html; charset=utf-8'],
+            [['X.Foo: value', 'X-Foo: other'], 'X.Foo', 'value'],
+            [['first' => 'X-Test: old', 7 => 'X-Test: new'], 'X-Test', 'new'],
+        ];
+    }
+
     public function testDecodeJsonParsesValidBody(): void
     {
         $response = new Response(['url' => 'https://example.org/packages.json'], 200, [], '{"foo":"bar"}');
