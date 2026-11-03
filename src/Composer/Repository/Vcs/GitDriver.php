@@ -77,9 +77,8 @@ class GitDriver extends VcsDriver
                 }
                 $this->io->writeError('<error>Failed to update '.Url::sanitize($this->url).', package information from this repository may be outdated</error>');
             } else {
-                // clone --mirror sets HEAD to the remote default branch, and since git 2.48 fetching into a mirror keeps it updated
-                $gitVersion = GitUtil::getVersion($this->process);
-                $this->mirrorHeadIsFresh = $isFreshClone || ($gitVersion !== null && version_compare($gitVersion, '2.48.0', '>='));
+                // clone --mirror sets HEAD to the remote default branch
+                $this->mirrorHeadIsFresh = $isFreshClone || GitUtil::fetchUpdatesMirrorHead($this->process);
             }
 
             $cacheUrl = $this->url;

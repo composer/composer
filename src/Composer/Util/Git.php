@@ -453,6 +453,16 @@ class Git
         return false;
     }
 
+    /**
+     * Since git 2.48, fetching into a mirror moves HEAD along with the remote default branch
+     */
+    public static function fetchUpdatesMirrorHead(ProcessExecutor $process): bool
+    {
+        $gitVersion = self::getVersion($process);
+
+        return $gitVersion !== null && version_compare($gitVersion, '2.48.0', '>=');
+    }
+
     public static function getNoShowSignatureFlag(ProcessExecutor $process): string
     {
         $gitVersion = self::getVersion($process);
