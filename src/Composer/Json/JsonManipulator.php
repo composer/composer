@@ -650,7 +650,7 @@ class JsonManipulator
         }
 
         // no node to remove
-        if (!isset($decoded[$mainNode][$name]) || ($subName && !isset($decoded[$mainNode][$name][$subName]))) {
+        if (!isset($decoded[$mainNode][$name]) || ($subName !== null && (!is_array($decoded[$mainNode][$name]) || !isset($decoded[$mainNode][$name][$subName])))) {
             return true;
         }
 

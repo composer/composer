@@ -3321,6 +3321,20 @@ class JsonManipulatorTest extends TestCase
     }}
 ',
         ];
+        yield 'remove numeric sub-key of a string is a no-op' => [
+            '{"extra": {"foo": "abc", "o": 1}}',
+            'extra.foo.0',
+            null,
+            '{"extra": {"foo": "abc", "o": 1}}
+',
+        ];
+        yield 'remove numeric sub-key of an only child string is a no-op' => [
+            '{"extra": {"foo": "abc"}}',
+            'extra.foo.0',
+            null,
+            '{"extra": {"foo": "abc"}}
+',
+        ];
     }
 
     public function testAddMainKey(): void
