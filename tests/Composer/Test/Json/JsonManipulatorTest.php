@@ -3243,6 +3243,86 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
+    /**
+     * @dataProvider provideSubKeyEditsKeepObjectOrListShape
+     */
+    public function testSubKeyEditsKeepObjectOrListShape(string $input, string $property, ?string $value, string $expected): void
+    {
+        $manipulator = new JsonManipulator($input);
+        if ($value === null) {
+            self::assertTrue($manipulator->removeProperty($property));
+        } else {
+            self::assertTrue($manipulator->addProperty($property, $value));
+        }
+        self::assertSame($expected, $manipulator->getContents());
+    }
+
+    public static function provideSubKeyEditsKeepObjectOrListShape(): iterable
+    {
+        yield 'add to object with numeric keys' => [
+            '{"extra": {"foo": {"0": "a"}}}',
+            'extra.foo.1',
+            'b',
+            '{"extra": {"foo": {
+            "0": "a",
+            "1": "b"
+        }}}
+',
+        ];
+        yield 'add to list' => [
+            '{"extra": {"foo": ["a"]}}',
+            'extra.foo.1',
+            'b',
+            '{"extra": {"foo": ["a", "b"]}}
+',
+        ];
+        yield 'remove from object leaving numeric keys' => [
+            '{"extra": {"foo": {"0": "a", "1": "b", "x": "c"}, "o": 1}}',
+            'extra.foo.x',
+            null,
+            '{"extra": {
+        "foo": {
+            "0": "a",
+            "1": "b"
+        },
+        "o": 1
+    }}
+',
+        ];
+        yield 'remove from only child object leaving numeric keys' => [
+            '{"extra": {"foo": {"0": "a", "1": "b", "x": "c"}}}',
+            'extra.foo.x',
+            null,
+            '{"extra": {
+        "foo": {
+            "0": "a",
+            "1": "b"
+        }
+    }}
+',
+        ];
+        yield 'remove first list item' => [
+            '{"extra": {"foo": ["a", "b"], "o": 1}}',
+            'extra.foo.0',
+            null,
+            '{"extra": {
+        "foo": ["b"],
+        "o": 1
+    }}
+',
+        ];
+        yield 'remove last remaining list item' => [
+            '{"extra": {"foo": ["a"], "o": 1}}',
+            'extra.foo.0',
+            null,
+            '{"extra": {
+        "foo": [],
+        "o": 1
+    }}
+',
+        ];
+    }
+
     public function testAddMainKey(): void
     {
         $manipulator = new JsonManipulator('{

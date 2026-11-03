@@ -555,11 +555,16 @@ class JsonManipulator
             assert(is_string($matches['end']));
 
             if ($subName !== null) {
-                $curVal = self::objectToArray(json_decode($matches['content']));
-                if (!is_array($curVal)) {
-                    $curVal = [];
+                // decoded without assoc so objects stay objects and lists stay lists when formatted back
+                $curVal = json_decode($matches['content']);
+                if ($curVal instanceof \stdClass) {
+                    $curVal->{$subName} = $value;
+                } else {
+                    if (!is_array($curVal)) {
+                        $curVal = [];
+                    }
+                    $curVal[$subName] = $value;
                 }
-                $curVal[$subName] = $value;
                 $value = $curVal;
             }
 
@@ -678,13 +683,9 @@ class JsonManipulator
 
                 // we have a subname, so we restore the rest of $name
                 if ($subName !== null) {
-                    $curVal = self::objectToArray(json_decode($children));
-                    $curVal[$name] = self::objectToArray($curVal[$name]);
-                    unset($curVal[$name][$subName]);
-                    if ($curVal[$name] === []) {
-                        $curVal[$name] = new \ArrayObject();
-                    }
-                    $this->addSubNode($mainNode, $name, $curVal[$name]);
+                    $curVal = json_decode($children);
+                    assert($curVal instanceof \stdClass);
+                    $this->addSubNode($mainNode, $name, self::removeKey($curVal->{$name}, $subName));
                 }
 
                 return true;
@@ -694,13 +695,10 @@ class JsonManipulator
         $this->contents = Preg::replaceCallback($nodeRegex, function ($matches) use ($name, $subName, $childrenClean): string {
             assert(is_string($matches['content']));
             if ($subName !== null) {
-                $curVal = self::objectToArray(json_decode($matches['content']));
-                $curVal[$name] = self::objectToArray($curVal[$name]);
-                unset($curVal[$name][$subName]);
-                if ($curVal[$name] === []) {
-                    $curVal[$name] = new \ArrayObject();
-                }
-                $childrenClean = $this->format($curVal, 0, true);
+                $curVal = json_decode($matches['content']);
+                assert($curVal instanceof \stdClass);
+                $curVal->{$name} = self::removeKey($curVal->{$name}, $subName);
+                $childrenClean = $this->format($curVal);
             }
 
             return $matches['start'] . $childrenClean . $matches['end'];
@@ -1079,15 +1077,21 @@ class JsonManipulator
     }
 
     /**
-     * Turns a decoded object into an array but leaves the objects nested in it as they are,
-     * so that format() writes them back as objects (an empty {} would otherwise become [])
-     *
-     * @param mixed $value
-     * @return mixed
+     * @param \stdClass|array<mixed> $node
+     * @return \stdClass|array<mixed>
      */
-    private static function objectToArray($value)
+    private static function removeKey($node, string $key)
     {
-        return $value instanceof \stdClass ? (array) $value : $value;
+        if ($node instanceof \stdClass) {
+            unset($node->{$key});
+
+            return $node;
+        }
+
+        // reindex so a list stays a list
+        unset($node[$key]);
+
+        return array_values($node);
     }
 
     /**
