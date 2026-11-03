@@ -27,6 +27,8 @@ class GitDriverTest extends TestCase
     private $home;
     /** @var false|string */
     private $networkEnv;
+    /** @var string|false|null */
+    private $gitVersion;
 
     public function setUp(): void
     {
@@ -38,6 +40,7 @@ class GitDriverTest extends TestCase
             ],
         ]);
         $this->networkEnv = Platform::getEnv('COMPOSER_DISABLE_NETWORK');
+        $this->gitVersion = $this->getGitVersionProperty()->getValue();
     }
 
     protected function tearDown(): void
@@ -45,7 +48,8 @@ class GitDriverTest extends TestCase
         parent::tearDown();
         $fs = new Filesystem;
         $fs->removeDirectory($this->home);
-        $this->setGitVersion(false);
+        // restore rather than reset, as later tests rely on the version cached by earlier ones
+        $this->getGitVersionProperty()->setValue(null, $this->gitVersion);
         if ($this->networkEnv === false) {
             Platform::clearEnv('COMPOSER_DISABLE_NETWORK');
         } else {
@@ -125,7 +129,7 @@ GIT;
     public function testGetRootIdentifierAfterMirrorSync(string $gitVersion, bool $existingMirror, bool $expectRemoteShow): void
     {
         Platform::clearEnv('COMPOSER_DISABLE_NETWORK');
-        $this->setGitVersion($gitVersion);
+        $this->getGitVersionProperty()->setValue(null, $gitVersion);
 
         $url = 'https://example.org/acme.git';
         $repoDir = $this->config->get('cache-vcs-dir').'/https---example.org-acme.git/';
@@ -257,16 +261,14 @@ GIT;
         $driver->getChangeDate('-n1 --format=%at HEAD');
     }
 
-    /**
-     * @param string|false $version
-     */
-    private function setGitVersion($version): void
+    private function getGitVersionProperty(): \ReflectionProperty
     {
         $reflectionProperty = new \ReflectionProperty(GitUtil::class, 'version');
         if (\PHP_VERSION_ID < 80100) {
             $reflectionProperty->setAccessible(true);
         }
-        $reflectionProperty->setValue(null, $version);
+
+        return $reflectionProperty;
     }
 
     private function setRepoDir(GitDriver $driver, string $path): void
