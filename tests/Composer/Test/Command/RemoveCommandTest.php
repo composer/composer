@@ -28,7 +28,7 @@ class RemoveCommandTest extends TestCase
         $this->expectExceptionMessage('Not enough arguments (missing: "packages").');
 
         $appTester = $this->getApplicationTester();
-        self::assertEquals(Command::FAILURE, $appTester->run(['command' => 'remove']));
+        $appTester->run(['command' => 'remove']);
     }
 
     public function testExceptionWhenRunningUnusedWithoutLockFile(): void
@@ -39,7 +39,7 @@ class RemoveCommandTest extends TestCase
         $this->expectExceptionMessage('A valid composer.lock file is required to run this command with --unused');
 
         $appTester = $this->getApplicationTester();
-        self::assertEquals(Command::FAILURE, $appTester->run(['command' => 'remove', '--unused' => true]));
+        $appTester->run(['command' => 'remove', '--unused' => true]);
     }
 
     public function testWarningWhenRemovingNonExistentPackage(): void
