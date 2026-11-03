@@ -174,6 +174,10 @@ class Package extends BasePackage
             return null;
         }
 
+        if (!str_contains($this->targetDir, '.')) {
+            return ltrim($this->targetDir, '/');
+        }
+
         return ltrim(Preg::replace('{ (?:^|[\\\\/]+) \.\.? (?:[\\\\/]+|$) (?:\.\.? (?:[\\\\/]+|$) )*}x', '/', $this->targetDir), '/');
     }
 

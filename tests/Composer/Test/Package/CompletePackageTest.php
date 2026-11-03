@@ -96,6 +96,31 @@ class CompletePackageTest extends TestCase
         self::assertEquals('foo/bar', $package->getTargetDir());
     }
 
+    /**
+     * @dataProvider provideTargetDirectories
+     */
+    public function testTargetDirectoryPreservesSeparators(?string $target, ?string $expected): void
+    {
+        $package = new Package('a', '1.0.0.0', '1.0');
+        $package->setTargetDir($target);
+
+        self::assertSame($expected, $package->getTargetDir());
+    }
+
+    public static function provideTargetDirectories(): array
+    {
+        return [
+            [null, null],
+            ['', ''],
+            ['src', 'src'],
+            ['//vendor/pkg', 'vendor/pkg'],
+            ['vendor/pkg/', 'vendor/pkg/'],
+            ['\Foo\Bar', '\Foo\Bar'],
+            ['a.b/c', 'a.b/c'],
+            ['foo/../bar', 'foo/bar'],
+        ];
+    }
+
     public function testLastDateSetterWins(): void
     {
         $package = new Package('foo', '1.0.0.0', '1.0');
