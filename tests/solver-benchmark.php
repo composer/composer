@@ -19,16 +19,30 @@
 
 use Composer\Test\Benchmark\SolverBenchmark;
 
+// This is a standalone CLI script; do nothing (and never exit) when it is merely
+// included from another script, e.g. a test runner scanning the tests directory.
+if (PHP_SAPI !== 'cli' || realpath((string) ($_SERVER['SCRIPT_FILENAME'] ?? '')) !== __FILE__) {
+    return;
+}
+
 require __DIR__.'/../vendor/autoload.php';
 
 ini_set('memory_limit', '-1');
 
+// $argv is only defined in the global scope of the entry script, read the
+// arguments from $_SERVER so they are available regardless of scope.
+$args = $_SERVER['argv'] ?? [];
+
 $baselineFile = null;
 $threshold = 15.0;
 $scenarios = [];
-foreach (array_slice($argv, 1) as $arg) {
+foreach (array_slice($args, 1) as $arg) {
     if (strpos($arg, '--baseline=') === 0) {
-        $baselineFile = substr($arg, strlen('--baseline='));
+        $baselineFile = (string) substr($arg, strlen('--baseline='));
+        if ($baselineFile === '') {
+            fwrite(STDERR, 'The --baseline option requires a file path'.PHP_EOL);
+            exit(2);
+        }
     } elseif (strpos($arg, '--threshold=') === 0) {
         $threshold = (float) substr($arg, strlen('--threshold='));
     } elseif (isset(SolverBenchmark::SCENARIOS[$arg])) {
