@@ -1,0 +1,15 @@
+{
+    "scripts": {
+        "test": "phpunit",
+        "test-verbose": "@test -vvv",
+        "ci": [
+            "@php -v",
+            "@putenv FOO=bar",
+            "@composer install",
+            "@test",
+            "@post-install-cmd",
+            "@missing --foo"
+        ],
+        "lint": "@also-missing"
+    }
+}

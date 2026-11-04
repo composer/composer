@@ -57,6 +57,55 @@ class ConfigValidatorTest extends TestCase
         );
     }
 
+    public function testConfigValidatorWarnsOnReferenceToNonexistentScriptInList(): void
+    {
+        $configValidator = new ConfigValidator(new NullIO());
+        [, , $warnings] = $configValidator->validate(__DIR__ . '/Fixtures/composer_scripts-references.json');
+
+        self::assertContains(
+            'Script "ci" references non-existent script "missing" (unless provided by a plugin)',
+            $warnings
+        );
+    }
+
+    public function testConfigValidatorWarnsOnReferenceToNonexistentScriptInString(): void
+    {
+        $configValidator = new ConfigValidator(new NullIO());
+        [, , $warnings] = $configValidator->validate(__DIR__ . '/Fixtures/composer_scripts-references.json');
+
+        self::assertContains(
+            'Script "lint" references non-existent script "also-missing" (unless provided by a plugin)',
+            $warnings
+        );
+    }
+
+    public function testConfigValidatorOnlyWarnsOnUnresolvableScriptReferences(): void
+    {
+        $configValidator = new ConfigValidator(new NullIO());
+        [, , $warnings] = $configValidator->validate(__DIR__ . '/Fixtures/composer_scripts-references.json');
+
+        $referenceWarnings = array_values(array_filter($warnings, static function (string $warning): bool {
+            return str_contains($warning, 'references non-existent script');
+        }));
+
+        self::assertSame([
+            'Script "ci" references non-existent script "missing" (unless provided by a plugin)',
+            'Script "lint" references non-existent script "also-missing" (unless provided by a plugin)',
+        ], $referenceWarnings);
+    }
+
+    public function testConfigValidatorDoesNotWarnOnReferencesToExistingScriptsOrEvents(): void
+    {
+        $configValidator = new ConfigValidator(new NullIO());
+        [, , $warnings] = $configValidator->validate(__DIR__ . '/Fixtures/composer_scripts-references.json');
+
+        foreach (['test', 'post-install-cmd', 'php', 'putenv', 'composer'] as $reference) {
+            foreach ($warnings as $warning) {
+                self::assertStringNotContainsString(sprintf('non-existent script "%s"', $reference), $warning);
+            }
+        }
+    }
+
     public function testConfigValidatorWarnsOnUnnecessaryProvideReplace(): void
     {
         $configValidator = new ConfigValidator(new NullIO());
