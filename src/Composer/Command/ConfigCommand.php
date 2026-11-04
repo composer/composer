@@ -898,6 +898,8 @@ EOT
 
         // handle repositories
         if (Preg::isMatchStrictGroups('/^repos?(?:itories)?\.(.+)/', $settingKey, $matches)) {
+            $this->validateRepositoryKey($matches[1]);
+
             if ($input->getOption('unset')) {
                 $this->configSource->removeRepository($matches[1]);
 
@@ -923,6 +925,7 @@ EOT
                     }
                 } else {
                     $value = JsonFile::parseJson($values[0]);
+                    $this->validateRepositoryConfig($value);
                     $this->configSource->addRepository($matches[1], $value, $input->getOption('append'));
 
                     return 0;

@@ -18,6 +18,38 @@ use Composer\Test\TestCase;
 
 class JsonManipulatorTest extends TestCase
 {
+    private const REPOSITORY_LIST = '{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../a"
+        },
+        {
+            "type": "path",
+            "url": "../b"
+        },
+        {
+            "type": "composer",
+            "url": "https://c.test"
+        }
+    ]
+}
+';
+
+    private const REPOSITORY_OBJECT = '{
+    "repositories": {
+        "0": {
+            "type": "path",
+            "url": "../a"
+        },
+        "foo": {
+            "type": "composer",
+            "url": "https://foo.test"
+        }
+    }
+}
+';
+
     /**
      * @dataProvider linkProvider
      */
@@ -2323,6 +2355,371 @@ class JsonManipulatorTest extends TestCase
         {
             "name": "baz",
             "type": "composer"
+        }
+    ]
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddRepositoryByNumericIndexOverwritesListEntry(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../"
+        },
+        {
+            "type": "composer",
+            "url": "https://other.test"
+        }
+    ]
+}
+');
+
+        self::assertTrue($manipulator->addRepository('0', ['type' => 'composer', 'url' => 'https://replaced.test'], false));
+        self::assertEquals('{
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://replaced.test"
+        },
+        {
+            "type": "composer",
+            "url": "https://other.test"
+        }
+    ]
+}
+', $manipulator->getContents());
+    }
+
+    /**
+     * @dataProvider provideAddRepositoryByNumericIndex
+     */
+    public function testAddRepositoryByNumericIndexReplacesInPlace(string $name, bool $append, string $expected): void
+    {
+        $manipulator = new JsonManipulator(self::REPOSITORY_LIST);
+
+        self::assertTrue($manipulator->addRepository($name, ['type' => 'composer', 'url' => 'https://replaced.test'], $append));
+        self::assertEquals($expected, $manipulator->getContents());
+    }
+
+    /**
+     * @return array<string, array{string, bool, string}>
+     */
+    public static function provideAddRepositoryByNumericIndex(): array
+    {
+        return [
+            'middle entry' => ['1', false, '{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../a"
+        },
+        {
+            "type": "composer",
+            "url": "https://replaced.test"
+        },
+        {
+            "type": "composer",
+            "url": "https://c.test"
+        }
+    ]
+}
+'],
+            'last entry' => ['2', false, '{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../a"
+        },
+        {
+            "type": "path",
+            "url": "../b"
+        },
+        {
+            "type": "composer",
+            "url": "https://replaced.test"
+        }
+    ]
+}
+'],
+            // the position is what was addressed, so it wins over the append flag
+            'first entry with append' => ['0', true, '{
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://replaced.test"
+        },
+        {
+            "type": "path",
+            "url": "../b"
+        },
+        {
+            "type": "composer",
+            "url": "https://c.test"
+        }
+    ]
+}
+'],
+        ];
+    }
+
+    public function testAddRepositoryByOutOfRangeNumericIndexAddsANewEntry(): void
+    {
+        $manipulator = new JsonManipulator(self::REPOSITORY_LIST);
+
+        self::assertTrue($manipulator->addRepository('9', ['type' => 'composer', 'url' => 'https://added.test'], true));
+        self::assertEquals('{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../a"
+        },
+        {
+            "type": "path",
+            "url": "../b"
+        },
+        {
+            "type": "composer",
+            "url": "https://c.test"
+        },
+        {
+            "type": "composer",
+            "url": "https://added.test"
+        }
+    ]
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddRepositoryPrefersANameOverAPosition(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../a"
+        },
+        {
+            "type": "path",
+            "url": "../b"
+        },
+        {
+            "name": "1",
+            "type": "composer",
+            "url": "https://named.test"
+        }
+    ]
+}
+');
+
+        // the repository named "1" is replaced, the entry at position 1 is left alone. A numeric
+        // name is never written back as a name property, so the replacement ends up unnamed.
+        self::assertTrue($manipulator->addRepository('1', ['type' => 'composer', 'url' => 'https://replaced.test'], false));
+        self::assertEquals('{
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://replaced.test"
+        },
+        {
+            "type": "path",
+            "url": "../a"
+        },
+        {
+            "type": "path",
+            "url": "../b"
+        }
+    ]
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddRepositoryTreatsANonIntegerNumericNameAsAName(): void
+    {
+        $manipulator = new JsonManipulator(self::REPOSITORY_LIST);
+
+        self::assertTrue($manipulator->addRepository('0.9', ['type' => 'composer', 'url' => 'https://added.test'], false));
+        self::assertEquals('{
+    "repositories": [
+        {
+            "name": "0.9",
+            "type": "composer",
+            "url": "https://added.test"
+        },
+        {
+            "type": "path",
+            "url": "../a"
+        },
+        {
+            "type": "path",
+            "url": "../b"
+        },
+        {
+            "type": "composer",
+            "url": "https://c.test"
+        }
+    ]
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddDisabledRepositoryDoesNotRemoveAnEntryByPosition(): void
+    {
+        $manipulator = new JsonManipulator(self::REPOSITORY_LIST);
+
+        // disabling addresses a repository by name, so it must not delete the entry at position 0
+        self::assertTrue($manipulator->addRepository('0', false, false));
+        self::assertStringContainsString('"url": "../a"', $manipulator->getContents());
+    }
+
+    public function testRemoveRepositoryByNumericIndex(): void
+    {
+        $manipulator = new JsonManipulator(self::REPOSITORY_LIST);
+
+        self::assertTrue($manipulator->removeRepository('1'));
+        self::assertEquals('{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../a"
+        },
+        {
+            "type": "composer",
+            "url": "https://c.test"
+        }
+    ]
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddRepositoryByNumericKeyInObjectFormat(): void
+    {
+        $manipulator = new JsonManipulator(self::REPOSITORY_OBJECT);
+
+        self::assertTrue($manipulator->addRepository('0', ['type' => 'composer', 'url' => 'https://replaced.test'], false));
+        self::assertEquals('{
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://replaced.test"
+        },
+        {
+            "name": "foo",
+            "type": "composer",
+            "url": "https://foo.test"
+        }
+    ]
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddRepositoryByNumericKeyInObjectFormatReplacesTheNamedEntry(): void
+    {
+        // in the object format a numeric key is a name, so it must be replaced rather than duplicated
+        $manipulator = new JsonManipulator('{
+    "repositories": {
+        "foo": {
+            "type": "composer",
+            "url": "https://foo.test"
+        },
+        "1": {
+            "type": "path",
+            "url": "../one"
+        },
+        "bar": {
+            "type": "composer",
+            "url": "https://bar.test"
+        }
+    }
+}');
+
+        self::assertTrue($manipulator->addRepository('1', ['type' => 'composer', 'url' => 'https://replaced.test'], false));
+        self::assertSame(
+            ['https://replaced.test', 'https://foo.test', 'https://bar.test'],
+            array_column(JsonFile::parseJson($manipulator->getContents())['repositories'], 'url')
+        );
+    }
+
+    public function testInsertRepositoryDoesNotRemoveTheEntryAtTheNamesPosition(): void
+    {
+        // --before/--after already state the position, so a numeric name only names the new entry
+        $manipulator = new JsonManipulator('{
+    "repositories": [
+        {
+            "name": "a",
+            "type": "path",
+            "url": "../a"
+        },
+        {
+            "name": "b",
+            "type": "path",
+            "url": "../b"
+        }
+    ]
+}
+');
+
+        self::assertTrue($manipulator->insertRepository('0', ['type' => 'vcs', 'url' => 'https://moved.test'], 'b', 0));
+        self::assertSame(
+            ['../a', 'https://moved.test', '../b'],
+            array_column(JsonFile::parseJson($manipulator->getContents())['repositories'], 'url')
+        );
+    }
+
+    public function testSetRepositoryUrlByNumericIndex(): void
+    {
+        $manipulator = new JsonManipulator(self::REPOSITORY_LIST);
+
+        self::assertTrue($manipulator->setRepositoryUrl('1', 'https://updated.test'));
+        self::assertStringContainsString('"url": "https://updated.test"', $manipulator->getContents());
+        self::assertStringContainsString('"url": "../a"', $manipulator->getContents());
+    }
+
+    public function testSetRepositoryUrlByNumericKeyInObjectFormat(): void
+    {
+        $manipulator = new JsonManipulator(self::REPOSITORY_OBJECT);
+
+        self::assertTrue($manipulator->setRepositoryUrl('0', 'https://updated.test'));
+        self::assertEquals('{
+    "repositories": {
+        "0": {
+            "type": "path",
+            "url": "https://updated.test"
+        },
+        "foo": {
+            "type": "composer",
+            "url": "https://foo.test"
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testInsertRepositoryBeforeANumericIndex(): void
+    {
+        $manipulator = new JsonManipulator(self::REPOSITORY_LIST);
+
+        self::assertTrue($manipulator->insertRepository('inserted', ['type' => 'composer', 'url' => 'https://inserted.test'], '1', 0));
+        self::assertEquals('{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../a"
+        },
+        {
+            "name": "inserted",
+            "type": "composer",
+            "url": "https://inserted.test"
+        },
+        {
+            "type": "path",
+            "url": "../b"
+        },
+        {
+            "type": "composer",
+            "url": "https://c.test"
         }
     ]
 }
