@@ -17,6 +17,7 @@
  * code 1 if rule counts or peak memory grew by more than the threshold percentage.
  */
 
+use Composer\Pcre\Preg;
 use Composer\Test\Benchmark\SolverBenchmark;
 
 // This is a standalone CLI script; do nothing (and never exit) when it is merely
@@ -37,8 +38,8 @@ $baselineFile = null;
 $threshold = 15.0;
 $scenarios = [];
 foreach (array_slice($args, 1) as $arg) {
-    if (strpos($arg, '--baseline=') === 0) {
-        $baselineFile = (string) substr($arg, strlen('--baseline='));
+    if (Preg::isMatchStrictGroups('{^--baseline=(.*)$}', $arg, $match)) {
+        $baselineFile = $match[1];
         if ($baselineFile === '') {
             fwrite(STDERR, 'The --baseline option requires a file path'.PHP_EOL);
             exit(2);
