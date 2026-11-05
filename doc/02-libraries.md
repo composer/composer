@@ -191,4 +191,75 @@ git archive branchName --format zip -o file.zip
 > zip distribution. This only works for packages installed from
 > dist (i.e. tagged releases) coming from GitHub, GitLab or Bitbucket.
 
+## Security advisories
+
+When a vulnerability exists in a library you manage, you can fix the vulnerability
+and publish a new release. Maybe some users will be notified that you published a
+new release because they subscribe to your repository, but most users won't know
+that they'd have to update to fix the underlying vulnerability.
+
+### How users get notified about advisories
+
+When users run `composer audit` or automated security advisory checks in their CI,
+security advisories of all their dependencies are retrieved via the
+[packagist.org API](https://packagist.org/apidoc#list-security-advisories).
+
+Packagist aggregates security advisories from multiple sources:
+
+- [GitHub Security Advisories](#creating-and-publishing-an-advisory-on-github)
+- [FriendsOfPHP Security Advisories](#registering-an-advisory-with-friendsofphp)
+
+It doesn't retrieve published advisories from your repository itself.
+
+### Creating and publishing an advisory on GitHub
+
+If you are using GitHub to host the code for your library, you can create a
+security advisory in the "Security and quality" tab.
+
+This will result in a unique url and GHSA-ID that can be used to reference
+this advisory. Please note it does NOT mean that users of your library will
+immediately get notified.
+
+### How GitHub Security Advisories are picked up
+
+Once you have [created and published](#creating-and-publishing-an-advisory-on-github)
+a security advisory on GitHub, it MIGHT automatically show up in the
+[GitHub advisory database](https://github.com/github/advisory-database). According
+to documentation, "GitHub will review each published security advisory", and mentions
+[this might take up to 72 hours](https://docs.github.com/en/code-security/concepts/vulnerability-reporting-and-management/repository-security-advisories#dependabot-alerts-for-published-security-advisories),
+but in practice this may take significantly longer given that these reports are
+reviewed manually.
+
+The `github/advisory-database` repository, where these are managed in, in turn also
+includes advisories from the `friendsofphp/security-advisories` repository. As such,
+it is recommended to add your advisory to that repository instead to make sure they
+are visible to users as soon as possible.
+
+### Registering an advisory with FriendsOfPHP
+
+To add an advisory to the `friendsofphp/security-advisories`
+[repository](https://github.com/FriendsOfPHP/security-advisories), simply
+open a Pull Request using the guide in their README. Once this Pull Request is
+merged, the repository update will
+[automatically trigger a new security advisory sync](https://github.com/composer/packagist/blob/858c6b430cffa3f070cc2c868afc572caefb5244/src/Service/UpdaterWorker.php#L412)
+on packagist.org and the advisory will be available immediately there.
+
+This will also eventually result in the advisory ending up in the
+`github/advisory-database` repository if it's not in there already.
+
+### Verifying advisory discoverability on packagist.org
+
+You can see if a security advisory is already known by Packagist by searching for
+the PKSA, CVE or GHSA IDs in the
+[Security Advisories search](https://packagist.org/security-advisories/).
+
+### Why is GitHub's Dependabot not notifying users of my libraries' advisory?
+
+Dependabot currently only uses the `github/advisory-database` repository as a
+source of advisories. If your published advisory is not in there, it won't trigger
+dependabot. To resolve this, either publish your advisory to
+[`friendsofphp/security-advisories`](#registering-an-advisory-with-friendsofphp)
+or, if you've done that already wait, for it to be picked up by
+[`github/advisory-database`](#how-github-security-advisories-are-picked-up)
+
 &larr; [Basic usage](01-basic-usage.md) |  [Command-line interface](03-cli.md) &rarr;
