@@ -652,13 +652,31 @@ so an empty list loads only the default branch.
 }
 ```
 
+The `exclude-branches` key does the opposite and skips the branches matching
+its patterns, which lets you leave out bot-managed or otherwise short-lived
+branches. Both keys can be combined, in which case a branch is loaded only if
+it matches `only-branches` and does not match `exclude-branches`.
+
+```json
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/acme/foo",
+            "exclude-branches": ["dependabot/*", "renovate/*", "gh-pages"]
+        }
+    ]
+}
+```
+
 Patterns are matched case-sensitively against the branch names as they appear
-in the repository (e.g. `7.4`, not `7.4.x-dev`). Tags are not affected by this
-option.
+in the repository (e.g. `7.4`, not `7.4.x-dev`). Tags are not affected by these
+options.
 
 > **Note:** For Mercurial and Perforce repositories the default branch is not
-> detected, so make sure it is included in `only-branches` (e.g. `default` for
-> Mercurial, `master` for Perforce) or it will be skipped.
+> detected and thus not protected by these options, so make sure it is included
+> in `only-branches` (e.g. `default` for Mercurial, `master` for Perforce) and
+> not matched by `exclude-branches`, or it will be skipped.
 
 #### Bitbucket Driver Configuration
 

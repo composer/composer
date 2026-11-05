@@ -195,26 +195,7 @@ class VcsRepositoryTest extends TestCase
      */
     public function testLoadVersionsWithOnlyBranchesFilter(array $onlyBranches, array $expected): void
     {
-        $config = new Config();
-        $config->merge([
-            'config' => [
-                'home' => self::$composerHome,
-            ],
-        ]);
-        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
-        $repo = new VcsRepository(['url' => self::$gitRepo, 'type' => 'vcs', 'only-branches' => $onlyBranches], new NullIO, $config, $httpDownloader);
-        $packages = $repo->getPackages();
-        $dumper = new ArrayDumper();
-
-        foreach ($packages as $package) {
-            if (isset($expected[$package->getPrettyVersion()])) {
-                unset($expected[$package->getPrettyVersion()]);
-            } else {
-                $this->fail('Unexpected version '.$package->getPrettyVersion().' in '.json_encode($dumper->dump($package)));
-            }
-        }
-
-        self::assertEmpty($expected, 'Missing versions: '.implode(', ', array_keys($expected)));
+        $this->assertLoadedVersions(['only-branches' => $onlyBranches], $expected);
     }
 
     public static function provideOnlyBranchesFilters(): array
@@ -243,11 +224,62 @@ class VcsRepositoryTest extends TestCase
         ];
     }
 
-    public function testOnlyBranchesFilterKeepsSvnTrunk(): void
+    /**
+     * @dataProvider provideExcludeBranchesFilters
+     * @param array<string, list<string>> $filters
+     * @param array<string, true> $expected
+     */
+    public function testLoadVersionsWithExcludeBranchesFilter(array $filters, array $expected): void
+    {
+        $this->assertLoadedVersions($filters, $expected);
+    }
+
+    public static function provideExcludeBranchesFilters(): array
+    {
+        return [
+            'patterns' => [
+                ['exclude-branches' => ['1.*', 'feature/*']],
+                [
+                    '0.6.0' => true,
+                    '1.0.0' => true,
+                    'dev-feature-b' => true,
+                    'dev-foo+bar' => true,
+                    'dev-master' => true,
+                    '9999999-dev' => true, // alias of dev-master
+                ],
+            ],
+            'default branch is always kept' => [
+                ['exclude-branches' => ['*']],
+                [
+                    '0.6.0' => true,
+                    '1.0.0' => true,
+                    'dev-master' => true,
+                    '9999999-dev' => true, // alias of dev-master
+                ],
+            ],
+            'combined with only-branches' => [
+                ['only-branches' => ['1.*', 'feature*'], 'exclude-branches' => ['1.1.x', 'feature-*']],
+                [
+                    '0.6.0' => true,
+                    '1.0.0' => true,
+                    '1.0.x-dev' => true,
+                    'dev-feature/a-1.0-B' => true,
+                    'dev-master' => true,
+                    '9999999-dev' => true, // alias of dev-master
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider provideSvnBranchFilters
+     * @param array<string, list<string>> $filters
+     */
+    public function testBranchFiltersKeepSvnTrunk(array $filters): void
     {
         $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
         $repo = new VcsRepository(
-            ['url' => 'svn://example.org/repo', 'type' => 'svn', 'only-branches' => ['1.*']],
+            ['url' => 'svn://example.org/repo', 'type' => 'svn'] + $filters,
             new NullIO,
             new Config(),
             $httpDownloader,
@@ -264,25 +296,64 @@ class VcsRepositoryTest extends TestCase
         self::assertSame(['1.0.x-dev', 'dev-trunk'], $versions);
     }
 
-    /**
-     * @dataProvider provideInvalidOnlyBranches
-     * @param mixed $onlyBranches
-     */
-    public function testInvalidOnlyBranchesThrows($onlyBranches): void
-    {
-        self::expectException('InvalidArgumentException');
-        self::expectExceptionMessage('"only-branches" key for repository '.self::$gitRepo.' should be an array of strings');
-
-        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
-        new VcsRepository(['url' => self::$gitRepo, 'type' => 'vcs', 'only-branches' => $onlyBranches], new NullIO, new Config(), $httpDownloader);
-    }
-
-    public static function provideInvalidOnlyBranches(): array
+    public static function provideSvnBranchFilters(): array
     {
         return [
-            'string' => ['7.4'],
-            'non-string item' => [['7.4', ['8.*']]],
+            'only-branches' => [['only-branches' => ['1.*']]],
+            'exclude-branches' => [['exclude-branches' => ['trunk', '2.*']]],
         ];
+    }
+
+    /**
+     * @dataProvider provideInvalidBranchFilters
+     * @param mixed $value
+     */
+    public function testInvalidBranchFilterThrows(string $key, $value): void
+    {
+        self::expectException('InvalidArgumentException');
+        self::expectExceptionMessage('"'.$key.'" key for repository '.self::$gitRepo.' should be an array of strings');
+
+        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
+        new VcsRepository(['url' => self::$gitRepo, 'type' => 'vcs', $key => $value], new NullIO, new Config(), $httpDownloader);
+    }
+
+    public static function provideInvalidBranchFilters(): array
+    {
+        $cases = [];
+        foreach (['only-branches', 'exclude-branches'] as $key) {
+            $cases[$key.' string'] = [$key, '7.4'];
+            $cases[$key.' non-string item'] = [$key, ['7.4', ['8.*']]];
+        }
+
+        return $cases;
+    }
+
+    /**
+     * @param array<string, mixed> $repoConfig
+     * @param array<string, true> $expected
+     */
+    private function assertLoadedVersions(array $repoConfig, array $expected): void
+    {
+        $config = new Config();
+        $config->merge([
+            'config' => [
+                'home' => self::$composerHome,
+            ],
+        ]);
+        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
+        $repo = new VcsRepository(['url' => self::$gitRepo, 'type' => 'vcs'] + $repoConfig, new NullIO, $config, $httpDownloader);
+        $packages = $repo->getPackages();
+        $dumper = new ArrayDumper();
+
+        foreach ($packages as $package) {
+            if (isset($expected[$package->getPrettyVersion()])) {
+                unset($expected[$package->getPrettyVersion()]);
+            } else {
+                $this->fail('Unexpected version '.$package->getPrettyVersion().' in '.json_encode($dumper->dump($package)));
+            }
+        }
+
+        self::assertEmpty($expected, 'Missing versions: '.implode(', ', array_keys($expected)));
     }
 }
 

@@ -74,6 +74,8 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     private $versionTransportExceptions = [];
     /** @var ?non-empty-string */
     private $onlyBranchesRegex = null;
+    /** @var ?non-empty-string */
+    private $excludeBranchesRegex = null;
 
     /**
      * @param array{url: string, type?: string}&array<string, mixed> $repoConfig
@@ -107,13 +109,8 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         $this->httpDownloader = $httpDownloader;
         $this->processExecutor = $process ?? new ProcessExecutor($io);
 
-        if (isset($repoConfig['only-branches'])) {
-            if (!is_array($repoConfig['only-branches']) || count(array_filter($repoConfig['only-branches'], 'is_string')) !== count($repoConfig['only-branches'])) {
-                throw new \InvalidArgumentException('"only-branches" key for repository '.Url::sanitize($this->url).' should be an array of strings');
-            }
-            // branch names are case-sensitive, unlike package names
-            $this->onlyBranchesRegex = BasePackage::packageNamesToRegexp($repoConfig['only-branches'], '{^(?:%s)$}D');
-        }
+        $this->onlyBranchesRegex = $this->createBranchFilterRegex($repoConfig, 'only-branches');
+        $this->excludeBranchesRegex = $this->createBranchFilterRegex($repoConfig, 'exclude-branches');
     }
 
     public function getRepoName()
@@ -475,14 +472,14 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     }
 
     /**
-     * Restricts the branches to the ones matching the "only-branches" repo config patterns, the default branch is always kept
+     * Restricts the branches to the ones matching "only-branches" and not matching "exclude-branches", the default branch is always kept
      *
      * @param array<int|string, string> $branches
      * @return array<int|string, string>
      */
     private function filterBranches(array $branches, string $rootIdentifier): array
     {
-        if (null === $this->onlyBranchesRegex) {
+        if (null === $this->onlyBranchesRegex && null === $this->excludeBranchesRegex) {
             return $branches;
         }
 
@@ -492,15 +489,37 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
             if ($branch === $rootIdentifier || $identifier === $rootIdentifier) {
                 continue;
             }
-            if (!Preg::isMatch($this->onlyBranchesRegex, $branch)) {
-                if ($this->isVeryVerbose) {
-                    $this->io->writeError('<warning>Skipped branch '.$branch.', not matching the only-branches filter</warning>');
-                }
-                unset($branches[$branch]);
+            if (null !== $this->onlyBranchesRegex && !Preg::isMatch($this->onlyBranchesRegex, $branch)) {
+                $reason = 'not matching the only-branches filter';
+            } elseif (null !== $this->excludeBranchesRegex && Preg::isMatch($this->excludeBranchesRegex, $branch)) {
+                $reason = 'matching the exclude-branches filter';
+            } else {
+                continue;
             }
+            if ($this->isVeryVerbose) {
+                $this->io->writeError('<warning>Skipped branch '.$branch.', '.$reason.'</warning>');
+            }
+            unset($branches[$branch]);
         }
 
         return $branches;
+    }
+
+    /**
+     * @param array<string, mixed> $repoConfig
+     * @return ?non-empty-string
+     */
+    private function createBranchFilterRegex(array $repoConfig, string $key): ?string
+    {
+        if (!isset($repoConfig[$key])) {
+            return null;
+        }
+        if (!is_array($repoConfig[$key]) || count(array_filter($repoConfig[$key], 'is_string')) !== count($repoConfig[$key])) {
+            throw new \InvalidArgumentException('"'.$key.'" key for repository '.Url::sanitize($this->url).' should be an array of strings');
+        }
+
+        // branch names are case-sensitive, unlike package names
+        return BasePackage::packageNamesToRegexp($repoConfig[$key], '{^(?:%s)$}D');
     }
 
     /**
