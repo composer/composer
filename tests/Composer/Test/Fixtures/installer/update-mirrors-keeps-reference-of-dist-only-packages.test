@@ -1,0 +1,161 @@
+--TEST--
+Update mirrors keeps the locked reference of packages which only have a dist and no source
+
+a/a is a tag whose dist was rebuilt, it keeps its ref and URL as the URL is not in a known format
+b/b is dev and keeps its ref, the GitHub URL is updated with the old ref
+c/c has the same ref but its dist moved to a new host, so it gets the new URL and shasum
+d/d was dist-only in the lock and now has a source, it keeps its old ref, stays dist-only and gets the new GitHub URL
+e/e is a path repo package and gets fully refreshed
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/a", "version": "1.0.0",
+                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://example.org/dists/a/a/1.0.0/2222222222222222222222222222222222222222.zip", "type": "zip" }
+                },
+                {
+                    "name": "b/b", "version": "dev-main",
+                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/b/newb/zipball/2222222222222222222222222222222222222222", "type": "zip" }
+                },
+                {
+                    "name": "c/c", "version": "1.0.0",
+                    "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://new.example.org/dists/c/c/1.0.0.zip", "type": "zip", "shasum": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" }
+                },
+                {
+                    "name": "d/d", "version": "dev-main",
+                    "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/d/d", "type": "git" },
+                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/d/d/zipball/2222222222222222222222222222222222222222", "type": "zip" }
+                },
+                {
+                    "name": "e/e", "version": "dev-main",
+                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "../e-new", "type": "path" }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.0",
+        "b/b": "dev-main",
+        "c/c": "1.0.0",
+        "d/d": "dev-main",
+        "e/e": "dev-main"
+    }
+}
+--INSTALLED--
+[
+    {
+        "name": "a/a", "version": "1.0.0",
+        "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://example.org/dists/a/a/1.0.0/1111111111111111111111111111111111111111.zip", "type": "zip" }
+    },
+    {
+        "name": "b/b", "version": "dev-main",
+        "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/b/b/zipball/1111111111111111111111111111111111111111", "type": "zip" }
+    },
+    {
+        "name": "c/c", "version": "1.0.0",
+        "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://old.example.org/dists/c/c/1.0.0.zip", "type": "zip", "shasum": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" }
+    },
+    {
+        "name": "d/d", "version": "dev-main",
+        "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://example.org/dists/d/d/1111111111111111111111111111111111111111.zip", "type": "zip" }
+    },
+    {
+        "name": "e/e", "version": "dev-main",
+        "dist": { "reference": "1111111111111111111111111111111111111111", "url": "../e", "type": "path" }
+    }
+]
+--LOCK--
+{
+    "packages": [
+        {
+            "name": "a/a", "version": "1.0.0",
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://example.org/dists/a/a/1.0.0/1111111111111111111111111111111111111111.zip", "type": "zip" },
+            "type": "library"
+        },
+        {
+            "name": "b/b", "version": "dev-main",
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/b/b/zipball/1111111111111111111111111111111111111111", "type": "zip" },
+            "type": "library"
+        },
+        {
+            "name": "c/c", "version": "1.0.0",
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://old.example.org/dists/c/c/1.0.0.zip", "type": "zip", "shasum": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" },
+            "type": "library"
+        },
+        {
+            "name": "d/d", "version": "dev-main",
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://example.org/dists/d/d/1111111111111111111111111111111111111111.zip", "type": "zip" },
+            "type": "library"
+        },
+        {
+            "name": "e/e", "version": "dev-main",
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "../e", "type": "path" },
+            "type": "library"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {},
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {},
+    "platform-dev": {}
+}
+--EXPECT-LOCK--
+{
+    "packages": [
+        {
+            "name": "a/a", "version": "1.0.0",
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://example.org/dists/a/a/1.0.0/1111111111111111111111111111111111111111.zip", "type": "zip" },
+            "type": "library"
+        },
+        {
+            "name": "b/b", "version": "dev-main",
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/b/newb/zipball/1111111111111111111111111111111111111111", "type": "zip" },
+            "type": "library"
+        },
+        {
+            "name": "c/c", "version": "1.0.0",
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://new.example.org/dists/c/c/1.0.0.zip", "type": "zip", "shasum": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" },
+            "type": "library"
+        },
+        {
+            "name": "d/d", "version": "dev-main",
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/d/d/zipball/1111111111111111111111111111111111111111", "type": "zip" },
+            "type": "library"
+        },
+        {
+            "name": "e/e", "version": "dev-main",
+            "dist": { "reference": "2222222222222222222222222222222222222222", "url": "../e-new", "type": "path" },
+            "type": "library"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {
+        "b/b": 20,
+        "d/d": 20,
+        "e/e": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {},
+    "platform-dev": {}
+}
+--RUN--
+update mirrors
+--EXPECT--
+Upgrading e/e (dev-main 1111111 => dev-main 2222222)
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 0 installs, 0 updates, 0 removals
+Writing lock file
+Installing dependencies from lock file (including require-dev)
+Package operations: 0 installs, 1 update, 0 removals
+Generating autoload files
