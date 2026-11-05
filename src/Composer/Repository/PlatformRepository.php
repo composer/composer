@@ -24,8 +24,8 @@ use Composer\Platform\Runtime;
 use Composer\Platform\Version;
 use Composer\Plugin\PluginInterface;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Util\ProcessRestarter;
 use Composer\Util\Silencer;
-use Composer\XdebugHandler\XdebugHandler;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -195,7 +195,7 @@ class PlatformRepository extends ArrayRepository
         }
 
         // Check for Xdebug in a restarted process
-        if (!in_array('xdebug', $loadedExtensions, true) && ($prettyVersion = XdebugHandler::getSkippedVersion())) {
+        if (!in_array('xdebug', $loadedExtensions, true) && ($prettyVersion = ProcessRestarter::getSkippedVersion())) {
             $this->addExtension('xdebug', $prettyVersion);
         }
 
