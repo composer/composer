@@ -109,8 +109,8 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         $this->httpDownloader = $httpDownloader;
         $this->processExecutor = $process ?? new ProcessExecutor($io);
 
-        $this->onlyBranchesRegex = $this->createBranchFilterRegex($repoConfig, 'only-branches');
-        $this->excludeBranchesRegex = $this->createBranchFilterRegex($repoConfig, 'exclude-branches');
+        $this->onlyBranchesRegex = $this->createBranchFilterRegex('only-branches');
+        $this->excludeBranchesRegex = $this->createBranchFilterRegex('exclude-branches');
     }
 
     public function getRepoName()
@@ -506,24 +506,23 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     }
 
     /**
-     * @param array<string, mixed> $repoConfig
      * @return ?non-empty-string
      */
-    private function createBranchFilterRegex(array $repoConfig, string $key): ?string
+    private function createBranchFilterRegex(string $key): ?string
     {
-        if (!isset($repoConfig[$key])) {
+        if (!isset($this->repoConfig[$key])) {
             return null;
         }
-        if (!is_array($repoConfig[$key]) || count(array_filter($repoConfig[$key], 'is_string')) !== count($repoConfig[$key])) {
+        if (!is_array($this->repoConfig[$key]) || count(array_filter($this->repoConfig[$key], 'is_string')) !== count($this->repoConfig[$key])) {
             throw new \InvalidArgumentException('"'.$key.'" key for repository '.Url::sanitize($this->url).' should be an array of strings');
         }
         // excluding nothing needs no filtering, whereas an empty only-branches list keeps only the default branch
-        if ('exclude-branches' === $key && [] === $repoConfig[$key]) {
+        if ('exclude-branches' === $key && [] === $this->repoConfig[$key]) {
             return null;
         }
 
         // branch names are case-sensitive, unlike package names
-        return BasePackage::packageNamesToRegexp($repoConfig[$key], '{^(?:%s)$}D');
+        return BasePackage::packageNamesToRegexp($this->repoConfig[$key], '{^(?:%s)$}D');
     }
 
     /**
