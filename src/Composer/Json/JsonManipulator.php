@@ -77,15 +77,15 @@ class JsonManipulator
 
         $links = $matches['value'];
 
-        // try to find existing link
+        // try to find existing link, whatever its value (a null one must be replaced, not duplicated)
         $packageRegex = str_replace('/', '\\\\?/', preg_quote($package));
-        $regex = '{'.self::DEFINES.'"(?P<package>'.$packageRegex.')"(\s*:\s*)(?&string)}ix';
+        $regex = '{'.self::DEFINES.'"(?P<package>'.$packageRegex.')"(\s*:\s*)(?&json)}ix';
         if (Preg::isMatch($regex, $links, $packageMatches)) {
             assert(is_string($packageMatches['package']));
             // update existing link
             $existingPackage = $packageMatches['package'];
             $packageRegex = str_replace('/', '\\\\?/', preg_quote($existingPackage));
-            $links = Preg::replaceCallback('{'.self::DEFINES.'"'.$packageRegex.'"(?P<separator>\s*:\s*)(?&string)}ix', static function ($m) use ($existingPackage, $constraint): string {
+            $links = Preg::replaceCallback('{'.self::DEFINES.'"'.$packageRegex.'"(?P<separator>\s*:\s*)(?&json)}ix', static function ($m) use ($existingPackage, $constraint): string {
                 return JsonFile::encode(str_replace('\\/', '/', $existingPackage)) . $m['separator'] . '"' . $constraint . '"';
             }, $links);
         } else {
@@ -649,8 +649,8 @@ class JsonManipulator
             [$name, $subName] = explode('.', $name, 2);
         }
 
-        // no node to remove
-        if (!isset($decoded[$mainNode][$name]) || ($subName !== null && (!is_array($decoded[$mainNode][$name]) || !isset($decoded[$mainNode][$name][$subName])))) {
+        // no node to remove, a key set to null is still there
+        if (!is_array($decoded[$mainNode]) || !array_key_exists($name, $decoded[$mainNode]) || ($subName !== null && (!is_array($decoded[$mainNode][$name]) || !array_key_exists($subName, $decoded[$mainNode][$name])))) {
             return true;
         }
 
@@ -895,7 +895,7 @@ class JsonManipulator
         }
 
         // no node to remove
-        if (!isset($decoded[$mainNode][$nodeIndex])) {
+        if (!is_array($decoded[$mainNode]) || !array_key_exists($nodeIndex, $decoded[$mainNode])) {
             return true;
         }
 
@@ -935,10 +935,10 @@ class JsonManipulator
         $decoded = JsonFile::parseJson($this->contents);
         $content = $this->format($content);
 
-        // key exists already
+        // key exists already, possibly set to null
         $regex = '{'.self::DEFINES.'^(?P<start>\s*\{\s*(?:(?&string)\s*:\s*(?&json)\s*,\s*)*?)'.
             '(?P<key>'.preg_quote(JsonFile::encode($key)).'\s*:\s*(?&json))(?P<end>.*)}sx';
-        if (isset($decoded[$key]) && Preg::isMatch($regex, $this->contents, $matches)) {
+        if (array_key_exists($key, $decoded) && Preg::isMatch($regex, $this->contents, $matches)) {
             // invalid match due to un-regexable content, abort
             if (!@json_decode('{'.$matches['key'].'}')) {
                 return false;

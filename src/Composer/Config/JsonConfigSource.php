@@ -208,11 +208,11 @@ class JsonConfigSource implements ConfigSourceInterface
     public function removeRepository(string $name): void
     {
         $this->manipulateJson('removeRepository', static function (&$config, $repo): void {
-            if (isset($config['repositories'][$repo])) {
+            if (!array_is_list($config['repositories'] ?? []) && array_key_exists($repo, $config['repositories'])) {
                 unset($config['repositories'][$repo]);
             } else {
                 $config['repositories'] = array_values(array_filter($config['repositories'] ?? [], static function ($val) use ($repo) {
-                    return !isset($val['name']) || $val['name'] !== $repo || $val !== [$repo => false];
+                    return ($val['name'] ?? null) !== $repo && $val !== [$repo => false];
                 }));
             }
 
@@ -379,7 +379,7 @@ class JsonConfigSource implements ConfigSourceInterface
     public function removeLink(string $type, string $name): void
     {
         $this->manipulateJson('removeLink', static function (&$config, $type, $name): void {
-            if (isset($config[$type][$name])) {
+            if (is_array($config[$type] ?? null) && array_key_exists($name, $config[$type])) {
                 unset($config[$type][$name]);
                 if ($config[$type] === []) {
                     unset($config[$type]);
