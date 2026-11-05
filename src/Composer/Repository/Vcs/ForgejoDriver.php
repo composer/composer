@@ -304,7 +304,7 @@ class ForgejoDriver extends VcsDriver
                     }
 
                     if (!$this->io->isInteractive()) {
-                        $this->attemptCloneFallback();
+                        $this->attemptCloneFallback($e);
 
                         return new Response(['url' => 'dummy'], 200, [], 'null');
                     }
@@ -329,8 +329,12 @@ class ForgejoDriver extends VcsDriver
      * @return true
      * @throws \RuntimeException
      */
-    protected function attemptCloneFallback(): bool
+    protected function attemptCloneFallback(?\Throwable $e = null): bool
     {
+        if (isset($this->repoConfig['allow-git-fallback']) && $this->repoConfig['allow-git-fallback'] === false) {
+            throw new \RuntimeException('Fallback to git driver disabled', 0, $e);
+        }
+
         try {
             // If this repository may be private (hard to say for sure,
             // Forgejo returns 404 for private repositories) and we

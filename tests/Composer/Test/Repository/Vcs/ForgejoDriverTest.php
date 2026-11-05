@@ -198,4 +198,25 @@ class ForgejoDriverTest extends TestCase
             ->method('isInteractive')
             ->will($this->returnValue($isInteractive));
     }
+
+    public function testGitFallbackCanBeDisabled(): void
+    {
+        $this->expectInteractiveIO(false);
+
+        $this->httpDownloader->expects(
+            [['url' => 'https://codeberg.org/api/v1/repos/acme/repo', 'status' => 404]],
+            true
+        );
+
+        $driver = new ForgejoDriver(['url' => 'https://codeberg.org/acme/repo.git', 'allow-git-fallback' => false], $this->io, $this->config, $this->httpDownloader, $this->getProcessExecutorMock());
+
+        try {
+            $driver->initialize();
+            self::fail('Expected the disabled git fallback to throw');
+        } catch (\RuntimeException $e) {
+            self::assertSame('Fallback to git driver disabled', $e->getMessage());
+            self::assertInstanceOf('Composer\Downloader\TransportException', $e->getPrevious());
+            self::assertSame(404, $e->getPrevious()->getCode());
+        }
+    }
 }

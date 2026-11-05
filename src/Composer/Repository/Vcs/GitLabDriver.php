@@ -401,8 +401,12 @@ class GitLabDriver extends VcsDriver
      * @return true
      * @throws \RuntimeException
      */
-    protected function attemptCloneFallback(): bool
+    protected function attemptCloneFallback(?\Throwable $e = null): bool
     {
+        if (isset($this->repoConfig['allow-git-fallback']) && $this->repoConfig['allow-git-fallback'] === false) {
+            throw new \RuntimeException('Fallback to git driver disabled', 0, $e);
+        }
+
         if ($this->isPrivate === false) {
             $url = $this->generatePublicUrl();
         } else {
@@ -525,7 +529,7 @@ class GitLabDriver extends VcsDriver
                     }
 
                     if (!$this->io->isInteractive()) {
-                        $this->attemptCloneFallback();
+                        $this->attemptCloneFallback($e);
 
                         return new Response(['url' => 'dummy'], 200, [], 'null');
                     }
@@ -540,7 +544,7 @@ class GitLabDriver extends VcsDriver
                     }
 
                     if (!$this->io->isInteractive() && $fetchingRepoData) {
-                        $this->attemptCloneFallback();
+                        $this->attemptCloneFallback($e);
 
                         return new Response(['url' => 'dummy'], 200, [], 'null');
                     }
