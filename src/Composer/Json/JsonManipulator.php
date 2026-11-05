@@ -77,15 +77,15 @@ class JsonManipulator
 
         $links = $matches['value'];
 
-        // try to find existing link
+        // try to find existing link, whatever its value (a null one must be replaced, not duplicated)
         $packageRegex = str_replace('/', '\\\\?/', preg_quote($package));
-        $regex = '{'.self::DEFINES.'"(?P<package>'.$packageRegex.')"(\s*:\s*)(?&string)}ix';
+        $regex = '{'.self::DEFINES.'"(?P<package>'.$packageRegex.')"(\s*:\s*)(?&json)}ix';
         if (Preg::isMatch($regex, $links, $packageMatches)) {
             assert(is_string($packageMatches['package']));
             // update existing link
             $existingPackage = $packageMatches['package'];
             $packageRegex = str_replace('/', '\\\\?/', preg_quote($existingPackage));
-            $links = Preg::replaceCallback('{'.self::DEFINES.'"'.$packageRegex.'"(?P<separator>\s*:\s*)(?&string)}ix', static function ($m) use ($existingPackage, $constraint): string {
+            $links = Preg::replaceCallback('{'.self::DEFINES.'"'.$packageRegex.'"(?P<separator>\s*:\s*)(?&json)}ix', static function ($m) use ($existingPackage, $constraint): string {
                 return JsonFile::encode(str_replace('\\/', '/', $existingPackage)) . $m['separator'] . '"' . $constraint . '"';
             }, $links);
         } else {

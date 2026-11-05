@@ -1285,6 +1285,23 @@ class JsonManipulatorTest extends TestCase
 }
 ',
             ],
+            [
+                '{
+    "require": {
+        "foo/bar": null
+    }
+}
+',
+                'require',
+                'foo/bar',
+                '^1',
+                '{
+    "require": {
+        "foo/bar": "^1"
+    }
+}
+',
+            ],
         ];
     }
 
