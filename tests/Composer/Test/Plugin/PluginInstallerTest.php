@@ -387,6 +387,25 @@ class PluginInstallerTest extends TestCase
         self::assertInstanceOf('Composer\Command\BaseCommand', $commands[0]);
     }
 
+    public function testAuthenticationProviderCapability(): void
+    {
+        $loader = new JsonLoader(new ArrayLoader());
+        $this->repository
+            ->expects($this->any())
+            ->method('getPackages')
+            ->will($this->returnValue([$loader->load(__DIR__ . '/Fixtures/plugin-v10/composer.json')]));
+        $installer = new PluginInstaller($this->io, $this->composer);
+        $this->pm->loadInstalledPlugins();
+
+        /** @var \Composer\Plugin\Capability\AuthenticationProvider[] $caps */
+        $caps = $this->pm->getPluginCapabilities('Composer\Plugin\Capability\AuthenticationProvider', ['composer' => $this->composer, 'io' => $this->io]);
+        self::assertCount(1, $caps);
+        self::assertInstanceOf('Composer\Plugin\Capability\AuthenticationProvider', $caps[0]);
+
+        self::assertSame(['username' => 'fixture-user', 'password' => 'fixture-pass'], $caps[0]->getAuthentication('fixture.example.org'));
+        self::assertNull($caps[0]->getAuthentication('unknown.example.org'));
+    }
+
     public function testIncapablePluginIsCorrectlyDetected(): void
     {
         $plugin = $this->getMockBuilder('Composer\Plugin\PluginInterface')
