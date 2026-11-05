@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\Package\BasePackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Semver\CompilingMatcher;
@@ -40,7 +41,7 @@ class Pool implements \Countable
     protected $removedVersions = [];
     /** @var array<int, array<string, string>> Map of package object id => removed normalized versions => removed pretty version */
     protected $removedVersionsByPackage = [];
-    /** @var array<string, array<string, PolicyRemovalReason>> Map of package name => normalized version => why a policy removed it */
+    /** @var array<string, array<string, RejectionReason>> Map of package name => normalized version => why a policy removed it */
     private $policyRemovedVersions = [];
 
     /**
@@ -48,7 +49,7 @@ class Pool implements \Countable
      * @param BasePackage[] $unacceptableFixedOrLockedPackages
      * @param array<string, array<string, string>> $removedVersions
      * @param array<int, array<string, string>> $removedVersionsByPackage
-     * @param array<string, array<string, PolicyRemovalReason>> $policyRemovedVersions
+     * @param array<string, array<string, RejectionReason>> $policyRemovedVersions
      */
     public function __construct(array $packages = [], array $unacceptableFixedOrLockedPackages = [], array $removedVersions = [], array $removedVersionsByPackage = [], array $policyRemovedVersions = [])
     {
@@ -110,7 +111,7 @@ class Pool implements \Countable
     /**
      * Versions of a package that dependency policies removed from the pool, with the reason for each
      *
-     * @return array<string, PolicyRemovalReason> normalized version => reason, in ascending version order
+     * @return array<string, RejectionReason> normalized version => reason, in ascending version order
      */
     public function getPolicyRemovedVersions(string $packageName, ?ConstraintInterface $constraint = null): array
     {
@@ -127,7 +128,7 @@ class Pool implements \Countable
         return $result;
     }
 
-    public function getPolicyRemovalReason(string $packageName, string $version): ?PolicyRemovalReason
+    public function getPolicyRemovalReason(string $packageName, string $version): ?RejectionReason
     {
         return $this->policyRemovedVersions[$packageName][$version] ?? null;
     }
@@ -136,9 +137,9 @@ class Pool implements \Countable
      * Records a removal under every name of the package, but a replacer never hides the removal of the package itself
      *
      * @internal
-     * @param array<string, array<string, PolicyRemovalReason>> $policyRemovedVersions
+     * @param array<string, array<string, RejectionReason>> $policyRemovedVersions
      */
-    public static function recordPolicyRemoval(array &$policyRemovedVersions, BasePackage $package, PolicyRemovalReason $reason): void
+    public static function recordPolicyRemoval(array &$policyRemovedVersions, BasePackage $package, RejectionReason $reason): void
     {
         foreach ($package->getNames(false) as $name) {
             $existing = $policyRemovedVersions[$name][$package->getVersion()] ?? null;
@@ -149,7 +150,7 @@ class Pool implements \Countable
     }
 
     /**
-     * @return array<string, array<string, PolicyRemovalReason>>
+     * @return array<string, array<string, RejectionReason>>
      */
     public function getAllPolicyRemovedVersions(): array
     {
