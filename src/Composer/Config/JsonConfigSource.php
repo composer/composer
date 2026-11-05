@@ -208,7 +208,7 @@ class JsonConfigSource implements ConfigSourceInterface
     public function removeRepository(string $name): void
     {
         $this->manipulateJson('removeRepository', static function (&$config, $repo): void {
-            if (is_array($config['repositories'] ?? null) && array_key_exists($repo, $config['repositories'])) {
+            if (!array_is_list($config['repositories'] ?? []) && array_key_exists($repo, $config['repositories'])) {
                 unset($config['repositories'][$repo]);
             } else {
                 $config['repositories'] = array_values(array_filter($config['repositories'] ?? [], static function ($val) use ($repo) {
