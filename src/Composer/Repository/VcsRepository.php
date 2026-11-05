@@ -517,6 +517,10 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         if (!is_array($repoConfig[$key]) || count(array_filter($repoConfig[$key], 'is_string')) !== count($repoConfig[$key])) {
             throw new \InvalidArgumentException('"'.$key.'" key for repository '.Url::sanitize($this->url).' should be an array of strings');
         }
+        // excluding nothing needs no filtering, whereas an empty only-branches list keeps only the default branch
+        if ('exclude-branches' === $key && [] === $repoConfig[$key]) {
+            return null;
+        }
 
         // branch names are case-sensitive, unlike package names
         return BasePackage::packageNamesToRegexp($repoConfig[$key], '{^(?:%s)$}D');

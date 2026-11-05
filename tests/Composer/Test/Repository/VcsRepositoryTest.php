@@ -248,6 +248,20 @@ class VcsRepositoryTest extends TestCase
                     '9999999-dev' => true, // alias of dev-master
                 ],
             ],
+            'empty list loads all branches' => [
+                ['exclude-branches' => []],
+                [
+                    '0.6.0' => true,
+                    '1.0.0' => true,
+                    '1.0.x-dev' => true,
+                    '1.1.x-dev' => true,
+                    'dev-feature-b' => true,
+                    'dev-feature/a-1.0-B' => true,
+                    'dev-foo+bar' => true,
+                    'dev-master' => true,
+                    '9999999-dev' => true, // alias of dev-master
+                ],
+            ],
             'default branch is always kept' => [
                 ['exclude-branches' => ['*']],
                 [
