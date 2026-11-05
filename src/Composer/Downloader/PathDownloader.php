@@ -229,7 +229,8 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
 
         $packageConfig = $dumper->dump($package);
         $packageVersion = $guesser->guessVersion($packageConfig, $path);
-        if ($packageVersion !== null) {
+        // a dir which is not the root of a git repository of its own would report the commit of an enclosing one, e.g. the root package's
+        if ($packageVersion !== null && 0 === $this->process->execute(['git', 'rev-parse', '--show-prefix'], $prefix, $path) && '' === trim($prefix)) {
             return $packageVersion['commit'];
         }
 
