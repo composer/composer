@@ -69,6 +69,16 @@ class ZipArchiver implements ArchiverInterface
                      */
                     $zip->setExternalAttributesName($relativePath, ZipArchive::OPSYS_UNIX, $perms << 16);
                 }
+
+                /**
+                 * setMtimeName() is only available with libzip 1.0.0 or above.
+                 */
+                if (method_exists($zip, 'setMtimeName')) {
+                    $mtime = filemtime($filepath);
+                    if (false !== $mtime) {
+                        $zip->setMtimeName($relativePath, $mtime);
+                    }
+                }
             }
             if ($zip->close()) {
                 if (!file_exists($target)) {

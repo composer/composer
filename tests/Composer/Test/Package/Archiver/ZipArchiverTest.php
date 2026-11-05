@@ -67,6 +67,40 @@ class ZipArchiverTest extends ArchiverTestCase
         ]);
     }
 
+    public function testPreservesFileModificationTimes(): void
+    {
+        if (!class_exists('ZipArchive')) {
+            $this->markTestSkipped('Cannot run ZipArchiverTest, missing class "ZipArchive".');
+        }
+        if (!method_exists('ZipArchive', 'setMtimeName')) {
+            $this->markTestSkipped('Cannot run ZipArchiverTest, missing method "ZipArchive::setMtimeName".');
+        }
+
+        $this->setupDummyRepo([
+            'file.txt' => 'content',
+        ]);
+
+        $sourceFile = $this->testDir.'/file.txt';
+        $expectedMtime = 1700000000;
+        touch($sourceFile, $expectedMtime);
+
+        $package = $this->setupPackage();
+        $target = $this->filesToCleanup[] = sys_get_temp_dir().'/composer_archiver_test.zip';
+
+        $archiver = new ZipArchiver();
+        $archiver->archive($package->getSourceUrl(), $target, 'zip');
+
+        $zip = new ZipArchive();
+        $res = $zip->open($target);
+        static::assertTrue($res, 'Failed asserting that Zip file can be opened');
+
+        $fileStat = $zip->statName('file.txt');
+        static::assertIsArray($fileStat);
+        static::assertArrayHasKey('mtime', $fileStat);
+        static::assertSame($expectedMtime, $fileStat['mtime']);
+        $zip->close();
+    }
+
     /**
      * @param array<string, string|null> $files
      */
