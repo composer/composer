@@ -1383,6 +1383,13 @@
                         "type": "string"
                     }
                 },
+                "exclude-branches": {
+                    "type": "array",
+                    "description": "List of branch names to skip, wildcards (*) are supported. The default branch is always loaded. Defaults to none.",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "secure-http": { "type": "boolean" },
                 "svn-cache-credentials": { "type": "boolean" },
                 "trunk-path": { "type": ["string", "boolean"] },
