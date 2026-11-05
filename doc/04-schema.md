@@ -386,6 +386,38 @@ the VCS it names is cloned once and then checked out at the reference.
 
 Optional.
 
+### transport-options
+
+Options passed to the transport when the package is downloaded, as an array.
+
+```json
+{
+    "transport-options": {
+        "http": {
+            "timeout": 60
+        }
+    }
+}
+```
+
+They take the same form as the `options` of a [Composer
+repository](05-repositories.md#curl-or-stream-options): `http` and `ssl` stream
+context options, or the limited set of them supported when cURL is used. For git
+source installs, `git.single_use_clone` is also supported.
+
+This field is primarily for internal use. Composer repositories, such as
+Packagist and the [`composer`](05-repositories.md#composer) repository type, use
+it to pass their own transport options on to packages whose dist URL belongs to
+them, and plugins can adjust it through the
+[`pre-file-download`](articles/scripts.md) event.
+
+You should normally not set this field in a package's `composer.json`: the
+options can be written to the lock file, are not portable between machines, and
+may expose credentials or local paths. Configure the options on the
+[repository](05-repositories.md#curl-or-stream-options) instead.
+
+Optional.
+
 ### Package links
 
 All of the following take an object which maps package names to
