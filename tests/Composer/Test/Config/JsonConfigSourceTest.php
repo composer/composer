@@ -288,6 +288,8 @@ class JsonConfigSourceTest extends TestCase
         yield 'remove nested extra key set to null' => ['{"extra": {"foo": {"bar": null, "z": 1}}}', 'removeProperty', ['extra.foo.bar'], '{"extra":{"foo":{"z":1}}}'];
         yield 'remove link set to null' => ['{"require-dev": {"a/b": "1", "c/d": null}}', 'removeLink', ['require-dev', 'c/d'], '{"require-dev":{"a\/b":"1"}}'];
         yield 'remove repository set to null' => ['{"repositories": {"foo": null, "bar": {"type": "vcs", "url": "x"}}}', 'removeRepository', ['foo'], '{"repositories":{"bar":{"type":"vcs","url":"x"}}}'];
+        yield 'remove repository from list' => ['{"repositories": [{"name": "foo", "type": "vcs", "url": "x"}, {"name": "bar", "type": "vcs", "url": "y"}]}', 'removeRepository', ['foo'], '{"repositories":[{"name":"bar","type":"vcs","url":"y"}]}'];
+        yield 'remove disabled packagist from list' => ['{"repositories": [{"packagist.org": false}, {"name": "bar", "type": "vcs", "url": "y"}]}', 'removeRepository', ['packagist.org'], '{"repositories":[{"name":"bar","type":"vcs","url":"y"}]}'];
     }
 
     public function testRemovePolicyListFieldCascadesEmptyAncestors(): void

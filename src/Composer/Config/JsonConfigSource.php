@@ -212,7 +212,7 @@ class JsonConfigSource implements ConfigSourceInterface
                 unset($config['repositories'][$repo]);
             } else {
                 $config['repositories'] = array_values(array_filter($config['repositories'] ?? [], static function ($val) use ($repo) {
-                    return !isset($val['name']) || $val['name'] !== $repo || $val !== [$repo => false];
+                    return ($val['name'] ?? null) !== $repo && $val !== [$repo => false];
                 }));
             }
 
