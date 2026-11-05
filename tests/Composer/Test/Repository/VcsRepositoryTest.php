@@ -165,27 +165,9 @@ class VcsRepositoryTest extends TestCase
             '9999999-dev' => true, // alias of dev-master
         ];
 
-        $config = new Config();
-        $config->merge([
-            'config' => [
-                'home' => self::$composerHome,
-            ],
-        ]);
-        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
-        $repo = new VcsRepository(['url' => self::$gitRepo, 'type' => 'vcs'], new NullIO, $config, $httpDownloader);
-        $packages = $repo->getPackages();
-        $dumper = new ArrayDumper();
-
-        foreach ($packages as $package) {
-            if (isset($expected[$package->getPrettyVersion()])) {
-                unset($expected[$package->getPrettyVersion()]);
-                self::assertNull($package->getPublishedDate(), 'published-time from composer.json must not be trusted for '.$package->getPrettyVersion());
-            } else {
-                $this->fail('Unexpected version '.$package->getPrettyVersion().' in '.json_encode($dumper->dump($package)));
-            }
+        foreach ($this->assertLoadedVersions([], $expected) as $package) {
+            self::assertNull($package->getPublishedDate(), 'published-time from composer.json must not be trusted for '.$package->getPrettyVersion());
         }
-
-        self::assertEmpty($expected, 'Missing versions: '.implode(', ', array_keys($expected)));
     }
 
     /**
@@ -345,8 +327,9 @@ class VcsRepositoryTest extends TestCase
     /**
      * @param array{only-branches?: list<string>, exclude-branches?: list<string>} $repoConfig
      * @param array<string, true> $expected
+     * @return array<\Composer\Package\PackageInterface>
      */
-    private function assertLoadedVersions(array $repoConfig, array $expected): void
+    private function assertLoadedVersions(array $repoConfig, array $expected): array
     {
         $config = new Config();
         $config->merge([
@@ -368,6 +351,8 @@ class VcsRepositoryTest extends TestCase
         }
 
         self::assertEmpty($expected, 'Missing versions: '.implode(', ', array_keys($expected)));
+
+        return $packages;
     }
 }
 
