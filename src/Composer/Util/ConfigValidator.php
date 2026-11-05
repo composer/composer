@@ -16,9 +16,13 @@ use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Package\Loader\InvalidPackageException;
 use Composer\Json\JsonValidationException;
+use Composer\Installer\InstallerEvents;
+use Composer\Installer\PackageEvents;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Pcre\Preg;
+use Composer\Plugin\PluginEvents;
+use Composer\Script\ScriptEvents;
 use Composer\Spdx\SpdxLicenses;
 use Seld\JsonLint\DuplicateKeyException;
 use Seld\JsonLint\JsonParser;
@@ -204,6 +208,36 @@ class ConfigValidator
                     'Aliases for non-existent script "%s" found in "scripts-aliases"',
                     $scriptName
                 );
+            }
+        }
+
+        // report @references to non-existent scripts
+        if (is_array($scripts)) {
+            $eventNames = [];
+            foreach ([ScriptEvents::class, PackageEvents::class, InstallerEvents::class, PluginEvents::class] as $eventClass) {
+                $eventNames = array_merge($eventNames, array_values((new \ReflectionClass($eventClass))->getConstants()));
+            }
+
+            foreach ($scripts as $scriptName => $listeners) {
+                foreach ((array) $listeners as $listener) {
+                    if (!is_string($listener) || !str_starts_with($listener, '@')) {
+                        continue;
+                    }
+                    if (str_starts_with($listener, '@php ') || str_starts_with($listener, '@putenv ') || str_starts_with($listener, '@composer ')) {
+                        continue;
+                    }
+
+                    $referencedScript = Preg::split('{\s+}', substr($listener, 1), 2)[0];
+                    if (array_key_exists($referencedScript, $scripts) || in_array($referencedScript, $eventNames, true)) {
+                        continue;
+                    }
+
+                    $warnings[] = sprintf(
+                        'Script "%s" references non-existent script "%s" (unless provided by a plugin)',
+                        $scriptName,
+                        $referencedScript
+                    );
+                }
             }
         }
 
