@@ -13,13 +13,18 @@
 namespace Composer\Command;
 
 use Composer\Composer;
+use Composer\DependencyResolver\LockTransaction;
 use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Request;
 use Composer\Installer;
 use Composer\IO\IOInterface;
+use Composer\Json\JsonFile;
 use Composer\Package\BasePackage;
 use Composer\Package\Loader\RootPackageLoader;
+use Composer\Package\PackageInterface;
+use Composer\Package\RootPackageInterface;
 use Composer\Package\Version\VersionSelector;
 use Composer\Pcre\Preg;
 use Composer\Plugin\CommandEvent;
@@ -89,6 +94,7 @@ class UpdateCommand extends BaseCommand
                 new InputOption('interactive', 'i', InputOption::VALUE_NONE, 'Interactive interface with autocompletion to select the packages to update.'),
                 new InputOption('root-reqs', null, InputOption::VALUE_NONE, 'Restricts the update to your first degree dependencies.'),
                 new InputOption('bump-after-update', null, InputOption::VALUE_OPTIONAL, 'Runs bump after performing the update.', false, ['dev', 'no-dev', 'all']),
+                new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the lock file operations output: text or json', 'text', ['json', 'text']),
             ])
             ->setHelp(
                 <<<EOT
@@ -132,6 +138,13 @@ EOT
         }
         if ($input->getOption('no-suggest')) {
             $io->writeError('<warning>You are using the deprecated option "--no-suggest". It has no effect and will break in Composer 3.</warning>');
+        }
+
+        $format = $input->getOption('format');
+        if (!in_array($format, ['text', 'json'], true)) {
+            $io->writeError(sprintf('Unsupported format "%s". See help for supported formats.', $format));
+
+            return self::FAILURE;
         }
 
         $composer = $this->requireComposer();
@@ -307,6 +320,13 @@ EOT
 
         $result = $install->run();
 
+        $lockTransaction = $install->getLockTransaction();
+        if ($format === 'json' && $lockTransaction !== null) {
+            $io->write(JsonFile::encode([
+                'operations' => $this->getOperationsReport($lockTransaction, $rootPackage, $updateMirrors),
+            ]));
+        }
+
         if ($result === 0 && !$input->getOption('lock')) {
             $bumpAfterUpdate = $input->getOption('bump-after-update');
             if (false === $bumpAfterUpdate) {
@@ -417,6 +437,57 @@ EOT
         }
 
         throw new \RuntimeException('Installation aborted.');
+    }
+
+    /**
+     * @return list<array{name: string, type: 'install'|'update'|'uninstall', direct: bool, from?: array{version: string, reference: string|null}, to?: array{version: string, reference: string|null}}>
+     */
+    private function getOperationsReport(LockTransaction $lockTransaction, RootPackageInterface $rootPackage, bool $updateMirrors): array
+    {
+        $rootRequires = array_merge($rootPackage->getRequires(), $rootPackage->getDevRequires());
+        $describe = static function (PackageInterface $package): array {
+            return [
+                'version' => $package->getPrettyVersion(),
+                'reference' => $package->getSourceReference() ?? $package->getDistReference(),
+            ];
+        };
+
+        $report = [];
+        foreach ($lockTransaction->getOperations() as $operation) {
+            if ($operation instanceof InstallOperation) {
+                $report[] = [
+                    'name' => $operation->getPackage()->getPrettyName(),
+                    'type' => 'install',
+                    'direct' => isset($rootRequires[$operation->getPackage()->getName()]),
+                    'to' => $describe($operation->getPackage()),
+                ];
+            } elseif ($operation instanceof UpdateOperation) {
+                // mirror-only updates are not listed as updates in the text output either
+                if ($updateMirrors
+                    && $operation->getInitialPackage()->getName() === $operation->getTargetPackage()->getName()
+                    && $operation->getInitialPackage()->getVersion() === $operation->getTargetPackage()->getVersion()
+                ) {
+                    continue;
+                }
+
+                $report[] = [
+                    'name' => $operation->getTargetPackage()->getPrettyName(),
+                    'type' => 'update',
+                    'direct' => isset($rootRequires[$operation->getTargetPackage()->getName()]),
+                    'from' => $describe($operation->getInitialPackage()),
+                    'to' => $describe($operation->getTargetPackage()),
+                ];
+            } elseif ($operation instanceof UninstallOperation) {
+                $report[] = [
+                    'name' => $operation->getPackage()->getPrettyName(),
+                    'type' => 'uninstall',
+                    'direct' => isset($rootRequires[$operation->getPackage()->getName()]),
+                    'from' => $describe($operation->getPackage()),
+                ];
+            }
+        }
+
+        return $report;
     }
 
     private function createVersionSelector(Composer $composer): VersionSelector
