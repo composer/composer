@@ -226,7 +226,7 @@ class VcsRepositoryTest extends TestCase
 
     /**
      * @dataProvider provideExcludeBranchesFilters
-     * @param array<string, list<string>> $filters
+     * @param array{only-branches?: list<string>, exclude-branches?: list<string>} $filters
      * @param array<string, true> $expected
      */
     public function testLoadVersionsWithExcludeBranchesFilter(array $filters, array $expected): void
@@ -273,7 +273,7 @@ class VcsRepositoryTest extends TestCase
 
     /**
      * @dataProvider provideSvnBranchFilters
-     * @param array<string, list<string>> $filters
+     * @param array{only-branches?: list<string>, exclude-branches?: list<string>} $filters
      */
     public function testBranchFiltersKeepSvnTrunk(array $filters): void
     {
@@ -306,30 +306,30 @@ class VcsRepositoryTest extends TestCase
 
     /**
      * @dataProvider provideInvalidBranchFilters
-     * @param mixed $value
+     * @param array{only-branches?: mixed, exclude-branches?: mixed} $filters
      */
-    public function testInvalidBranchFilterThrows(string $key, $value): void
+    public function testInvalidBranchFilterThrows(string $key, array $filters): void
     {
         self::expectException('InvalidArgumentException');
         self::expectExceptionMessage('"'.$key.'" key for repository '.self::$gitRepo.' should be an array of strings');
 
         $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
-        new VcsRepository(['url' => self::$gitRepo, 'type' => 'vcs', $key => $value], new NullIO, new Config(), $httpDownloader);
+        new VcsRepository(['url' => self::$gitRepo, 'type' => 'vcs'] + $filters, new NullIO, new Config(), $httpDownloader);
     }
 
     public static function provideInvalidBranchFilters(): array
     {
         $cases = [];
         foreach (['only-branches', 'exclude-branches'] as $key) {
-            $cases[$key.' string'] = [$key, '7.4'];
-            $cases[$key.' non-string item'] = [$key, ['7.4', ['8.*']]];
+            $cases[$key.' string'] = [$key, [$key => '7.4']];
+            $cases[$key.' non-string item'] = [$key, [$key => ['7.4', ['8.*']]]];
         }
 
         return $cases;
     }
 
     /**
-     * @param array<string, mixed> $repoConfig
+     * @param array{only-branches?: list<string>, exclude-branches?: list<string>} $repoConfig
      * @param array<string, true> $expected
      */
     private function assertLoadedVersions(array $repoConfig, array $expected): void
