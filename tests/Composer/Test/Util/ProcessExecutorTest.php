@@ -13,6 +13,7 @@
 namespace Composer\Test\Util;
 
 use Composer\IO\ConsoleIO;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Test\TestCase;
 use Composer\IO\BufferIO;
@@ -21,6 +22,7 @@ use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
+use Symfony\Component\Process\Exception\ProcessTimedOutException;
 
 class ProcessExecutorTest extends TestCase
 {
@@ -64,6 +66,33 @@ class ProcessExecutorTest extends TestCase
         $process = new ProcessExecutor;
         self::assertEquals(1, $process->getTimeout());
         ProcessExecutor::setTimeout(60);
+    }
+
+    public function testTtyProcessOnWindowsInheritsHandles(): void
+    {
+        if (!Platform::isWindows()) {
+            self::markTestSkipped('Only Windows passes its own handles to the child process');
+        }
+
+        $doExecute = new \ReflectionMethod(ProcessExecutor::class, 'doExecute');
+        $doExecute->setAccessible(true);
+        $php = ProcessExecutor::escape(PHP_BINARY);
+        $io = new BufferIO();
+        $process = new ProcessExecutor($io);
+
+        self::assertSame(3, $doExecute->invoke($process, $php.' -r "echo PHP_EOL; exit(3);"', null, true));
+        self::assertSame('', $io->getOutput());
+
+        $timeout = ProcessExecutor::getTimeout();
+        ProcessExecutor::setTimeout(1);
+        try {
+            $doExecute->invoke($process, $php.' -r "sleep(30);"', null, true);
+            self::fail('The process should have timed out');
+        } catch (ProcessTimedOutException $e) {
+            self::assertStringContainsString('exceeded the timeout of 1 seconds', $e->getMessage());
+        } finally {
+            ProcessExecutor::setTimeout($timeout);
+        }
     }
 
     /**
