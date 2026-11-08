@@ -584,12 +584,17 @@ class Locker
         $datetime = null;
 
         if ($path && in_array($sourceType, ['git', 'hg'])) {
-            $sourceRef = $package->getSourceReference() ?: $package->getDistReference();
+            $sourceRef = (string) ($package->getSourceReference() ?: $package->getDistReference());
+            // a ref like "--output=<file>" would be parsed as an option by git/hg
+            if ($sourceRef === '' || $sourceRef[0] === '-') {
+                return null;
+            }
+
             switch ($sourceType) {
                 case 'git':
                     GitUtil::cleanEnv($this->process);
 
-                    $command = GitUtil::buildRevListCommand($this->process, array_merge(['-n1', '--format=%ct', (string) $sourceRef], GitUtil::getNoShowSignatureFlags($this->process)));
+                    $command = GitUtil::buildRevListCommand($this->process, array_merge(['-n1', '--format=%ct', $sourceRef], GitUtil::getNoShowSignatureFlags($this->process)));
                     if (0 === $this->process->execute($command, $output, $path)) {
                         $output = trim(GitUtil::parseRevListOutput($output, $this->process));
                         if (Preg::isMatch('{^\s*\d+\s*$}', $output)) {
@@ -599,7 +604,7 @@ class Locker
                     break;
 
                 case 'hg':
-                    if (0 === $this->process->execute(['hg', 'log', '--template', '{date|hgdate}', '-r', (string) $sourceRef], $output, $path) && Preg::isMatch('{^\s*(\d+)\s*}', $output, $match)) {
+                    if (0 === $this->process->execute(['hg', 'log', '--template', '{date|hgdate}', '-r', $sourceRef], $output, $path) && Preg::isMatch('{^\s*(\d+)\s*}', $output, $match)) {
                         $datetime = new \DateTime('@'.$match[1], new \DateTimeZone('UTC'));
                     }
                     break;
