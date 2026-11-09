@@ -417,7 +417,10 @@ class CurlDownloaderTest extends TestCase
             }]
         );
 
-        $this->tickUntil($downloader, static function () use (&$errors): bool {
+        $this->tickUntil($downloader, function () use ($server, &$errors): bool {
+            // accepted so the test does not depend on the OS completing the connection from the backlog
+            $this->acceptClient($server);
+
             return count($errors) > 0;
         });
 
