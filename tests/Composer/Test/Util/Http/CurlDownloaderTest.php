@@ -469,6 +469,39 @@ class CurlDownloaderTest extends TestCase
         self::assertSame('', stream_get_contents($client), 'nothing must be sent to a blocked IP');
     }
 
+    public function testExceptionFromThePreventIpAccessCallableRejectsTheRequest(): void
+    {
+        if (!\defined('CURLOPT_PREREQFUNCTION')) {
+            self::markTestSkipped('Requires CURLOPT_PREREQFUNCTION (PHP 8.4+) to check the IP before sending');
+        }
+
+        $server = $this->createLocalServer();
+        $downloader = $this->createDownloader();
+        $exception = new \RuntimeException('Could not check the IP');
+        $errors = [];
+        $downloader->download(
+            static function (): void {
+            },
+            static function (\Throwable $e) use (&$errors): void {
+                $errors[] = $e;
+            },
+            'localhost',
+            'http://'.stream_socket_get_name($server, false).'/',
+            ['prevent_ip_access_callable' => static function () use ($exception): bool {
+                throw $exception;
+            }]
+        );
+
+        $this->tickUntil($downloader, function () use ($server, &$errors): bool {
+            $this->acceptClient($server);
+
+            return count($errors) > 0;
+        });
+
+        self::assertSame([$exception], $errors);
+        self::assertSame([], $this->readProperty($downloader, 'jobs'));
+    }
+
     public function testRequestExceedingTheMaxFileSizeIsRejectedOnceAndRemovedFromTheTransfersInFlight(): void
     {
         $server = $this->createLocalServer();

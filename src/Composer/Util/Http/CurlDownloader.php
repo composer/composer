@@ -28,7 +28,7 @@ use React\Promise\Promise;
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Nicolas Grekas <p@tchwork.com>
  * @phpstan-type Attributes array{retryAuthFailure: bool, redirects: int<0, max>, retries: int<0, max>, authRetries: int<0, max>, storeAuth: 'prompt'|bool, ipResolve: 4|6|null}
- * @phpstan-type Job array{url: non-empty-string, origin: string, attributes: Attributes, options: mixed[], progress: mixed[], curlHandle: \CurlHandle, filename: string|null, headerHandle: resource, bodyHandle: resource, resolve: callable, reject: callable, primaryIp: string, blockedIp: string|null, hostKey: string|null}
+ * @phpstan-type Job array{url: non-empty-string, origin: string, attributes: Attributes, options: mixed[], progress: mixed[], curlHandle: \CurlHandle, filename: string|null, headerHandle: resource, bodyHandle: resource, resolve: callable, reject: callable, primaryIp: string, preRequestError: \Exception|null, hostKey: string|null}
  * @phpstan-type RetryAttributes array{retryAuthFailure?: bool, redirects?: int<0, max>, storeAuth?: 'prompt'|bool, retries: int<1, max>, ipResolve?: 4|6}
  * @phpstan-type DelayedJob array{job: Job, url: non-empty-string, attributes: RetryAttributes, at: float}
  */
@@ -268,14 +268,22 @@ class CurlDownloader
         $preventIpAccess = ($options['prevent_ip_access_callable'] ?? null) instanceof \Closure ? $options['prevent_ip_access_callable'] : null;
         if (\defined('CURLOPT_PREREQFUNCTION') && (null !== $hostKey || null !== $preventIpAccess)) {
             // runs after the TLS handshake but before the request and its credentials are sent
-            curl_setopt($curlHandle, CURLOPT_PREREQFUNCTION, function ($handle, string $primaryIp) use ($hostKey, $preventIpAccess): int {
+            curl_setopt($curlHandle, CURLOPT_PREREQFUNCTION, function ($handle, string $primaryIp) use ($hostKey, $preventIpAccess, $url): int {
                 // CURL_PREREQFUNC_OK = 0, CURL_PREREQFUNC_ABORT = 1, literals as the constants only exist on PHP 8.4+
-                if (null !== $preventIpAccess && $preventIpAccess($primaryIp)) {
-                    if (isset($this->jobs[(int) $handle])) {
-                        $this->jobs[(int) $handle]['blockedIp'] = $primaryIp;
+                if (null !== $preventIpAccess) {
+                    // an exception thrown here would escape curl_multi_exec() and leave the job hanging
+                    try {
+                        $error = $preventIpAccess($primaryIp) ? new TransportException(sprintf('IP "%s" is blocked for "%s".', $primaryIp, Url::sanitize($url))) : null;
+                    } catch (\Exception $e) {
+                        $error = $e;
                     }
+                    if (null !== $error) {
+                        if (isset($this->jobs[(int) $handle])) {
+                            $this->jobs[(int) $handle]['preRequestError'] = $error;
+                        }
 
-                    return 1;
+                        return 1;
+                    }
                 }
 
                 return null === $hostKey || null === $this->checkCertificateChain($hostKey, curl_getinfo($handle, CURLINFO_CERTINFO)) ? 0 : 1;
@@ -355,7 +363,7 @@ class CurlDownloader
             'resolve' => $resolve,
             'reject' => $reject,
             'primaryIp' => '',
-            'blockedIp' => null,
+            'preRequestError' => null,
             'hostKey' => $hostKey,
         ];
 
@@ -466,8 +474,8 @@ class CurlDownloader
             $statusCode = null;
             $response = null;
             try {
-                if (null !== $job['blockedIp']) {
-                    throw new TransportException(sprintf('IP "%s" is blocked for "%s".', $job['blockedIp'], Url::sanitize($job['url'])));
+                if (null !== $job['preRequestError']) {
+                    throw $job['preRequestError'];
                 }
 
                 if (null !== $job['hostKey'] && null !== ($distrusted = $this->checkCertificateChain($job['hostKey'], $progress['certinfo'] ?? []))) {
