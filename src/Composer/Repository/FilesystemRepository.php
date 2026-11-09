@@ -42,6 +42,8 @@ class FilesystemRepository extends WritableArrayRepository
     private $filesystem;
     /** @var bool|null */
     private $devMode = null;
+    /** @var array<string, string|null> */
+    private $recordedInstallPaths = [];
     /** @var ?RepositoryManager */
     private $repositoryManager = null;
 
@@ -115,13 +117,37 @@ class FilesystemRepository extends WritableArrayRepository
         }
 
         $loader = new ArrayLoader(null, true);
+        $this->recordedInstallPaths = [];
         foreach ($packages as $packageData) {
             $package = $loader->load($packageData);
             if ($this->repositoryManager !== null) {
                 $this->repositoryManager->restoreHttpHeaders($package);
             }
+            $this->recordedInstallPaths[$package->getName()] = $packageData['install-path'] ?? null;
             $this->addPackage($package);
         }
+    }
+
+    /**
+     * Returns the install path recorded in the repository file for the given package, resolved
+     * to an absolute path, or null if no install path was recorded for the package
+     *
+     * This is useful early in the process, before the installer responsible for the package
+     * (e.g. a custom installer provided by a plugin) got registered in the installation
+     * manager, as its install path can then not be derived from the installation manager.
+     */
+    public function getInstallPath(PackageInterface $package): ?string
+    {
+        $installPath = $this->recordedInstallPaths[$package->getName()] ?? null;
+        if (null === $installPath || '' === $installPath) {
+            return null;
+        }
+
+        if (!$this->filesystem->isAbsolutePath($installPath)) {
+            $installPath = dirname($this->file->getPath()).'/'.$installPath;
+        }
+
+        return $this->filesystem->normalizePath($installPath);
     }
 
     public function reload()

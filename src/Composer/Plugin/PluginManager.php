@@ -24,6 +24,7 @@ use Composer\Package\RootPackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\PartialComposer;
 use Composer\Pcre\Preg;
+use Composer\Repository\FilesystemRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\InstalledRepository;
 use Composer\Repository\RepositoryUtils;
@@ -596,12 +597,23 @@ class PluginManager
     private function getInstallPath(PackageInterface $package, bool $global = false): ?string
     {
         if (!$global) {
-            return $this->composer->getInstallationManager()->getInstallPath($package);
+            $composer = $this->composer;
+        } else {
+            assert(null !== $this->globalComposer);
+            $composer = $this->globalComposer;
         }
 
-        assert(null !== $this->globalComposer);
+        // If the package is already installed, the install path recorded in installed.json
+        // is authoritative: the installer responsible for the package (e.g. a custom installer
+        // provided by the plugin being registered, or by another plugin which is not loaded
+        // yet) may not be registered in the installation manager at this point, in which case
+        // the installation manager would derive an incorrect default path inside vendor/
+        $localRepo = $composer->getRepositoryManager()->getLocalRepository();
+        if ($localRepo instanceof FilesystemRepository && null !== ($installPath = $localRepo->getInstallPath($package))) {
+            return $installPath;
+        }
 
-        return $this->globalComposer->getInstallationManager()->getInstallPath($package);
+        return $composer->getInstallationManager()->getInstallPath($package);
     }
 
     /**

@@ -1,0 +1,13 @@
+{
+    "name": "acme/installer-plugin",
+    "version": "1.0.0",
+    "type": "composer-plugin",
+    "autoload": { "psr-4": { "Acme\\InstallerPlugin\\": "src/" } },
+    "extra": {
+        "class": "Acme\\InstallerPlugin\\Plugin"
+    },
+    "require": {
+        "composer-plugin-api": "^2.0",
+        "acme/root": "*"
+    }
+}
