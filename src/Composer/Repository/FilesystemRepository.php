@@ -135,6 +135,8 @@ class FilesystemRepository extends WritableArrayRepository
      * This is useful early in the process, before the installer responsible for the package
      * (e.g. a custom installer provided by a plugin) got registered in the installation
      * manager, as its install path can then not be derived from the installation manager.
+     *
+     * @internal
      */
     public function getInstallPath(PackageInterface $package): ?string
     {
