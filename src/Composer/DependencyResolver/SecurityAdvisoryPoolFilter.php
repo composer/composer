@@ -72,7 +72,8 @@ class SecurityAdvisoryPoolFilter
             }
         }
 
-        $ignoreListForBlocking = $advisories->getIgnoreListForOperation('block');
+        // package-name ignores depend on each package version so they are checked in getMatchingAdvisories
+        $ignoreListForBlocking = $advisories->getIgnoreIdForOperation('block');
         $ignoreUnreachableUpdate = $this->policyConfig->ignoreUnreachable->update;
 
         $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, true, $ignoreUnreachableUpdate);
@@ -89,12 +90,10 @@ class SecurityAdvisoryPoolFilter
 
         $advisoryMap = $this->auditor->processAdvisories($allAdvisories['advisories'], $ignoreListForBlocking, $advisories->getIgnoreSeverityForOperation('block'))['advisories'];
 
-        $ignoreAbandonedForBlocking = $abandoned->getFlatIgnoreForOperation('block');
-
         $packages = [];
         $policyRemovedVersions = $pool->getAllPolicyRemovedVersions();
         foreach ($pool->getPackages() as $package) {
-            if ($abandoned->block && count($this->auditor->filterAbandonedPackages([$package], $ignoreAbandonedForBlocking)) !== 0) {
+            if ($abandoned->block && count($this->auditor->filterAbandonedPackages([self::getAdvisoryTarget($package)], $abandoned, 'block')) !== 0) {
                 Pool::recordPolicyRemoval($policyRemovedVersions, $package, PolicyRemovalReason::abandoned($package->getName(), $package->getPrettyVersion()));
                 continue;
             }
@@ -126,7 +125,7 @@ class SecurityAdvisoryPoolFilter
 
         $matchingAdvisories = [];
         foreach ($package->getNames(false) as $packageName) {
-            if (!isset($advisoryMap[$packageName])) {
+            if (!isset($advisoryMap[$packageName]) || count($this->policyConfig->advisories->getMatchingIgnoreRules($packageName, $package->getVersion(), 'block')) > 0) {
                 continue;
             }
 

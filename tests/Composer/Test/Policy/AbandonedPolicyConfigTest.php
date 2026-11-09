@@ -94,8 +94,8 @@ class AbandonedPolicyConfigTest extends TestCase
 
         $abandoned = PolicyConfig::fromConfig($config)->abandoned;
 
-        self::assertSame(['vendor/package1' => null, 'vendor/package2' => null], $abandoned->getFlatIgnoreForOperation('audit'));
-        self::assertSame(['vendor/package1' => null, 'vendor/package2' => null], $abandoned->getFlatIgnoreForOperation('block'));
+        self::assertSame(['vendor/package1', 'vendor/package2'], array_keys($abandoned->getIgnoreForOperation('audit')));
+        self::assertSame(['vendor/package1', 'vendor/package2'], array_keys($abandoned->getIgnoreForOperation('block')));
     }
 
     public function testLegacyIgnoreAbandonedDetailedFormat(): void
@@ -110,8 +110,10 @@ class AbandonedPolicyConfigTest extends TestCase
 
         $abandoned = PolicyConfig::fromConfig($config)->abandoned;
 
-        self::assertSame(['vendor/package1' => 'Report but do not block'], $abandoned->getFlatIgnoreForOperation('audit'));
-        self::assertSame(['vendor/package2' => 'Block but do not report'], $abandoned->getFlatIgnoreForOperation('block'));
+        self::assertSame('Report but do not block', ListPolicyConfig::mergeRuleReasons($abandoned->getMatchingIgnoreRules('vendor/package1', '1.0.0.0', 'audit')));
+        self::assertSame([], $abandoned->getMatchingIgnoreRules('vendor/package1', '1.0.0.0', 'block'));
+        self::assertSame('Block but do not report', ListPolicyConfig::mergeRuleReasons($abandoned->getMatchingIgnoreRules('vendor/package2', '1.0.0.0', 'block')));
+        self::assertSame([], $abandoned->getMatchingIgnoreRules('vendor/package2', '1.0.0.0', 'audit'));
     }
 
     public function testPolicyAbandonedSetIgnoresLegacyAuditAbandonedKeys(): void
@@ -144,7 +146,7 @@ class AbandonedPolicyConfigTest extends TestCase
         $this->assertEquals(AbandonedPolicyConfig::disabled(), $abandoned);
     }
 
-    public function testGetFlatIgnoreForOperationMergesMultiRuleReasons(): void
+    public function testGetMatchingIgnoreRulesAppliesVersionConstraint(): void
     {
         $config = new Config();
         $config->merge(['config' => ['policy' => [
@@ -160,9 +162,8 @@ class AbandonedPolicyConfigTest extends TestCase
 
         $abandoned = PolicyConfig::fromConfig($config)->abandoned;
 
-        $reason = $abandoned->getFlatIgnoreForOperation('audit')['vendor/multi-abandoned'];
-        self::assertNotNull($reason);
-        self::assertStringContainsString('fork ready', $reason);
-        self::assertStringContainsString('maintained downstream', $reason);
+        self::assertSame('fork ready', ListPolicyConfig::mergeRuleReasons($abandoned->getMatchingIgnoreRules('vendor/multi-abandoned', '1.0.0.0', 'audit')));
+        self::assertSame('maintained downstream', ListPolicyConfig::mergeRuleReasons($abandoned->getMatchingIgnoreRules('vendor/multi-abandoned', '2.0.0.0', 'audit')));
+        self::assertSame([], $abandoned->getMatchingIgnoreRules('vendor/multi-abandoned', '3.0.0.0', 'audit'));
     }
 }

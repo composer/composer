@@ -19,13 +19,13 @@ use Composer\IO\ConsoleIO;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Package\AliasPackage;
-use Composer\Package\BasePackage;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\PackageInterface;
-use Composer\Pcre\Preg;
+use Composer\Policy\IgnorePackageRule;
 use Composer\Policy\ListPolicyConfig;
 use Composer\Policy\PolicyConfig;
 use Composer\Repository\RepositorySet;
+use Composer\Semver\Constraint\Constraint;
 use Composer\Util\PackageInfo;
 use InvalidArgumentException;
 use Symfony\Component\Console\Formatter\OutputFormatter;
@@ -80,7 +80,7 @@ class Auditor
      */
     public function audit(IOInterface $io, RepositorySet $repoSet, PolicyConfig $policyConfig, array $packages, string $format, bool $warningOnly = true, ?FilterListProviderSet $filterListProviderSet = null): int
     {
-        $ignoreList = $policyConfig->advisories->getIgnoreListForOperation('audit');
+        $ignoreList = $policyConfig->advisories->getIgnoreIdForOperation('audit');
         $ignoredSeverities = $policyConfig->advisories->getIgnoreSeverityForOperation('audit');
 
         $result = $repoSet->getMatchingSecurityAdvisories($packages, $format === self::FORMAT_SUMMARY, $policyConfig->ignoreUnreachable->audit);
@@ -94,7 +94,7 @@ class Auditor
             $allAdvisories = $result['advisories'];
             $unreachableRepos = array_merge($unreachableRepos, $result['unreachableRepos']);
         }
-        ['advisories' => $advisories, 'ignoredAdvisories' => $ignoredAdvisories] = $this->processAdvisories($allAdvisories, $ignoreList, $ignoredSeverities);
+        ['advisories' => $advisories, 'ignoredAdvisories' => $ignoredAdvisories] = $this->processAdvisories($allAdvisories, $ignoreList, $ignoredSeverities, $this->getPackageIgnoreRules($packages, $allAdvisories, $policyConfig->advisories));
 
         $abandonedCount = 0;
         $affectedPackagesCount = count($advisories);
@@ -105,7 +105,7 @@ class Auditor
             $canonicalPackages = array_filter($packages, static function (PackageInterface $package): bool {
                 return !$package instanceof AliasPackage;
             });
-            $abandonedPackages = $this->filterAbandonedPackages($canonicalPackages, $policyConfig->abandoned->getFlatIgnoreForOperation('audit'));
+            $abandonedPackages = $this->filterAbandonedPackages($canonicalPackages, $policyConfig->abandoned, 'audit');
             if ($policyConfig->abandoned->audit === ListPolicyConfig::AUDIT_FAIL) {
                 $abandonedCount = count($abandonedPackages);
             }
@@ -285,30 +285,73 @@ class Auditor
 
     /**
      * @param array<PackageInterface> $packages
-     * @param array<string, string|null> $ignoreAbandoned
+     * @param 'block'|'audit' $operation
      * @return array<CompletePackageInterface>
      */
-    public function filterAbandonedPackages(array $packages, array $ignoreAbandoned): array
+    public function filterAbandonedPackages(array $packages, ListPolicyConfig $abandonedPolicy, string $operation): array
     {
-        $filter = null;
-        if (\count($ignoreAbandoned) !== 0) {
-            $filter = BasePackage::packageNamesToRegexp(array_keys($ignoreAbandoned));
-        }
-
-        return array_filter($packages, static function (PackageInterface $pkg) use ($filter): bool {
-            return $pkg instanceof CompletePackageInterface && $pkg->isAbandoned() && ($filter === null || !Preg::isMatch($filter, $pkg->getName()));
+        return array_filter($packages, static function (PackageInterface $pkg) use ($abandonedPolicy, $operation): bool {
+            return $pkg instanceof CompletePackageInterface && $pkg->isAbandoned() && count($abandonedPolicy->getMatchingIgnoreRules($pkg->getName(), $pkg->getVersion(), $operation)) === 0;
         });
     }
 
     /**
+     * Map each version of the packages with advisories to the audit ignore rules matching it, keeping only packages with at least one matching rule.
+     *
+     * @param array<PackageInterface> $packages
+     * @param array<string, array<PartialSecurityAdvisory|SecurityAdvisory>> $advisories
+     * @return array<string, array<string, list<IgnorePackageRule>>>
+     */
+    private function getPackageIgnoreRules(array $packages, array $advisories, ListPolicyConfig $policy): array
+    {
+        $rulesByVersion = [];
+        foreach ($packages as $package) {
+            // skip the versions RepositorySet::getMatchingSecurityAdvisories() does not check
+            if (!isset($advisories[$package->getName()]) || ($package instanceof AliasPackage && $package->isRootPackageAlias()) || RepositorySet::isUnversionedBranch($package)) {
+                continue;
+            }
+            $rulesByVersion[$package->getName()][$package->getVersion()] = $policy->getMatchingIgnoreRules($package->getName(), $package->getVersion(), 'audit');
+        }
+
+        return array_filter($rulesByVersion, static function (array $versions): bool {
+            return array_any($versions, static function (array $rules): bool {
+                return count($rules) > 0;
+            });
+        });
+    }
+
+    /**
+     * Package-name ignore rules only ignore an advisory if they match every version of the package it affects.
+     *
+     * @param array<string, list<IgnorePackageRule>> $rulesByVersion
+     * @return list<IgnorePackageRule>
+     */
+    private static function getRulesIgnoringAdvisory(PartialSecurityAdvisory $advisory, array $rulesByVersion): array
+    {
+        $matchingRules = [];
+        foreach ($rulesByVersion as $version => $rules) {
+            if (!$advisory->affectedVersions->matches(new Constraint('==', (string) $version))) {
+                continue;
+            }
+            if (count($rules) === 0) {
+                return [];
+            }
+            $matchingRules = array_merge($matchingRules, $rules);
+        }
+
+        return $matchingRules;
+    }
+
+    /**
      * @phpstan-param array<string, array<PartialSecurityAdvisory|SecurityAdvisory>> $allAdvisories
-     * @param array<string, string|null> $ignoreList List of advisory IDs, remote IDs, CVE IDs or package names that reported but not listed as vulnerabilities.
+     * @param array<string, string|null> $ignoreList List of advisory IDs, remote IDs or CVE IDs that reported but not listed as vulnerabilities.
      * @param array<string, string|null> $ignoredSeverities List of ignored severity levels
+     * @param array<string, array<string, list<IgnorePackageRule>>> $packageIgnoreRules Package-name ignore rules matching each package version, see getPackageIgnoreRules()
      * @phpstan-return array{advisories: array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>, ignoredAdvisories: array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>}
      */
-    public function processAdvisories(array $allAdvisories, array $ignoreList, array $ignoredSeverities): array
+    public function processAdvisories(array $allAdvisories, array $ignoreList, array $ignoredSeverities, array $packageIgnoreRules = []): array
     {
-        if ($ignoreList === [] && $ignoredSeverities === []) {
+        if ($ignoreList === [] && $ignoredSeverities === [] && $packageIgnoreRules === []) {
             return ['advisories' => $allAdvisories, 'ignoredAdvisories' => []];
         }
 
@@ -320,9 +363,12 @@ class Auditor
             foreach ($pkgAdvisories as $advisory) {
                 $isActive = true;
 
-                if (array_key_exists($package, $ignoreList)) {
-                    $isActive = false;
-                    $ignoreReason = $ignoreList[$package] ?? null;
+                if (isset($packageIgnoreRules[$package])) {
+                    $rules = self::getRulesIgnoringAdvisory($advisory, $packageIgnoreRules[$package]);
+                    if (count($rules) > 0) {
+                        $isActive = false;
+                        $ignoreReason = ListPolicyConfig::mergeRuleReasons($rules);
+                    }
                 }
 
                 if (array_key_exists($advisory->advisoryId, $ignoreList)) {
