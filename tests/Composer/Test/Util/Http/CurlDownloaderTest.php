@@ -465,8 +465,10 @@ class CurlDownloaderTest extends TestCase
         self::assertInstanceOf(TransportException::class, $errors[0]);
         self::assertSame('IP "127.0.0.1" is blocked for "http://'.stream_socket_get_name($server, false).'/".', $errors[0]->getMessage());
         self::assertNotNull($client);
-        stream_set_blocking($client, false);
+        // curl closed the aborted connection, so this reads everything it sent up to EOF
+        stream_set_timeout($client, 5);
         self::assertSame('', stream_get_contents($client), 'nothing must be sent to a blocked IP');
+        self::assertFalse(stream_get_meta_data($client)['timed_out'], 'the connection must have been closed');
     }
 
     public function testExceptionFromThePreventIpAccessCallableRejectsTheRequest(): void
