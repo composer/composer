@@ -360,9 +360,10 @@ class CurlDownloaderTest extends TestCase
     public function testCurlErrorForAUrlCurlCannotParseNamesTheRequestedUrl(): void
     {
         $downloader = $this->createDownloader();
-        $url = 'https://example.invalid/<img src=x onerror=alert(1)>';
+        // the space makes curl reject the URL before any DNS lookup, so no network access happens
+        $url = 'https://example.invalid/foo bar';
 
-        // since curl 8.23.0 curl_getinfo() omits the url key when curl cannot parse the URL
+        // curl_getinfo() omits the url key when curl cannot parse the URL
         $error = null;
         $downloader->download(
             static function (): void {
