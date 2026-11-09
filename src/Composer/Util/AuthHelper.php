@@ -314,7 +314,7 @@ class AuthHelper
         }
 
         $options['http']['header'] = array_values(array_filter((array) $headers, static function ($header): bool {
-            return !is_string($header) || !Preg::isMatch('{^\s*(?:authorization|proxy-authorization|cookie)\s*:}i', $header);
+            return !is_string($header) || !Preg::isMatch('{^\s*(?:authorization|cookie)\s*:}i', $header);
         }));
 
         return $options;
