@@ -17,6 +17,7 @@ use Composer\IO\IOInterface;
 use Composer\Test\TestCase;
 use Composer\Util\Http\CurlDownloader;
 use Composer\Util\Http\Response;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class CurlDownloaderTest extends TestCase
 {
@@ -198,6 +199,49 @@ class CurlDownloaderTest extends TestCase
         $this->letWaitsRunOut($downloader);
         self::callPrivate($downloader, 'restartDueJobs');
         self::assertSame([], $this->readProperty($downloader, 'jobs'), 'a cancelled request must not be sent again');
+    }
+
+    public function testTransferWaitingForAConnectionIsNotGivenUpOnByTheConnectTimeout(): void
+    {
+        if (!defined('CURLMOPT_MAX_HOST_CONNECTIONS')) {
+            self::markTestSkipped('curl does not support CURLMOPT_MAX_HOST_CONNECTIONS');
+        }
+
+        // nothing ever accepts on this socket, but the kernel completes the TCP handshake and buffers the requests
+        // anyway, so every transfer to it holds on to its connection without ever finishing
+        $server = stream_socket_server('tcp://127.0.0.1:0', $errno, $errstr);
+        if (false === $server) {
+            self::fail('Could not listen on a local port: '.$errstr);
+        }
+        $port = (int) parse_url('tcp://'.stream_socket_get_name($server, false), PHP_URL_PORT);
+        $io = new BufferIO('', OutputInterface::VERBOSITY_DEBUG);
+        $downloader = $this->createDownloader($io);
+
+        // one transfer more than the 8 connections allowed per host, so the last one has to wait for a connection
+        $ids = [];
+        for ($i = 0; $i <= 8; $i++) {
+            $ids[] = $downloader->download(
+                static function (): void {
+                },
+                static function (): void {
+                },
+                '127.0.0.1:'.$port,
+                'http://127.0.0.1:'.$port.'/file'.$i,
+                []
+            );
+        }
+
+        // the waiting transfer has not even started connecting, so the 10s connect timeout must not give up on it
+        $deadline = microtime(true) + 12;
+        while (microtime(true) < $deadline && false === strpos($io->getOutput(), 'due to curl error 28')) {
+            $downloader->tick();
+        }
+        foreach ($ids as $id) {
+            $downloader->abortRequest($id);
+        }
+        fclose($server);
+
+        self::assertStringNotContainsString('due to curl error 28', $io->getOutput());
     }
 
     public function testUnauthorizedRequestWhichWasOnlyRetriedForNetworkErrorsGetsCredentialsFromAnotherRequest(): void
