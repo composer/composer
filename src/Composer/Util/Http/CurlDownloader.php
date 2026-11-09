@@ -495,7 +495,7 @@ class CurlDownloader
                         continue;
                     }
 
-                    throw new TransportException('curl error '.$errno.' while downloading '.Url::sanitize($progress['url']).': '.$error);
+                    throw new TransportException('curl error '.$errno.' while downloading '.Url::sanitize($job['url']).': '.$error);
                 }
                 $statusCode = $progress['http_code'];
                 rewind($job['headerHandle']);
@@ -503,7 +503,7 @@ class CurlDownloader
                 fclose($job['headerHandle']);
 
                 if ($statusCode === 0) {
-                    throw new \LogicException('Received unexpected http status code 0 without error for '.Url::sanitize($progress['url']).': headers '.var_export($headers, true).' curl info '.var_export($progress, true));
+                    throw new \LogicException('Received unexpected http status code 0 without error for '.Url::sanitize($job['url']).': headers '.var_export($headers, true).' curl info '.var_export($progress, true));
                 }
 
                 // prepare response object
@@ -620,7 +620,7 @@ class CurlDownloader
                         is_callable($this->jobs[$i]['options']['prevent_ip_access_callable']) &&
                         $this->jobs[$i]['options']['prevent_ip_access_callable']($progress['primary_ip'])
                     ) {
-                        $this->rejectJob($this->jobs[$i], new TransportException(sprintf('IP "%s" is blocked for "%s".', $progress['primary_ip'], Url::sanitize($progress['url']))));
+                        $this->rejectJob($this->jobs[$i], new TransportException(sprintf('IP "%s" is blocked for "%s".', $progress['primary_ip'], Url::sanitize($this->jobs[$i]['url']))));
                     }
 
                     $this->jobs[$i]['primaryIp'] = (string) $progress['primary_ip'];
