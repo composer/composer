@@ -19,6 +19,7 @@ use Composer\IO\IOInterface;
 use Composer\Test\TestCase;
 use Composer\Util\Http\CurlDownloader;
 use Composer\Util\Http\Response;
+use Composer\Util\Platform;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class CurlDownloaderTest extends TestCase
@@ -574,6 +575,18 @@ class CurlDownloaderTest extends TestCase
         self::assertSame([], $this->readProperty($downloader, 'jobs'));
     }
 
+    public function testStallTimeoutCanBeConfiguredViaEnv(): void
+    {
+        Platform::putEnv('COMPOSER_HTTP_STALL_TIMEOUT', '0');
+        try {
+            self::assertSame(0, $this->readProperty($this->createDownloader(), 'stallTimeout'));
+            Platform::putEnv('COMPOSER_HTTP_STALL_TIMEOUT', 'garbage');
+            self::assertSame(30, $this->readProperty($this->createDownloader(), 'stallTimeout'));
+        } finally {
+            Platform::clearEnv('COMPOSER_HTTP_STALL_TIMEOUT');
+        }
+    }
+
     public function testServerWhichNeverAnswersIsGivenUpOnBeforeTheTransferTimeout(): void
     {
         // nothing ever accepts on this socket, but the kernel completes the TCP handshake and buffers the request
@@ -589,7 +602,7 @@ class CurlDownloaderTest extends TestCase
         $this->writeProperty($downloader, 'stallTimeout', 1);
 
         $url = 'http://127.0.0.1:'.$port.'/packages.json';
-        $id = $downloader->download(
+        $downloader->download(
             static function (): void {
             },
             static function (): void {
@@ -605,7 +618,10 @@ class CurlDownloaderTest extends TestCase
         while (microtime(true) < $deadline && false === strpos($io->getOutput(), 'Retrying (1)')) {
             $downloader->tick();
         }
-        $downloader->abortRequest($id);
+        // the retry runs under a new job id, so abort whatever is still in flight
+        foreach (array_keys($this->readProperty($downloader, 'jobs')) as $jobId) {
+            $downloader->abortRequest($jobId);
+        }
         fclose($server);
 
         self::assertStringContainsString('Retrying (1) '.$url.' due to curl error 28', $io->getOutput());
