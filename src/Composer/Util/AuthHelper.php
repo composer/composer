@@ -295,6 +295,40 @@ class AuthHelper
     }
 
     /**
+     * Drops credential headers from request options when a redirect leaves the origin (scheme, host and port)
+     * of the previous request. Auth configured per origin is re-added for the new URL by addAuthenticationOptions.
+     *
+     * @internal
+     * @param array<string, mixed> $options
+     * @return array<string, mixed> updated options
+     */
+    public static function stripCredentialHeadersOnRedirect(array $options, string $fromUrl, string $toUrl): array
+    {
+        if (!isset($options['http']['header']) || self::getRedirectOrigin($fromUrl) === self::getRedirectOrigin($toUrl)) {
+            return $options;
+        }
+
+        $headers = $options['http']['header'];
+        if (is_string($headers)) {
+            $headers = Preg::split('{\r?\n}', $headers);
+        }
+
+        $options['http']['header'] = array_values(array_filter((array) $headers, static function ($header): bool {
+            return !is_string($header) || !Preg::isMatch('{^\s*(?:authorization|cookie)\s*:}i', $header);
+        }));
+
+        return $options;
+    }
+
+    private static function getRedirectOrigin(string $url): string
+    {
+        $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
+        $port = parse_url($url, PHP_URL_PORT) ?? ($scheme === 'https' ? 443 : ($scheme === 'http' ? 80 : null));
+
+        return $scheme.'://'.strtolower((string) parse_url($url, PHP_URL_HOST)).':'.$port;
+    }
+
+    /**
      * @param array{http: array{header: string[]}}&array<string, mixed> $options
      * @param array{username: string|null, password: string|null} $auth
      * @return string|null message describing the authentication in use, if any was added
