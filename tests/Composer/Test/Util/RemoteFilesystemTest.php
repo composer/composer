@@ -262,6 +262,48 @@ class RemoteFilesystemTest extends TestCase
     }
 
     /**
+     * @dataProvider provideRedirectHeaderCases
+     *
+     * @param string $location
+     * @param bool   $expectAuthHeader
+     *
+     * @return void
+     */
+    public function testCredentialHeadersAreOnlyKeptOnSameOriginRedirects($location, $expectAuthHeader)
+    {
+        $sentHeaders = array();
+        $fs = $this->getRemoteFilesystemWithMockedMethods(array('getRemoteContents'));
+        $fs->expects($this->exactly(2))->method('getRemoteContents')
+            ->willReturnCallback(function ($originUrl, $fileUrl, $ctx, &$http_response_header) use ($location, &$sentHeaders) {
+                $ctxOptions = stream_context_get_options($ctx);
+                $sentHeaders[] = implode("\n", (array) $ctxOptions['http']['header']);
+                $http_response_header = count($sentHeaders) === 1 ? array('HTTP/1.1 302 Found', 'Location: '.$location) : array('HTTP/1.1 200 OK');
+
+                return 'ok';
+            });
+
+        $fs->getContents('example.org', 'https://example.org/packages.json', false, array('http' => array('header' => array('Authorization: Bearer abc', 'X-Custom: 1'))));
+
+        $this->assertStringContainsString('Authorization: Bearer abc', $sentHeaders[0]);
+        $this->assertSame($expectAuthHeader, false !== strpos($sentHeaders[1], 'Authorization: Bearer abc'));
+        $this->assertStringContainsString('X-Custom: 1', $sentHeaders[1]);
+    }
+
+    /**
+     * @return array<string, array{string, bool}>
+     */
+    public function provideRedirectHeaderCases()
+    {
+        return array(
+            'same origin, absolute path' => array('/other.json', true),
+            'same origin, absolute url' => array('https://example.org:443/other.json', true),
+            'other host' => array('https://example.net/other.json', false),
+            'other scheme' => array('http://example.org/other.json', false),
+            'other port' => array('https://example.org:8443/other.json', false),
+        );
+    }
+
+    /**
      * @return string[][]
      */
     public function provideDisallowedRedirectSchemes()

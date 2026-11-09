@@ -793,6 +793,7 @@ class RemoteFilesystem
             $this->io->writeError('', true, IOInterface::DEBUG);
             $this->io->writeError(sprintf('Following redirect (%u) %s', $this->redirects, Url::sanitize($targetUrl)), true, IOInterface::DEBUG);
 
+            $additionalOptions = AuthHelper::stripCredentialHeadersOnRedirect($additionalOptions, $this->fileUrl, $targetUrl);
             $additionalOptions['redirects'] = $this->redirects;
 
             return $this->get(parse_url($targetUrl, PHP_URL_HOST), $targetUrl, $additionalOptions, $this->fileName, $this->progress);
