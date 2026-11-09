@@ -459,6 +459,45 @@ class CurlDownloaderTest extends TestCase
         self::assertSame([], $this->readProperty($downloader, 'jobs'), 'a rejected request must not keep transferring');
     }
 
+    public function testRejectionWhichAbortsAnotherTransferDoesNotBreakTheProgressLoop(): void
+    {
+        $server = $this->createLocalServer();
+        $downloader = $this->createDownloader();
+        $errors = [];
+        $reject = function (\Throwable $e) use ($downloader, &$errors): void {
+            $errors[] = $e;
+            // e.g. a failed download aborting the rest of the batch
+            foreach (array_keys($this->readProperty($downloader, 'jobs')) as $id) {
+                $downloader->abortRequest((int) $id);
+            }
+        };
+        $url = 'http://'.stream_socket_get_name($server, false).'/';
+        $downloader->download(static function (): void {
+        }, $reject, 'localhost', $url, ['max_file_size' => 10]);
+        $downloader->download(static function (): void {
+        }, $reject, 'localhost', $url, ['max_file_size' => 10]);
+
+        $clients = [];
+        $sent = false;
+        $this->tickUntil($downloader, function () use ($server, &$clients, &$sent, &$errors): bool {
+            while (count($clients) < 2 && null !== ($client = $this->acceptClient($server))) {
+                $clients[] = $client;
+            }
+            // both responses are sent at once so both transfers go over the limit in the same tick
+            if (!$sent && count($clients) === 2) {
+                foreach ($clients as $client) {
+                    fwrite($client, "HTTP/1.1 200 OK\r\nContent-Length: 1000\r\n\r\n");
+                }
+                $sent = true;
+            }
+
+            return count($errors) > 0;
+        });
+
+        self::assertCount(1, $errors);
+        self::assertSame([], $this->readProperty($downloader, 'jobs'));
+    }
+
     /**
      * @param list<string> $headers
      */

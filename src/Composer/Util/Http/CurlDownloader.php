@@ -597,6 +597,10 @@ class CurlDownloader
         $this->announceRetryAfterWaits();
 
         foreach ($this->jobs as $i => $curlHandle) {
+            // a reject callback run earlier in this loop may have aborted this job
+            if (!isset($this->jobs[$i])) {
+                continue;
+            }
             $curlHandle = $this->jobs[$i]['curlHandle'];
             $progress = array_diff_key(curl_getinfo($curlHandle), self::$ignoredProgressInfo);
 
