@@ -90,8 +90,9 @@ class CurlDownloader
     /**
      * Seconds a transfer may go without receiving anything before it is given up on and retried, so a server
      * which accepted the connection but stopped answering does not hold the request for the whole CURLOPT_TIMEOUT
+     * (0 disables it)
      *
-     * @var int<1, max>
+     * @var int<0, max>
      */
     private $stallTimeout = 30;
     /** @var array<int, string[]> */
@@ -140,6 +141,11 @@ class CurlDownloader
     {
         $this->io = $io;
         $this->config = $config;
+
+        $stallTimeout = Platform::getEnv('COMPOSER_HTTP_STALL_TIMEOUT');
+        if (is_string($stallTimeout) && ctype_digit($stallTimeout)) {
+            $this->stallTimeout = (int) $stallTimeout;
+        }
 
         $this->multiHandle = $mh = curl_multi_init();
         if (function_exists('curl_multi_setopt')) {
@@ -263,8 +269,10 @@ class CurlDownloader
         curl_setopt($curlHandle, CURLOPT_FOLLOWLOCATION, false);
         curl_setopt($curlHandle, CURLOPT_CONNECTTIMEOUT, 10);
         curl_setopt($curlHandle, CURLOPT_TIMEOUT, max((int) ini_get("default_socket_timeout"), 300));
-        curl_setopt($curlHandle, CURLOPT_LOW_SPEED_LIMIT, 1);
-        curl_setopt($curlHandle, CURLOPT_LOW_SPEED_TIME, $this->stallTimeout);
+        if ($this->stallTimeout > 0) {
+            curl_setopt($curlHandle, CURLOPT_LOW_SPEED_LIMIT, 1);
+            curl_setopt($curlHandle, CURLOPT_LOW_SPEED_TIME, $this->stallTimeout);
+        }
         curl_setopt($curlHandle, CURLOPT_WRITEHEADER, $headerHandle);
         curl_setopt($curlHandle, CURLOPT_FILE, $bodyHandle);
         curl_setopt($curlHandle, CURLOPT_ENCODING, ""); // let cURL set the Accept-Encoding header to what it supports
@@ -526,6 +534,10 @@ class CurlDownloader
                         $this->io->writeError('Retrying ('.($job['attributes']['retries'] + 1).') ' . Url::sanitize($job['url']) . ' due to curl error '. $errno, true, IOInterface::DEBUG);
                         $this->restartJobWithDelay($job, $job['url'], ['retries' => $job['attributes']['retries'] + 1]);
                         continue;
+                    }
+
+                    if ($errno === 28 && $this->stallTimeout > 0 && str_contains((string) $error, 'too slow')) {
+                        $error .= ' (if the server is merely slow to respond, set COMPOSER_HTTP_STALL_TIMEOUT to a higher number of seconds, or 0 to disable this check)';
                     }
 
                     throw new TransportException('curl error '.$errno.' while downloading '.Url::sanitize($job['url']).': '.$error);
