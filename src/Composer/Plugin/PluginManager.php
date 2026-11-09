@@ -12,6 +12,7 @@
 
 namespace Composer\Plugin;
 
+use Composer\Autoload\ClassLoader;
 use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\Installer\InstallerInterface;
@@ -247,8 +248,8 @@ class PluginManager
         $autoloadPackages = [$package->getName() => $package];
         $autoloadPackages = $this->collectDependencies($installedRepo, $autoloadPackages, $package);
 
-        $generator = $this->composer->getAutoloadGenerator();
         $autoloads = [];
+        $missingPackages = [];
         if ($this->shouldAutoloadPackage($rootPackage, '')) {
             $autoloads[] = [$rootPackage, ''];
         }
@@ -261,6 +262,12 @@ class PluginManager
             if ($installPath === null) {
                 continue;
             }
+            // the installer deciding where a dependency lives may not be registered yet (it can even be
+            // provided by the plugin being loaded here), so skip what is not present at the expected path
+            if ($autoloadPackage !== $package && !is_dir($installPath)) {
+                $missingPackages[] = $autoloadPackage;
+                continue;
+            }
             // call shouldAutoloadPackage first here to ensure the plugin package gets marked in the autoloadedPackages array
             if ($this->shouldAutoloadPackage($autoloadPackage, $installPath) || $autoloadPackage === $package) {
                 $autoloads[] = [$autoloadPackage, $installPath];
@@ -271,19 +278,7 @@ class PluginManager
             throw new \LogicException('At least the plugin package should always be autoloaded for the code below to work');
         }
 
-        $map = $generator->parseAutoloads($autoloads, $rootPackage);
-        $classLoader = $generator->createLoader($map, $this->composer->getConfig()->get('vendor-dir'));
-        $classLoader->register(false);
-
-        foreach ($map['files'] as $fileIdentifier => $file) {
-            // exclude laminas/laminas-zendframework-bridge:src/autoload.php as it breaks Composer in some conditions
-            // see https://github.com/composer/composer/issues/10349 and https://github.com/composer/composer/issues/10401
-            // this hack can be removed once this deprecated package stop being installed
-            if ($fileIdentifier === '7e9bd612cc444b3eed788ebbe46263a0') {
-                continue;
-            }
-            \Composer\Autoload\composerRequire($fileIdentifier, $file);
-        }
+        $classLoader = $this->registerAutoloads($autoloads, $rootPackage);
 
         foreach ($classes as $class) {
             if (class_exists($class, false)) {
@@ -326,6 +321,41 @@ class PluginManager
                 throw new \UnexpectedValueException('Plugin '.$package->getName().' could not be initialized, class not found: '.$class);
             }
         }
+
+        // retry the missing packages as the plugin may have registered the installer which knows where they are
+        $autoloads = [];
+        foreach ($missingPackages as $missingPackage) {
+            $installPath = $this->getInstallPath($missingPackage, $globalRepo !== null && $globalRepo->hasPackage($missingPackage));
+            if ($installPath !== null && is_dir($installPath) && $this->shouldAutoloadPackage($missingPackage, $installPath)) {
+                $autoloads[] = [$missingPackage, $installPath];
+            }
+        }
+        if (\count($autoloads) > 0) {
+            $this->registerAutoloads($autoloads, $rootPackage);
+        }
+    }
+
+    /**
+     * @param non-empty-array<int, array{PackageInterface, string}> $autoloads
+     */
+    private function registerAutoloads(array $autoloads, RootPackageInterface $rootPackage): ClassLoader
+    {
+        $generator = $this->composer->getAutoloadGenerator();
+        $map = $generator->parseAutoloads($autoloads, $rootPackage);
+        $classLoader = $generator->createLoader($map, $this->composer->getConfig()->get('vendor-dir'));
+        $classLoader->register(false);
+
+        foreach ($map['files'] as $fileIdentifier => $file) {
+            // exclude laminas/laminas-zendframework-bridge:src/autoload.php as it breaks Composer in some conditions
+            // see https://github.com/composer/composer/issues/10349 and https://github.com/composer/composer/issues/10401
+            // this hack can be removed once this deprecated package stop being installed
+            if ($fileIdentifier === '7e9bd612cc444b3eed788ebbe46263a0') {
+                continue;
+            }
+            \Composer\Autoload\composerRequire($fileIdentifier, $file);
+        }
+
+        return $classLoader;
     }
 
     private function shouldAutoloadPackage(PackageInterface $package, string $path): bool
