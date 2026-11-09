@@ -252,7 +252,7 @@ class AuthHelper
 
         $kept = array();
         foreach ((array) $headers as $header) {
-            if (!is_string($header) || !Preg::isMatch('{^\s*(?:authorization|proxy-authorization|cookie)\s*:}i', $header)) {
+            if (!is_string($header) || !Preg::isMatch('{^\s*(?:authorization|cookie)\s*:}i', $header)) {
                 $kept[] = $header;
             }
         }

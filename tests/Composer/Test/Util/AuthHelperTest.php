@@ -689,11 +689,11 @@ class AuthHelperTest extends TestCase
      */
     public function testStripCredentialHeadersOnRedirect()
     {
-        $options = array('http' => array('header' => array('Authorization: Bearer abc', 'proxy-authorization: Basic xyz', 'Cookie: a=b', 'Accept: */*')));
+        $options = array('http' => array('header' => array('Authorization: Bearer abc', 'Proxy-Authorization: Basic xyz', 'Cookie: a=b', 'Accept: */*')));
 
         $this->assertSame($options, AuthHelper::stripCredentialHeadersOnRedirect($options, 'https://example.org/a', 'https://EXAMPLE.org:443/b'));
         $result = AuthHelper::stripCredentialHeadersOnRedirect($options, 'https://example.org/a', 'https://example.net/b');
-        $this->assertSame(array('Accept: */*'), $result['http']['header']);
+        $this->assertSame(array('Proxy-Authorization: Basic xyz', 'Accept: */*'), $result['http']['header']);
 
         $stringHeaders = array('http' => array('header' => "Authorization: Bearer abc\r\nAccept: */*"));
         $result = AuthHelper::stripCredentialHeadersOnRedirect($stringHeaders, 'https://example.org/a', 'http://example.org/b');
