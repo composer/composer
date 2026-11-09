@@ -258,14 +258,15 @@ class PluginManager
                 continue;
             }
 
-            $installPath = $this->getInstallPath($autoloadPackage, $globalRepo && $globalRepo->hasPackage($autoloadPackage));
+            $isGlobalPackage = $globalRepo && $globalRepo->hasPackage($autoloadPackage);
+            $installPath = $this->getInstallPath($autoloadPackage, $isGlobalPackage);
             if ($installPath === null) {
                 continue;
             }
             // the installer deciding where a dependency lives may not be registered yet (it can even be
             // provided by the plugin being loaded here), so skip what is not present at the expected path
             if ($autoloadPackage !== $package && !is_dir($installPath)) {
-                $missingPackages[] = $autoloadPackage;
+                $missingPackages[] = [$autoloadPackage, $isGlobalPackage];
                 continue;
             }
             // call shouldAutoloadPackage first here to ensure the plugin package gets marked in the autoloadedPackages array
@@ -324,8 +325,8 @@ class PluginManager
 
         // retry the missing packages as the plugin may have registered the installer which knows where they are
         $autoloads = [];
-        foreach ($missingPackages as $missingPackage) {
-            $installPath = $this->getInstallPath($missingPackage, $globalRepo !== null && $globalRepo->hasPackage($missingPackage));
+        foreach ($missingPackages as [$missingPackage, $isGlobalPackage]) {
+            $installPath = $this->getInstallPath($missingPackage, $isGlobalPackage);
             if ($installPath !== null && is_dir($installPath) && $this->shouldAutoloadPackage($missingPackage, $installPath)) {
                 $autoloads[] = [$missingPackage, $installPath];
             }
