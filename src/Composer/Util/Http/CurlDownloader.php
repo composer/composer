@@ -472,13 +472,7 @@ class CurlDownloader
                     }
                     $progress['error_code'] = $errno;
 
-                    if (
-                        (!isset($job['options']['http']['method']) || $job['options']['http']['method'] === 'GET')
-                        && (
-                            in_array($errno, [7 /* CURLE_COULDNT_CONNECT */, 16 /* CURLE_HTTP2 */, 92 /* CURLE_HTTP2_STREAM */, 6 /* CURLE_COULDNT_RESOLVE_HOST */, 28 /* CURLE_OPERATION_TIMEDOUT */], true)
-                            || (in_array($errno, [56 /* CURLE_RECV_ERROR */, 35 /* CURLE_SSL_CONNECT_ERROR */], true) && str_contains((string) $error, 'Connection reset by peer'))
-                        ) && $job['attributes']['retries'] < $this->maxRetries
-                    ) {
+                    if ($this->isCurlErrorRetryNeeded($job, $errno, (string) $error, (float) $progress['pretransfer_time'])) {
                         $attributes = ['retries' => $job['attributes']['retries'] + 1];
                         if ($errno === 7 && !isset($job['attributes']['ipResolve'])) { // CURLE_COULDNT_CONNECT, retry forcing IPv4 if no IP stack was selected
                             $attributes['ipResolve'] = 4;
@@ -734,6 +728,26 @@ class CurlDownloader
         }
 
         return ['retry' => false, 'storeAuth' => false];
+    }
+
+    /**
+     * Decides whether a transfer which failed with a network error should be retried
+     *
+     * @param  Job $job
+     */
+    private function isCurlErrorRetryNeeded(array $job, int $errno, string $error, float $pretransferTime): bool
+    {
+        if ($job['attributes']['retries'] >= $this->maxRetries) {
+            return false;
+        }
+
+        $transient = in_array($errno, [7 /* CURLE_COULDNT_CONNECT */, 16 /* CURLE_HTTP2 */, 92 /* CURLE_HTTP2_STREAM */, 6 /* CURLE_COULDNT_RESOLVE_HOST */, 28 /* CURLE_OPERATION_TIMEDOUT */], true)
+            || (in_array($errno, [56 /* CURLE_RECV_ERROR */, 35 /* CURLE_SSL_CONNECT_ERROR */], true) && str_contains($error, 'Connection reset by peer'));
+        if (!$transient) {
+            return false;
+        }
+
+        return !isset($job['options']['http']['method']) || $job['options']['http']['method'] === 'GET' || $pretransferTime === 0.0;
     }
 
     /**
