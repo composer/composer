@@ -75,6 +75,9 @@ class PluginManager
     /** @var array<string, true> */
     private $autoloadedPackages = [];
 
+    /** @var array<string, array{PackageInterface, bool}> packages not found at their install path yet, with whether they are global */
+    private $missingAutoloadPackages = [];
+
     /** @var int */
     private static $classCounter = 0;
 
@@ -249,7 +252,6 @@ class PluginManager
         $autoloadPackages = $this->collectDependencies($installedRepo, $autoloadPackages, $package);
 
         $autoloads = [];
-        $missingPackages = [];
         if ($this->shouldAutoloadPackage($rootPackage, '')) {
             $autoloads[] = [$rootPackage, ''];
         }
@@ -266,7 +268,7 @@ class PluginManager
             // the installer deciding where a dependency lives may not be registered yet (it can even be
             // provided by the plugin being loaded here), so skip what is not present at the expected path
             if ($autoloadPackage !== $package && !is_dir($installPath)) {
-                $missingPackages[] = [$autoloadPackage, $isGlobalPackage];
+                $this->missingAutoloadPackages[$autoloadPackage->getName()] = [$autoloadPackage, $isGlobalPackage];
                 continue;
             }
             // call shouldAutoloadPackage first here to ensure the plugin package gets marked in the autoloadedPackages array
@@ -323,12 +325,15 @@ class PluginManager
             }
         }
 
-        // retry the missing packages as the plugin may have registered the installer which knows where they are
+        // retry the packages missing so far (for any plugin) as the plugin may have registered the installer which knows where they are
         $autoloads = [];
-        foreach ($missingPackages as [$missingPackage, $isGlobalPackage]) {
+        foreach ($this->missingAutoloadPackages as $name => [$missingPackage, $isGlobalPackage]) {
             $installPath = $this->getInstallPath($missingPackage, $isGlobalPackage);
-            if ($installPath !== null && is_dir($installPath) && $this->shouldAutoloadPackage($missingPackage, $installPath)) {
-                $autoloads[] = [$missingPackage, $installPath];
+            if ($installPath !== null && is_dir($installPath)) {
+                unset($this->missingAutoloadPackages[$name]);
+                if ($this->shouldAutoloadPackage($missingPackage, $installPath)) {
+                    $autoloads[] = [$missingPackage, $installPath];
+                }
             }
         }
         if (\count($autoloads) > 0) {
