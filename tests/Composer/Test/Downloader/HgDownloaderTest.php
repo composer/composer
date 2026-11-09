@@ -87,6 +87,33 @@ class HgDownloaderTest extends TestCase
         $process->assertComplete($this);
     }
 
+    public function testDownloadDoesNotRunCloneInsideTargetPath()
+    {
+        $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
+        $packageMock->expects($this->any())
+            ->method('getSourceReference')
+            ->will($this->returnValue('ref'));
+        $packageMock->expects($this->once())
+            ->method('getSourceUrls')
+            ->will($this->returnValue(array('https://mercurial.dev/l3l0/composer')));
+
+        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
+        $process->expects($this->exactly(2))
+            ->method('execute')
+            ->withConsecutive(
+                array($this->getCmd('hg clone -- \'https://mercurial.dev/l3l0/composer\' \'vendor/composerPath\''), $this->anything(), $this->isNull()),
+                array($this->getCmd('hg up -- \'ref\''), $this->anything(), $this->anything())
+            )
+            ->will($this->returnValue(0));
+
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $config = $this->getMockBuilder('Composer\Config')->getMock();
+        $filesystem = $this->getMockBuilder('Composer\Util\Filesystem')->getMock();
+
+        $downloader = new HgDownloader($io, $config, $process, $filesystem);
+        $downloader->install($packageMock, 'vendor/composerPath');
+    }
+
     public function testUpdateforPackageWithoutSourceReference()
     {
         $initialPackageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
