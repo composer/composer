@@ -265,7 +265,7 @@ class CurlDownloader
             curl_setopt($curlHandle, CURLOPT_CERTINFO, true);
         }
 
-        $preventIpAccess = isset($options['prevent_ip_access_callable']) && is_callable($options['prevent_ip_access_callable']) ? $options['prevent_ip_access_callable'] : null;
+        $preventIpAccess = ($options['prevent_ip_access_callable'] ?? null) instanceof \Closure ? $options['prevent_ip_access_callable'] : null;
         if (\defined('CURLOPT_PREREQFUNCTION') && (null !== $hostKey || null !== $preventIpAccess)) {
             // runs after the TLS handshake but before the request and its credentials are sent
             curl_setopt($curlHandle, CURLOPT_PREREQFUNCTION, function ($handle, string $primaryIp) use ($hostKey, $preventIpAccess): int {
