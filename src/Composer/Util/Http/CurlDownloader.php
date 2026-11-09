@@ -443,6 +443,7 @@ class CurlDownloader
                 if ($statusCode >= 300 && $statusCode <= 399 && $statusCode !== 304 && $job['attributes']['redirects'] < $this->maxRedirects) {
                     $location = $this->handleRedirect($job, $response);
                     if ($location) {
+                        $job['options'] = AuthHelper::stripCredentialHeadersOnRedirect($job['options'], $job['url'], $location);
                         $this->restartJob($job, $location, array('redirects' => $job['attributes']['redirects'] + 1));
                         continue;
                     }
