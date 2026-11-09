@@ -40,6 +40,8 @@ class CurlDownloaderTest extends TestCase
             }
         }
         $this->sockets = [];
+
+        parent::tearDown();
     }
 
     public function testRetryAfterIsReadAsDelaySeconds(): void
