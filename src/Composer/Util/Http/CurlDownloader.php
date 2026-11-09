@@ -1014,9 +1014,10 @@ class CurlDownloader
      */
     private function rejectInFlightJob(int $id, \Exception $e): void
     {
-        $job = $this->jobs[$id];
+        $reject = $this->jobs[$id]['reject'];
+        // also closes the streams and removes the partial file
         $this->abortRequest($id);
-        $this->rejectJob($job, $e);
+        $reject($e);
     }
 
     private function checkCurlResult(int $code): void
