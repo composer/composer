@@ -695,7 +695,7 @@ class AuthHelperTest extends TestCase
         $result = AuthHelper::stripCredentialHeadersOnRedirect($options, 'https://example.org/a', 'https://example.net/b');
         $this->assertSame(array('Proxy-Authorization: Basic xyz', 'Accept: */*'), $result['http']['header']);
 
-        $stringHeaders = array('http' => array('header' => "Authorization: Bearer abc\r\nAccept: */*"));
+        $stringHeaders = array('http' => array('header' => "Accept: */*\nAuthorization: Bearer abc"));
         $result = AuthHelper::stripCredentialHeadersOnRedirect($stringHeaders, 'https://example.org/a', 'http://example.org/b');
         $this->assertSame(array('Accept: */*'), $result['http']['header']);
     }

@@ -247,7 +247,7 @@ class AuthHelper
 
         $headers = $options['http']['header'];
         if (is_string($headers)) {
-            $headers = explode("\r\n", $headers);
+            $headers = Preg::split('{\r?\n}', $headers);
         }
 
         $kept = array();
