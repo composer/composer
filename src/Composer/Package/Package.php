@@ -721,7 +721,7 @@ class Package extends BasePackage
             && Preg::isMatch('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com|(?:www\.)?gitlab\.com|codeberg\.org)/}i', $this->getDistUrl())
         ) {
             $this->setDistReference($reference);
-            $this->setDistUrl(Preg::replace('{(?<=/|sha=)[a-f0-9]{40}(?=/|\.zip$|$)}i', $reference, $this->getDistUrl()));
+            $this->setDistUrl(Preg::replace('{(?<=/|sha=)[a-f0-9]{40}(?=/|(?:\.zip)?(?:$|\?))}i', $reference, $this->getDistUrl()));
         } elseif ($this->getDistReference()) { // update the dist reference if there was one, but if none was provided ignore it
             $this->setDistReference($reference);
         }
