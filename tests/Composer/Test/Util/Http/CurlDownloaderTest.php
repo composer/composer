@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Util\Http;
 
+use Composer\Downloader\TransportException;
 use Composer\IO\BufferIO;
 use Composer\IO\IOInterface;
 use Composer\Test\TestCase;
@@ -354,6 +355,34 @@ class CurlDownloaderTest extends TestCase
         // an interval which was waited out, or no interval at all, has nothing to add
         self::assertSame('HTTP/1.1 429 Status', self::callPrivate(CurlDownloader::class, 'getStatusFailureMessage', $this->createResponse(429, ['Retry-After: 5'])));
         self::assertSame('HTTP/1.1 429 Status', self::callPrivate(CurlDownloader::class, 'getStatusFailureMessage', $this->createResponse(429, [])));
+    }
+
+    public function testCurlErrorForAUrlCurlCannotParseNamesTheRequestedUrl(): void
+    {
+        $downloader = $this->createDownloader();
+        // the space makes curl reject the URL before any DNS lookup, so no network access happens
+        $url = 'https://example.invalid/foo bar';
+
+        // curl_getinfo() omits the url key when curl cannot parse the URL
+        $error = null;
+        $downloader->download(
+            static function (): void {
+                self::fail('The download of a malformed URL should not succeed');
+            },
+            static function (\Throwable $e) use (&$error): void {
+                $error = $e;
+            },
+            'example.invalid',
+            $url,
+            []
+        );
+
+        for ($i = 0; $i < 100 && null === $error; $i++) {
+            $downloader->tick();
+        }
+
+        self::assertInstanceOf(TransportException::class, $error);
+        self::assertStringContainsString('while downloading '.$url.':', $error->getMessage());
     }
 
     /**
