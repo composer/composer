@@ -22,11 +22,24 @@ use Composer\Util\Http\Response;
 
 class CurlDownloaderTest extends TestCase
 {
+    /** @var list<resource> */
+    private $sockets = [];
+
     protected function setUp(): void
     {
         if (!extension_loaded('curl')) {
             self::markTestSkipped('curl extension is required');
         }
+    }
+
+    protected function tearDown(): void
+    {
+        foreach ($this->sockets as $socket) {
+            if (is_resource($socket)) {
+                fclose($socket);
+            }
+        }
+        $this->sockets = [];
     }
 
     public function testRetryAfterIsReadAsDelaySeconds(): void
@@ -429,14 +442,10 @@ class CurlDownloaderTest extends TestCase
             ['max_file_size' => 10]
         );
 
-        $client = null;
-        $this->tickUntil($downloader, static function () use ($server, &$client, &$errors): bool {
-            if (null === $client && false !== ($client = @stream_socket_accept($server, 0))) {
+        $this->tickUntil($downloader, function () use ($server, &$errors): bool {
+            if (null !== ($client = $this->acceptClient($server))) {
                 // only part of the body is sent so the transfer stays in flight, with both the announced and the received size over the limit
                 fwrite($client, "HTTP/1.1 200 OK\r\nContent-Length: 1000\r\n\r\n".str_repeat('a', 500));
-            }
-            if (false === $client) {
-                $client = null;
             }
 
             return count($errors) > 0;
@@ -610,8 +619,24 @@ class CurlDownloaderTest extends TestCase
         if (false === $server) {
             self::markTestSkipped('Could not open a local socket: '.$errstr);
         }
+        $this->sockets[] = $server;
 
         return $server;
+    }
+
+    /**
+     * @param  resource      $server
+     * @return resource|null the connection which was waiting, if any
+     */
+    private function acceptClient($server)
+    {
+        $client = @stream_socket_accept($server, 0);
+        if (false === $client) {
+            return null;
+        }
+        $this->sockets[] = $client;
+
+        return $client;
     }
 
     /**
