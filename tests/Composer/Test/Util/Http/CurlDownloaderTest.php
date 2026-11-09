@@ -620,7 +620,7 @@ class CurlDownloaderTest extends TestCase
         }
         // the retry runs under a new job id, so abort whatever is still in flight
         foreach (array_keys($this->readProperty($downloader, 'jobs')) as $jobId) {
-            $downloader->abortRequest($jobId);
+            $downloader->abortRequest((int) $jobId);
         }
         fclose($server);
 

@@ -144,7 +144,7 @@ class CurlDownloader
 
         $stallTimeout = Platform::getEnv('COMPOSER_HTTP_STALL_TIMEOUT');
         if (is_string($stallTimeout) && ctype_digit($stallTimeout)) {
-            $this->stallTimeout = (int) $stallTimeout;
+            $this->stallTimeout = max(0, (int) $stallTimeout);
         }
 
         $this->multiHandle = $mh = curl_multi_init();
