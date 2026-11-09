@@ -28,7 +28,7 @@ use React\Promise\Promise;
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Nicolas Grekas <p@tchwork.com>
  * @phpstan-type Attributes array{retryAuthFailure: bool, redirects: int<0, max>, retries: int<0, max>, authRetries: int<0, max>, storeAuth: 'prompt'|bool, ipResolve: 4|6|null}
- * @phpstan-type Job array{url: non-empty-string, origin: string, attributes: Attributes, options: mixed[], progress: mixed[], curlHandle: \CurlHandle, filename: string|null, headerHandle: resource, bodyHandle: resource, resolve: callable, reject: callable, primaryIp: string, hostKey: string|null}
+ * @phpstan-type Job array{url: non-empty-string, origin: string, attributes: Attributes, options: mixed[], progress: mixed[], curlHandle: \CurlHandle, filename: string|null, headerHandle: resource, bodyHandle: resource, resolve: callable, reject: callable, primaryIp: string, blockedIp: string|null, hostKey: string|null}
  * @phpstan-type RetryAttributes array{retryAuthFailure?: bool, redirects?: int<0, max>, storeAuth?: 'prompt'|bool, retries: int<1, max>, ipResolve?: 4|6}
  * @phpstan-type DelayedJob array{job: Job, url: non-empty-string, attributes: RetryAttributes, at: float}
  */
@@ -263,12 +263,23 @@ class CurlDownloader
 
         if (null !== $hostKey) {
             curl_setopt($curlHandle, CURLOPT_CERTINFO, true);
-            if (\defined('CURLOPT_PREREQFUNCTION')) {
-                // runs after the TLS handshake but before the request and its credentials are sent
-                curl_setopt($curlHandle, CURLOPT_PREREQFUNCTION, function ($handle) use ($hostKey): int {
-                    return null === $this->checkCertificateChain($hostKey, curl_getinfo($handle, CURLINFO_CERTINFO)) ? 0 : 1; // CURL_PREREQFUNC_OK : CURL_PREREQFUNC_ABORT, literals as the constants only exist on PHP 8.4+
-                });
-            }
+        }
+
+        $preventIpAccess = isset($options['prevent_ip_access_callable']) && is_callable($options['prevent_ip_access_callable']) ? $options['prevent_ip_access_callable'] : null;
+        if (\defined('CURLOPT_PREREQFUNCTION') && (null !== $hostKey || null !== $preventIpAccess)) {
+            // runs after the TLS handshake but before the request and its credentials are sent
+            curl_setopt($curlHandle, CURLOPT_PREREQFUNCTION, function ($handle, string $primaryIp) use ($hostKey, $preventIpAccess): int {
+                // CURL_PREREQFUNC_OK = 0, CURL_PREREQFUNC_ABORT = 1, literals as the constants only exist on PHP 8.4+
+                if (null !== $preventIpAccess && $preventIpAccess($primaryIp)) {
+                    if (isset($this->jobs[(int) $handle])) {
+                        $this->jobs[(int) $handle]['blockedIp'] = $primaryIp;
+                    }
+
+                    return 1;
+                }
+
+                return null === $hostKey || null === $this->checkCertificateChain($hostKey, curl_getinfo($handle, CURLINFO_CERTINFO)) ? 0 : 1;
+            });
         }
 
         if ($attributes['ipResolve'] === 4) {
@@ -344,6 +355,7 @@ class CurlDownloader
             'resolve' => $resolve,
             'reject' => $reject,
             'primaryIp' => '',
+            'blockedIp' => null,
             'hostKey' => $hostKey,
         ];
 
@@ -454,6 +466,10 @@ class CurlDownloader
             $statusCode = null;
             $response = null;
             try {
+                if (null !== $job['blockedIp']) {
+                    throw new TransportException(sprintf('IP "%s" is blocked for "%s".', $job['blockedIp'], Url::sanitize($job['url'])));
+                }
+
                 if (null !== $job['hostKey'] && null !== ($distrusted = $this->checkCertificateChain($job['hostKey'], $progress['certinfo'] ?? []))) {
                     $requestSent = !\defined('CURLOPT_PREREQFUNCTION');
                     $e = TlsChainDenylist::createException($job['url'], $distrusted, $requestSent);
@@ -622,7 +638,9 @@ class CurlDownloader
                 }
 
                 if (isset($progress['primary_ip']) && $progress['primary_ip'] !== $this->jobs[$i]['primaryIp']) {
+                    // without CURLOPT_PREREQFUNCTION the request may already have been sent by the time this catches it
                     if (
+                        !\defined('CURLOPT_PREREQFUNCTION') &&
                         isset($this->jobs[$i]['options']['prevent_ip_access_callable']) &&
                         is_callable($this->jobs[$i]['options']['prevent_ip_access_callable']) &&
                         $this->jobs[$i]['options']['prevent_ip_access_callable']($progress['primary_ip'])

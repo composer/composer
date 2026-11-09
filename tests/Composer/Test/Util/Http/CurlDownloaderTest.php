@@ -429,6 +429,44 @@ class CurlDownloaderTest extends TestCase
         self::assertSame([], $this->readProperty($downloader, 'jobs'), 'a rejected request must not keep transferring');
     }
 
+    public function testRequestToABlockedIpIsNotSent(): void
+    {
+        if (!\defined('CURLOPT_PREREQFUNCTION')) {
+            self::markTestSkipped('Requires CURLOPT_PREREQFUNCTION (PHP 8.4+) to check the IP before sending');
+        }
+
+        $server = $this->createLocalServer();
+        $downloader = $this->createDownloader();
+        $errors = [];
+        $downloader->download(
+            static function (): void {
+            },
+            static function (\Throwable $e) use (&$errors): void {
+                $errors[] = $e;
+            },
+            'localhost',
+            'http://'.stream_socket_get_name($server, false).'/',
+            ['prevent_ip_access_callable' => static function (string $ip): bool {
+                return $ip === '127.0.0.1';
+            }]
+        );
+
+        $client = null;
+        $this->tickUntil($downloader, function () use ($server, &$client, &$errors): bool {
+            $client = $client ?? $this->acceptClient($server);
+
+            return count($errors) > 0;
+        });
+        $client = $client ?? $this->acceptClient($server);
+
+        self::assertCount(1, $errors);
+        self::assertInstanceOf(TransportException::class, $errors[0]);
+        self::assertSame('IP "127.0.0.1" is blocked for "http://'.stream_socket_get_name($server, false).'/".', $errors[0]->getMessage());
+        self::assertNotNull($client);
+        stream_set_blocking($client, false);
+        self::assertSame('', stream_get_contents($client), 'nothing must be sent to a blocked IP');
+    }
+
     public function testRequestExceedingTheMaxFileSizeIsRejectedOnceAndRemovedFromTheTransfersInFlight(): void
     {
         $server = $this->createLocalServer();
