@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Util\Http;
 
+use Composer\Downloader\MaxFileSizeExceededException;
 use Composer\Downloader\TransportException;
 use Composer\IO\BufferIO;
 use Composer\IO\IOInterface;
@@ -385,6 +386,67 @@ class CurlDownloaderTest extends TestCase
         self::assertStringContainsString('while downloading '.$url.':', $error->getMessage());
     }
 
+    public function testRequestToABlockedIpIsRemovedFromTheTransfersInFlight(): void
+    {
+        $server = $this->createLocalServer();
+        $downloader = $this->createDownloader();
+        $errors = [];
+        $downloader->download(
+            static function (): void {
+            },
+            static function (\Throwable $e) use (&$errors): void {
+                $errors[] = $e;
+            },
+            'localhost',
+            'http://'.stream_socket_get_name($server, false).'/',
+            ['prevent_ip_access_callable' => static function (): bool {
+                return true;
+            }]
+        );
+
+        $this->tickUntil($downloader, static function () use (&$errors): bool {
+            return count($errors) > 0;
+        });
+
+        self::assertCount(1, $errors);
+        self::assertStringContainsString('is blocked for', $errors[0]->getMessage());
+        self::assertSame([], $this->readProperty($downloader, 'jobs'), 'a rejected request must not keep transferring');
+    }
+
+    public function testRequestExceedingTheMaxFileSizeIsRejectedOnceAndRemovedFromTheTransfersInFlight(): void
+    {
+        $server = $this->createLocalServer();
+        $downloader = $this->createDownloader();
+        $errors = [];
+        $downloader->download(
+            static function (): void {
+            },
+            static function (\Throwable $e) use (&$errors): void {
+                $errors[] = $e;
+            },
+            'localhost',
+            'http://'.stream_socket_get_name($server, false).'/',
+            ['max_file_size' => 10]
+        );
+
+        $client = null;
+        $this->tickUntil($downloader, static function () use ($server, &$client, &$errors): bool {
+            if (null === $client && false !== ($client = @stream_socket_accept($server, 0))) {
+                // only part of the body is sent so the transfer stays in flight, with both the announced and the received size over the limit
+                fwrite($client, "HTTP/1.1 200 OK\r\nContent-Length: 1000\r\n\r\n".str_repeat('a', 500));
+            }
+            if (false === $client) {
+                $client = null;
+            }
+
+            return count($errors) > 0;
+        });
+
+        self::assertCount(1, $errors);
+        self::assertInstanceOf(MaxFileSizeExceededException::class, $errors[0]);
+        self::assertSame([], $this->readProperty($downloader, 'jobs'), 'a rejected request must not keep transferring');
+    }
+
     /**
      * @param list<string> $headers
      */
@@ -537,5 +599,38 @@ class CurlDownloaderTest extends TestCase
             $property->setAccessible(true);
         }
         $property->setValue($downloader, $value);
+    }
+
+    /**
+     * @return resource
+     */
+    private function createLocalServer()
+    {
+        $server = @stream_socket_server('tcp://127.0.0.1:0', $errno, $errstr);
+        if (false === $server) {
+            self::markTestSkipped('Could not open a local socket: '.$errstr);
+        }
+
+        return $server;
+    }
+
+    /**
+     * @param callable(): bool $condition
+     */
+    private function tickUntil(CurlDownloader $downloader, callable $condition): void
+    {
+        // the local server never finishes its responses, so do not let curl_multi_select() wait for them
+        $this->writeProperty($downloader, 'selectTimeout', 0.01);
+        $deadline = microtime(true) + 5;
+        while (!$condition()) {
+            if (microtime(true) > $deadline) {
+                self::fail('Timed out waiting for the transfer');
+            }
+            $downloader->tick();
+        }
+        // let any further progress of the rejected transfer surface
+        for ($i = 0; $i < 10; $i++) {
+            $downloader->tick();
+        }
     }
 }

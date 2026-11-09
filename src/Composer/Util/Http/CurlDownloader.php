@@ -606,12 +606,14 @@ class CurlDownloader
                 if (isset($this->jobs[$i]['options']['max_file_size'])) {
                     // Compare max_file_size with the content-length header this value will be -1 until the header is parsed
                     if ($this->jobs[$i]['options']['max_file_size'] < $progress['download_content_length']) {
-                        $this->rejectJob($this->jobs[$i], new MaxFileSizeExceededException('Maximum allowed download size reached. Content-length header indicates ' . $progress['download_content_length'] . ' bytes. Allowed ' .  $this->jobs[$i]['options']['max_file_size'] . ' bytes for ' . Url::sanitize($this->jobs[$i]['url'])));
+                        $this->rejectInFlightJob($i, new MaxFileSizeExceededException('Maximum allowed download size reached. Content-length header indicates ' . $progress['download_content_length'] . ' bytes. Allowed ' .  $this->jobs[$i]['options']['max_file_size'] . ' bytes for ' . Url::sanitize($this->jobs[$i]['url'])));
+                        continue;
                     }
 
                     // Compare max_file_size with the download size in bytes
                     if ($this->jobs[$i]['options']['max_file_size'] < $progress['size_download']) {
-                        $this->rejectJob($this->jobs[$i], new MaxFileSizeExceededException('Maximum allowed download size reached. Downloaded ' . $progress['size_download'] . ' of allowed ' .  $this->jobs[$i]['options']['max_file_size'] . ' bytes for ' . Url::sanitize($this->jobs[$i]['url'])));
+                        $this->rejectInFlightJob($i, new MaxFileSizeExceededException('Maximum allowed download size reached. Downloaded ' . $progress['size_download'] . ' of allowed ' .  $this->jobs[$i]['options']['max_file_size'] . ' bytes for ' . Url::sanitize($this->jobs[$i]['url'])));
+                        continue;
                     }
                 }
 
@@ -621,7 +623,8 @@ class CurlDownloader
                         is_callable($this->jobs[$i]['options']['prevent_ip_access_callable']) &&
                         $this->jobs[$i]['options']['prevent_ip_access_callable']($progress['primary_ip'])
                     ) {
-                        $this->rejectJob($this->jobs[$i], new TransportException(sprintf('IP "%s" is blocked for "%s".', $progress['primary_ip'], Url::sanitize($this->jobs[$i]['url']))));
+                        $this->rejectInFlightJob($i, new TransportException(sprintf('IP "%s" is blocked for "%s".', $progress['primary_ip'], Url::sanitize($this->jobs[$i]['url']))));
+                        continue;
                     }
 
                     $this->jobs[$i]['primaryIp'] = (string) $progress['primary_ip'];
@@ -1004,6 +1007,16 @@ class CurlDownloader
             @unlink($job['filename'].'~');
         }
         $job['reject']($e);
+    }
+
+    /**
+     * Stops a transfer which is still running before rejecting it, so it does not complete and get settled again
+     */
+    private function rejectInFlightJob(int $id, \Exception $e): void
+    {
+        $job = $this->jobs[$id];
+        $this->abortRequest($id);
+        $this->rejectJob($job, $e);
     }
 
     private function checkCurlResult(int $code): void
