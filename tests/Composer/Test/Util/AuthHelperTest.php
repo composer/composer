@@ -890,7 +890,7 @@ class AuthHelperTest extends TestCase
         self::assertSame($options, AuthHelper::stripCredentialHeadersOnRedirect($options, 'https://example.org/a', 'https://EXAMPLE.org:443/b'));
         self::assertSame(['Proxy-Authorization: Basic xyz', 'Accept: */*'], AuthHelper::stripCredentialHeadersOnRedirect($options, 'https://example.org/a', 'https://example.net/b')['http']['header']);
 
-        $stringHeaders = ['http' => ['header' => "Authorization: Bearer abc\r\nAccept: */*"]];
+        $stringHeaders = ['http' => ['header' => "Accept: */*\nAuthorization: Bearer abc"]];
         self::assertSame(['Accept: */*'], AuthHelper::stripCredentialHeadersOnRedirect($stringHeaders, 'https://example.org/a', 'http://example.org/b')['http']['header']);
     }
 }

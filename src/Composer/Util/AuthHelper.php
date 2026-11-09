@@ -310,7 +310,7 @@ class AuthHelper
 
         $headers = $options['http']['header'];
         if (is_string($headers)) {
-            $headers = explode("\r\n", $headers);
+            $headers = Preg::split('{\r?\n}', $headers);
         }
 
         $options['http']['header'] = array_values(array_filter((array) $headers, static function ($header): bool {
