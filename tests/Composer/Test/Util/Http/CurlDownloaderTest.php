@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Util\Http;
 
+use Composer\Downloader\MaxFileSizeExceededException;
 use Composer\Downloader\TransportException;
 use Composer\IO\BufferIO;
 use Composer\IO\IOInterface;
@@ -21,11 +22,26 @@ use Composer\Util\Http\Response;
 
 class CurlDownloaderTest extends TestCase
 {
+    /** @var list<resource> */
+    private $sockets = [];
+
     protected function setUp(): void
     {
         if (!extension_loaded('curl')) {
             self::markTestSkipped('curl extension is required');
         }
+    }
+
+    protected function tearDown(): void
+    {
+        foreach ($this->sockets as $socket) {
+            if (is_resource($socket)) {
+                fclose($socket);
+            }
+        }
+        $this->sockets = [];
+
+        parent::tearDown();
     }
 
     public function testRetryAfterIsReadAsDelaySeconds(): void
@@ -385,6 +401,178 @@ class CurlDownloaderTest extends TestCase
         self::assertStringContainsString('while downloading '.$url.':', $error->getMessage());
     }
 
+    public function testRequestToABlockedIpIsRemovedFromTheTransfersInFlight(): void
+    {
+        $server = $this->createLocalServer();
+        $downloader = $this->createDownloader();
+        $errors = [];
+        $downloader->download(
+            static function (): void {
+            },
+            static function (\Throwable $e) use (&$errors): void {
+                $errors[] = $e;
+            },
+            'localhost',
+            'http://'.stream_socket_get_name($server, false).'/',
+            ['prevent_ip_access_callable' => static function (): bool {
+                return true;
+            }]
+        );
+
+        $this->tickUntil($downloader, function () use ($server, &$errors): bool {
+            // accepted so the test does not depend on the OS completing the connection from the backlog
+            $this->acceptClient($server);
+
+            return count($errors) > 0;
+        });
+
+        self::assertCount(1, $errors);
+        self::assertStringContainsString('is blocked for', $errors[0]->getMessage());
+        self::assertSame([], $this->readProperty($downloader, 'jobs'), 'a rejected request must not keep transferring');
+    }
+
+    public function testRequestToABlockedIpIsNotSent(): void
+    {
+        if (!\defined('CURLOPT_PREREQFUNCTION')) {
+            self::markTestSkipped('Requires CURLOPT_PREREQFUNCTION (PHP 8.4+) to check the IP before sending');
+        }
+
+        $server = $this->createLocalServer();
+        $downloader = $this->createDownloader();
+        $errors = [];
+        $downloader->download(
+            static function (): void {
+            },
+            static function (\Throwable $e) use (&$errors): void {
+                $errors[] = $e;
+            },
+            'localhost',
+            'http://'.stream_socket_get_name($server, false).'/',
+            ['prevent_ip_access_callable' => static function (string $ip): bool {
+                return $ip === '127.0.0.1';
+            }]
+        );
+
+        $client = null;
+        $this->tickUntil($downloader, function () use ($server, &$client, &$errors): bool {
+            $client = $client ?? $this->acceptClient($server);
+
+            return count($errors) > 0;
+        });
+        $client = $client ?? $this->acceptClient($server);
+
+        self::assertCount(1, $errors);
+        self::assertInstanceOf(TransportException::class, $errors[0]);
+        self::assertSame('IP "127.0.0.1" is blocked for "http://'.stream_socket_get_name($server, false).'/".', $errors[0]->getMessage());
+        self::assertNotNull($client);
+        // curl closed the aborted connection, so this reads everything it sent up to EOF
+        stream_set_timeout($client, 5);
+        self::assertSame('', stream_get_contents($client), 'nothing must be sent to a blocked IP');
+        self::assertFalse(stream_get_meta_data($client)['timed_out'], 'the connection must have been closed');
+    }
+
+    public function testExceptionFromThePreventIpAccessCallableRejectsTheRequest(): void
+    {
+        if (!\defined('CURLOPT_PREREQFUNCTION')) {
+            self::markTestSkipped('Requires CURLOPT_PREREQFUNCTION (PHP 8.4+) to check the IP before sending');
+        }
+
+        $server = $this->createLocalServer();
+        $downloader = $this->createDownloader();
+        $exception = new \RuntimeException('Could not check the IP');
+        $errors = [];
+        $downloader->download(
+            static function (): void {
+            },
+            static function (\Throwable $e) use (&$errors): void {
+                $errors[] = $e;
+            },
+            'localhost',
+            'http://'.stream_socket_get_name($server, false).'/',
+            ['prevent_ip_access_callable' => static function () use ($exception): bool {
+                throw $exception;
+            }]
+        );
+
+        $this->tickUntil($downloader, function () use ($server, &$errors): bool {
+            $this->acceptClient($server);
+
+            return count($errors) > 0;
+        });
+
+        self::assertSame([$exception], $errors);
+        self::assertSame([], $this->readProperty($downloader, 'jobs'));
+    }
+
+    public function testRequestExceedingTheMaxFileSizeIsRejectedOnceAndRemovedFromTheTransfersInFlight(): void
+    {
+        $server = $this->createLocalServer();
+        $downloader = $this->createDownloader();
+        $errors = [];
+        $downloader->download(
+            static function (): void {
+            },
+            static function (\Throwable $e) use (&$errors): void {
+                $errors[] = $e;
+            },
+            'localhost',
+            'http://'.stream_socket_get_name($server, false).'/',
+            ['max_file_size' => 10]
+        );
+
+        $this->tickUntil($downloader, function () use ($server, &$errors): bool {
+            if (null !== ($client = $this->acceptClient($server))) {
+                // only part of the body is sent so the transfer stays in flight, with both the announced and the received size over the limit
+                fwrite($client, "HTTP/1.1 200 OK\r\nContent-Length: 1000\r\n\r\n".str_repeat('a', 500));
+            }
+
+            return count($errors) > 0;
+        });
+
+        self::assertCount(1, $errors);
+        self::assertInstanceOf(MaxFileSizeExceededException::class, $errors[0]);
+        self::assertSame([], $this->readProperty($downloader, 'jobs'), 'a rejected request must not keep transferring');
+    }
+
+    public function testRejectionWhichAbortsAnotherTransferDoesNotBreakTheProgressLoop(): void
+    {
+        $server = $this->createLocalServer();
+        $downloader = $this->createDownloader();
+        $errors = [];
+        $reject = function (\Throwable $e) use ($downloader, &$errors): void {
+            $errors[] = $e;
+            // e.g. a failed download aborting the rest of the batch
+            foreach (array_keys($this->readProperty($downloader, 'jobs')) as $id) {
+                $downloader->abortRequest((int) $id);
+            }
+        };
+        $url = 'http://'.stream_socket_get_name($server, false).'/';
+        $downloader->download(static function (): void {
+        }, $reject, 'localhost', $url, ['max_file_size' => 10]);
+        $downloader->download(static function (): void {
+        }, $reject, 'localhost', $url, ['max_file_size' => 10]);
+
+        $clients = [];
+        $sent = false;
+        $this->tickUntil($downloader, function () use ($server, &$clients, &$sent, &$errors): bool {
+            while (count($clients) < 2 && null !== ($client = $this->acceptClient($server))) {
+                $clients[] = $client;
+            }
+            // both responses are sent at once so both transfers go over the limit in the same tick
+            if (!$sent && count($clients) === 2) {
+                foreach ($clients as $client) {
+                    fwrite($client, "HTTP/1.1 200 OK\r\nContent-Length: 1000\r\n\r\n");
+                }
+                $sent = true;
+            }
+
+            return count($errors) > 0;
+        });
+
+        self::assertCount(1, $errors);
+        self::assertSame([], $this->readProperty($downloader, 'jobs'));
+    }
+
     /**
      * @param list<string> $headers
      */
@@ -537,5 +725,54 @@ class CurlDownloaderTest extends TestCase
             $property->setAccessible(true);
         }
         $property->setValue($downloader, $value);
+    }
+
+    /**
+     * @return resource
+     */
+    private function createLocalServer()
+    {
+        $server = @stream_socket_server('tcp://127.0.0.1:0', $errno, $errstr);
+        if (false === $server) {
+            self::markTestSkipped('Could not open a local socket: '.$errstr);
+        }
+        $this->sockets[] = $server;
+
+        return $server;
+    }
+
+    /**
+     * @param  resource      $server
+     * @return resource|null the connection which was waiting, if any
+     */
+    private function acceptClient($server)
+    {
+        $client = @stream_socket_accept($server, 0);
+        if (false === $client) {
+            return null;
+        }
+        $this->sockets[] = $client;
+
+        return $client;
+    }
+
+    /**
+     * @param callable(): bool $condition
+     */
+    private function tickUntil(CurlDownloader $downloader, callable $condition): void
+    {
+        // the local server never finishes its responses, so do not let curl_multi_select() wait for them
+        $this->writeProperty($downloader, 'selectTimeout', 0.01);
+        $deadline = microtime(true) + 5;
+        while (!$condition()) {
+            if (microtime(true) > $deadline) {
+                self::fail('Timed out waiting for the transfer');
+            }
+            $downloader->tick();
+        }
+        // let any further progress of the rejected transfer surface
+        for ($i = 0; $i < 10; $i++) {
+            $downloader->tick();
+        }
     }
 }
