@@ -387,6 +387,26 @@ class ComposerRepositoryTest extends TestCase
         );
     }
 
+    public function testIsOwnDistUrlIgnoresMirrors()
+    {
+        $options = array('http' => array('header' => array('Authorization: Bearer secret')));
+        $repository = new ComposerRepository(
+            array('url' => 'https://example.org/packages.json', 'options' => $options),
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock()
+        );
+
+        // the canonical dist URL is on another host; only a mirror (which may come from untrusted
+        // lock/installed data) points under the repository URL
+        $package = new Package('foo/bar', '1.0.0.0', '1.0.0');
+        $package->setDistType('zip');
+        $package->setDistUrl('https://evil.com/foo.zip');
+        $package->setDistMirrors(array(array('url' => 'https://example.org/dists/foo.zip', 'preferred' => true)));
+
+        $this->assertFalse($repository->isOwnDistUrl($package), 'a mirror must not make the repository claim ownership of the dist URL');
+    }
+
     public function testGetProviderNamesWillReturnPartialPackageNames()
     {
         $httpDownloader = new HttpDownloaderMock(array(

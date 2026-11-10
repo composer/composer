@@ -14,6 +14,7 @@ namespace Composer\Test\Downloader;
 
 use Composer\Config;
 use Composer\Downloader\FileDownloader;
+use Composer\Downloader\TransportException;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PreFileDownloadEvent;
@@ -328,6 +329,159 @@ class FileDownloaderTest extends TestCase
             $this->assertInstanceOf('UnexpectedValueException', $e, $e->getMessage());
             $this->assertStringContainsString('could not be saved to', $e->getMessage());
         }
+    }
+
+    /**
+     * @dataProvider provideMirrorHeaderScenarios
+     * @param string $distUrl
+     * @param array|null $mirror
+     * @param string $contactedUrl
+     * @param bool $expectHeader
+     */
+    public function testRepositoryHeadersAreOnlySentToTheRepositoryOrigin($distUrl, $mirror, $contactedUrl, $expectHeader)
+    {
+        $path = $this->getUniqueTmpDirectory();
+
+        $package = $this->getPackage('dummy/pkg', '1.0.0');
+        $package->setDistType('zip');
+        $package->setDistUrl($distUrl);
+        if ($mirror !== null) {
+            // a preferred mirror is tried before the canonical URL
+            $package->setDistMirrors(array($mirror));
+        }
+        // the repository http header (restored from the repository config) carries a credential
+        $package->setTransportOptions(array('http' => array('header' => array('Authorization: Bearer SECRET'))));
+
+        $this->config->expects($this->any())
+            ->method('get')
+            ->will($this->returnCallback(function ($key) use ($path) {
+                if ($key === 'vendor-dir') {
+                    return $path.'/vendor';
+                } elseif ($key === 'bin-dir') {
+                    return $path.'/vendor/bin';
+                }
+            }));
+
+        $seenOptions = array();
+        $httpDownloaderMock = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
+        $httpDownloaderMock
+            ->expects($this->any())
+            ->method('addCopy')
+            ->will($this->returnCallback(function ($url, $to, $options) use (&$seenOptions) {
+                $seenOptions[$url] = $options;
+
+                return \React\Promise\resolve(
+                    new Response(array('url' => $url), 200, array(), 'file~')
+                );
+            }));
+
+        $downloader = $this->getDownloader(null, null, null, null, $httpDownloaderMock);
+
+        try {
+            $loop = new Loop($this->httpDownloader);
+            $promise = $downloader->download($package, $path);
+            $loop->wait(array($promise));
+
+            $this->fail('Download was expected to throw');
+        } catch (\Exception $e) {
+            if (is_dir($path)) {
+                $fs = new Filesystem();
+                $fs->removeDirectory($path);
+            } elseif (is_file($path)) {
+                unlink($path);
+            }
+
+            $this->assertInstanceOf('UnexpectedValueException', $e, $e->getMessage());
+        }
+
+        $this->assertArrayHasKey($contactedUrl, $seenOptions, 'expected the first candidate URL to be contacted');
+        $http = isset($seenOptions[$contactedUrl]['http']) ? $seenOptions[$contactedUrl]['http'] : array();
+        if ($expectHeader) {
+            $this->assertSame(array('Authorization: Bearer SECRET'), isset($http['header']) ? $http['header'] : null, 'the repository header must be sent to the repository origin');
+        } else {
+            $this->assertArrayNotHasKey('header', $http, 'the repository header must not be sent to a mirror on another origin');
+        }
+    }
+
+    public function provideMirrorHeaderScenarios()
+    {
+        $canonical = 'https://repo.example.org/dist/pkg.zip';
+        $pref = function ($url) {
+            return array('url' => $url, 'preferred' => true);
+        };
+
+        return array(
+            'no mirror: canonical receives the header' => array($canonical, null, $canonical, true),
+            'preferred mirror on the same origin keeps the header' => array($canonical, $pref('https://repo.example.org/mirror/pkg.zip'), 'https://repo.example.org/mirror/pkg.zip', true),
+            'preferred mirror on another host is stripped' => array($canonical, $pref('https://mirror.example.net/pkg.zip'), 'https://mirror.example.net/pkg.zip', false),
+            'userinfo pointing at another host is stripped' => array($canonical, $pref('https://repo.example.org@evil.example.net/pkg.zip'), 'https://repo.example.org@evil.example.net/pkg.zip', false),
+            'different port on the same host is stripped' => array($canonical, $pref('https://repo.example.org:8443/pkg.zip'), 'https://repo.example.org:8443/pkg.zip', false),
+            'http scheme on the same host is stripped' => array($canonical, $pref('http://repo.example.org/pkg.zip'), 'http://repo.example.org/pkg.zip', false),
+            'URLs without a parseable origin never match each other' => array('https:///dist/pkg.zip', $pref('https:///mirror/pkg.zip'), 'https:///mirror/pkg.zip', false),
+        );
+    }
+
+    public function testRepositoryHeadersAreSentToTheCanonicalUrlAfterAMirrorFailed()
+    {
+        $path = $this->getUniqueTmpDirectory();
+        $canonical = 'https://repo.example.org/dist/pkg.zip';
+        $mirror = 'https://mirror.example.net/pkg.zip';
+
+        $package = $this->getPackage('dummy/pkg', '1.0.0');
+        $package->setDistType('zip');
+        $package->setDistUrl($canonical);
+        $package->setDistMirrors(array(array('url' => $mirror, 'preferred' => true)));
+        $package->setTransportOptions(array('http' => array('header' => array('Authorization: Bearer SECRET'))));
+
+        $this->config->expects($this->any())
+            ->method('get')
+            ->will($this->returnCallback(function ($key) use ($path) {
+                if ($key === 'vendor-dir') {
+                    return $path.'/vendor';
+                } elseif ($key === 'bin-dir') {
+                    return $path.'/vendor/bin';
+                }
+            }));
+
+        $seenOptions = array();
+        $httpDownloaderMock = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
+        $httpDownloaderMock
+            ->expects($this->any())
+            ->method('addCopy')
+            ->will($this->returnCallback(function ($url, $to, $options) use (&$seenOptions, $mirror) {
+                $seenOptions[$url] = $options;
+                if ($url === $mirror) {
+                    // a 404 moves on to the next URL without retrying
+                    return \React\Promise\reject(new TransportException('Not found', 404));
+                }
+
+                return \React\Promise\resolve(
+                    new Response(array('url' => $url), 200, array(), 'file~')
+                );
+            }));
+
+        $downloader = $this->getDownloader(null, null, null, null, $httpDownloaderMock);
+
+        try {
+            $loop = new Loop($this->httpDownloader);
+            $promise = $downloader->download($package, $path);
+            $loop->wait(array($promise));
+
+            $this->fail('Download was expected to throw');
+        } catch (\Exception $e) {
+            if (is_dir($path)) {
+                $fs = new Filesystem();
+                $fs->removeDirectory($path);
+            } elseif (is_file($path)) {
+                unlink($path);
+            }
+
+            $this->assertInstanceOf('UnexpectedValueException', $e, $e->getMessage());
+        }
+
+        $this->assertSame(array($mirror, $canonical), array_keys($seenOptions));
+        $this->assertFalse(isset($seenOptions[$mirror]['http']['header']));
+        $this->assertSame(array('Authorization: Bearer SECRET'), isset($seenOptions[$canonical]['http']['header']) ? $seenOptions[$canonical]['http']['header'] : null);
     }
 
     public function testDownloadWithCustomCacheKey()
