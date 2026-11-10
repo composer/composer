@@ -20,6 +20,7 @@ use Composer\Util\Filesystem;
 use Composer\Util\Http\Response;
 use Composer\Util\HttpDownloader;
 use Composer\Util\Loop;
+use Composer\Util\Platform;
 
 class ZipDownloaderTest extends TestCase
 {
@@ -108,6 +109,91 @@ class ZipDownloaderTest extends TestCase
         } catch (\Exception $e) {
             self::assertStringContainsString('is truncated or corrupt, zip end of central directory not found', $e->getMessage());
         }
+    }
+
+    public function testExtractWithZipArchiveDoesNotWriteThroughPreexistingSymlinks(): void
+    {
+        if (!class_exists('ZipArchive')) {
+            $this->markTestSkipped('zip extension missing');
+        }
+        if (Platform::isWindows()) {
+            $this->markTestSkipped('symlink creation requires privileges on Windows');
+        }
+
+        $fs = new Filesystem;
+        $extractDir = $this->testDir.'/extract';
+        $fs->ensureDirectoryExists($extractDir);
+
+        // a file outside the extraction directory that must stay untouched
+        $outside = $this->testDir.'/outside.txt';
+        file_put_contents($outside, 'original');
+
+        // mimic what the unzip command does with a symlink entry: a real symlink inside the
+        // extraction directory pointing at the outside file, left behind before the fallback runs
+        if (false === @symlink('../outside.txt', $extractDir.'/payload.txt')) {
+            $this->markTestSkipped('could not create symlink');
+        }
+
+        // a real archive whose regular entry has the same name as the planted symlink
+        $zipFile = $this->testDir.'/evil.zip';
+        $zip = new \ZipArchive;
+        $zip->open($zipFile, \ZipArchive::CREATE);
+        $zip->addFromString('payload.txt', 'OVERWRITTEN');
+        $zip->close();
+
+        $downloader = new ZipDownloader($this->io, $this->config, $this->httpDownloader);
+
+        $method = new \ReflectionMethod($downloader, 'extractWithZipArchive');
+        (\PHP_VERSION_ID < 80100) and $method->setAccessible(true);
+        $promise = $method->invoke($downloader, $this->package, $zipFile, $extractDir);
+        $loop = new Loop($this->httpDownloader);
+        $loop->wait([$promise]);
+
+        self::assertSame('original', file_get_contents($outside), 'the file outside the extraction directory must not be written through the symlink');
+        self::assertFalse(is_link($extractDir.'/payload.txt'), 'the pre-existing symlink must be removed before extraction');
+        self::assertSame('OVERWRITTEN', file_get_contents($extractDir.'/payload.txt'));
+    }
+
+    public function testExtractWithZipArchiveDoesNotWriteThroughPreexistingDirectorySymlink(): void
+    {
+        if (!class_exists('ZipArchive')) {
+            $this->markTestSkipped('zip extension missing');
+        }
+        if (Platform::isWindows()) {
+            $this->markTestSkipped('symlink creation requires privileges on Windows');
+        }
+
+        $fs = new Filesystem;
+        $extractDir = $this->testDir.'/extract';
+        $fs->ensureDirectoryExists($extractDir);
+
+        // a directory outside the extraction directory that must stay empty
+        $outsideDir = $this->testDir.'/outside';
+        $fs->ensureDirectoryExists($outsideDir);
+
+        // mimic a symlink entry pointing at an outside directory, left behind before the fallback runs
+        if (false === @symlink('../outside', $extractDir.'/sub')) {
+            $this->markTestSkipped('could not create symlink');
+        }
+
+        // a real archive whose entry would be written into the planted directory symlink
+        $zipFile = $this->testDir.'/evil.zip';
+        $zip = new \ZipArchive;
+        $zip->open($zipFile, \ZipArchive::CREATE);
+        $zip->addFromString('sub/evil.txt', 'OWNED');
+        $zip->close();
+
+        $downloader = new ZipDownloader($this->io, $this->config, $this->httpDownloader);
+
+        $method = new \ReflectionMethod($downloader, 'extractWithZipArchive');
+        (\PHP_VERSION_ID < 80100) and $method->setAccessible(true);
+        $promise = $method->invoke($downloader, $this->package, $zipFile, $extractDir);
+        $loop = new Loop($this->httpDownloader);
+        $loop->wait([$promise]);
+
+        self::assertFalse(file_exists($outsideDir.'/evil.txt'), 'nothing must be written through the directory symlink to outside the extraction directory');
+        self::assertFalse(is_link($extractDir.'/sub'), 'the pre-existing directory symlink must be removed before extraction');
+        self::assertSame('OWNED', file_get_contents($extractDir.'/sub/evil.txt'));
     }
 
     public function testTruncatedDownloadIsRetried(): void

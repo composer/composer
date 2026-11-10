@@ -259,6 +259,12 @@ class ZipDownloader extends ArchiveDownloader
                     }
                 }
 
+                // extract into a clean directory: a previous extractor (the unzip command tried
+                // before falling back here) may have created symlinks, which extractTo() would
+                // follow and write through to paths outside the target directory
+                $this->filesystem->removeDirectory($path);
+                $this->filesystem->ensureDirectoryExists($path);
+
                 $extractResult = $zipArchive->extractTo($path);
 
                 if (true === $extractResult) {
