@@ -1162,14 +1162,15 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      */
     public function isOwnDistUrl(PackageInterface $package): bool
     {
-        foreach ($package->getDistUrls() as $url) {
-            // require a boundary after the base URL so e.g. https://example.org.example.net does not match https://example.org
-            if (Preg::isMatch('{^'.preg_quote($this->baseUrl).'(?:[/?#]|$)}', $url)) {
-                return true;
-            }
+        $url = $package->getDistUrl();
+        if ($url === null) {
+            return false;
         }
 
-        return false;
+        // only match on the canonical dist URL, never on mirrors, which may come from untrusted
+        // lock/installed data; require a boundary after the base URL so e.g.
+        // https://example.org.example.net does not match https://example.org
+        return Preg::isMatch('{^'.preg_quote($this->baseUrl).'(?:[/?#]|$)}', $url);
     }
 
     /**

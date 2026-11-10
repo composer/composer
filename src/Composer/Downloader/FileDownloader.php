@@ -133,6 +133,21 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             return $package->getName().'/'.$cacheKey.'.'.$package->getDistType();
         };
 
+        // scheme://host:port of a URL, with default ports normalized, used to decide whether a
+        // candidate URL belongs to the same origin as the repository the package was resolved from
+        $urlOrigin = static function (string $url): string {
+            $parts = parse_url($url);
+            if (!isset($parts['host'])) {
+                return '';
+            }
+            $scheme = isset($parts['scheme']) ? strtolower($parts['scheme']) : '';
+            $host = strtolower($parts['host']);
+            $defaultPorts = ['http' => 80, 'https' => 443, 'ftp' => 21, 'ftps' => 990];
+            $port = $parts['port'] ?? ($defaultPorts[$scheme] ?? null);
+
+            return $scheme.'://'.$host.($port !== null ? ':'.$port : '');
+        };
+
         $retries = 3;
         $distUrls = $package->getDistUrls();
         /** @var array<array{base: non-empty-string, processed: non-empty-string, cacheKey: string}> $urls */
@@ -151,6 +166,10 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         }
         assert(count($urls) > 0);
 
+        // repository http headers may carry credentials, so remember the canonical dist origin
+        // to ensure they are only ever sent to the repository's own origin, not to a dist mirror
+        $canonicalDistOrigin = $urlOrigin($this->processUrl($package, (string) $package->getDistUrl()));
+
         $fileName = $this->getFileName($package, $path);
         $this->filesystem->ensureDirectoryExists($path);
         $this->filesystem->ensureDirectoryExists(dirname($fileName));
@@ -158,7 +177,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $accept = null;
         /** @var (callable(\Throwable): mixed)|null $reject */
         $reject = null;
-        $download = function () use ($output, $cacheKeyGenerator, $package, $fileName, &$urls, &$accept, &$reject) {
+        $download = function () use ($output, $cacheKeyGenerator, $urlOrigin, $package, $fileName, $canonicalDistOrigin, &$urls, &$accept, &$reject) {
             $url = reset($urls);
             $index = key($urls);
 
@@ -195,7 +214,18 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                     $this->io->writeError("  - Downloading <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
                 }
 
-                $result = $this->httpDownloader->addCopy($url['processed'], $fileName, $package->getTransportOptions())
+                $transportOptions = $package->getTransportOptions();
+                // do not send repository http headers (which may carry credentials) to a dist
+                // mirror on a different origin than the repository the package was resolved from,
+                // an origin which cannot be determined never matches
+                if (isset($transportOptions['http']['header']) && ($canonicalDistOrigin === '' || $urlOrigin($url['processed']) !== $canonicalDistOrigin)) {
+                    unset($transportOptions['http']['header']);
+                    if (count($transportOptions['http']) === 0) {
+                        unset($transportOptions['http']);
+                    }
+                }
+
+                $result = $this->httpDownloader->addCopy($url['processed'], $fileName, $transportOptions)
                     ->then($accept, $reject);
             }
 
