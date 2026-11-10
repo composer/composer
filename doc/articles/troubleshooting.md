@@ -121,6 +121,17 @@ It means your network is probably so slow that a request took over 300seconds to
 minimum timeout Composer will use, but you can increase it by increasing the `default_socket_timeout`
 value in your php.ini to something higher.
 
+If instead you see something like:
+
+```
+Failed to download * curl error 28 while downloading * Operation too slow. Less than 1 bytes/sec transferred the last 30 seconds
+```
+
+It means the server accepted the request but did not send anything back for 30 seconds, so Composer
+gave up on it. If the server is merely slow to start responding, you can raise this limit by setting the
+[`COMPOSER_HTTP_STALL_TIMEOUT`](../03-cli.md#composer-http-stall-timeout) env var to a higher number of
+seconds, or to `0` to disable it.
+
 
 ## Package not found in a Jenkins-build
 

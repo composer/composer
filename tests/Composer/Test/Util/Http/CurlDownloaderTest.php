@@ -19,6 +19,8 @@ use Composer\IO\IOInterface;
 use Composer\Test\TestCase;
 use Composer\Util\Http\CurlDownloader;
 use Composer\Util\Http\Response;
+use Composer\Util\Platform;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class CurlDownloaderTest extends TestCase
 {
@@ -571,6 +573,58 @@ class CurlDownloaderTest extends TestCase
 
         self::assertCount(1, $errors);
         self::assertSame([], $this->readProperty($downloader, 'jobs'));
+    }
+
+    public function testStallTimeoutCanBeConfiguredViaEnv(): void
+    {
+        Platform::putEnv('COMPOSER_HTTP_STALL_TIMEOUT', '0');
+        try {
+            self::assertSame(0, $this->readProperty($this->createDownloader(), 'stallTimeout'));
+            Platform::putEnv('COMPOSER_HTTP_STALL_TIMEOUT', 'garbage');
+            self::assertSame(30, $this->readProperty($this->createDownloader(), 'stallTimeout'));
+        } finally {
+            Platform::clearEnv('COMPOSER_HTTP_STALL_TIMEOUT');
+        }
+    }
+
+    public function testServerWhichNeverAnswersIsGivenUpOnBeforeTheTransferTimeout(): void
+    {
+        // nothing ever accepts on this socket, but the kernel completes the TCP handshake and buffers the request
+        // anyway, so curl sees a server which took the request and never answers
+        $server = stream_socket_server('tcp://127.0.0.1:0', $errno, $errstr);
+        if (false === $server) {
+            self::fail('Could not listen on a local port: '.$errstr);
+        }
+        $port = (int) parse_url('tcp://'.stream_socket_get_name($server, false), PHP_URL_PORT);
+        $io = new BufferIO('', OutputInterface::VERBOSITY_DEBUG);
+        $downloader = $this->createDownloader($io);
+        // give up after 1s without data instead of the default 30s, to keep the test short
+        $this->writeProperty($downloader, 'stallTimeout', 1);
+
+        $url = 'http://127.0.0.1:'.$port.'/packages.json';
+        $downloader->download(
+            static function (): void {
+            },
+            static function (): void {
+            },
+            '127.0.0.1:'.$port,
+            $url,
+            []
+        );
+
+        // the request must be given up on once nothing arrived for the stall timeout, not held for the whole
+        // 300s transfer timeout
+        $deadline = microtime(true) + 10;
+        while (microtime(true) < $deadline && false === strpos($io->getOutput(), 'Retrying (1)')) {
+            $downloader->tick();
+        }
+        // the retry runs under a new job id, so abort whatever is still in flight
+        foreach (array_keys($this->readProperty($downloader, 'jobs')) as $jobId) {
+            $downloader->abortRequest((int) $jobId);
+        }
+        fclose($server);
+
+        self::assertStringContainsString('Retrying (1) '.$url.' due to curl error 28', $io->getOutput());
     }
 
     /**
