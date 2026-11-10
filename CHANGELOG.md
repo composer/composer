@@ -1,3 +1,11 @@
+### [2.2.32] 2026-11-11
+
+  * Security: Fixed malicious zip archives being able to write files outside of the package directory via symlinked entries when extraction falls back from `unzip` to `ZipArchive` (GHSA-w6hj-6587-3jh5)
+  * Security: Fixed inline repository HTTP credentials being sent to dist mirrors on other hosts supplied by a crafted `composer.lock` / `vendor/composer/installed.json` (GHSA-x82q-x274-r6pq)
+  * Security: Fixed `Authorization` and `Cookie` headers set in request options, e.g. via a repository's `http.header` option, being resent when following a redirect to another origin (#13254)
+  * Security: Fixed non-auth config settings being read from a project's `auth.json` and the `COMPOSER_AUTH` env var, and `home` being read from a project's composer.json, these are now ignored with a warning (#13209)
+  * Fixed every update aborting with a `SecurityException` when a PHP extension reports a name that is not a valid platform package name (#13185)
+
 ### [2.2.31] 2026-10-29
 
   * Security: Fixed package names in `vendor/composer/installed.json` being able to escape the vendor directory during install and reinstall (GHSA-c968-33g3-wh7p)
@@ -1571,6 +1579,7 @@
 
   * Initial release
 
+[2.2.32]: https://github.com/composer/composer/compare/2.2.31...2.2.32
 [2.2.31]: https://github.com/composer/composer/compare/2.2.30...2.2.31
 [2.2.30]: https://github.com/composer/composer/compare/2.2.29...2.2.30
 [2.2.29]: https://github.com/composer/composer/compare/2.2.28...2.2.29
