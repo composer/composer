@@ -16,6 +16,9 @@ use Composer\Cache;
 use Composer\Composer;
 use Composer\Config;
 use Composer\DependencyResolver\DefaultPolicy;
+use Composer\Filter\PackageFilter\AbandonedRule;
+use Composer\Filter\PackageFilter\RejectionReason;
+use Composer\Filter\PackageFilter\RejectionRuleInterface;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
@@ -294,8 +297,10 @@ EOT
         }
 
         $cooldown = null;
+        $latestVersionSelector = null;
         if ($input->getOption('latest') && $composer !== null) {
             $cooldown = $this->getCooldownPolicyConfig($composer->getConfig(), $input);
+            $latestVersionSelector = $this->createLatestVersionSelector($composer, $platformRepo, $cooldown, $input);
         }
 
         $packageFilter = $input->getArgument('package');
@@ -350,10 +355,13 @@ EOT
 
             $latestPackage = null;
             $withheld = null;
+            $blocked = null;
             if ($input->getOption('latest')) {
-                $found = $this->findLatestPackage($package, $composer, $platformRepo, $input->getOption('major-only'), $input->getOption('minor-only'), $input->getOption('patch-only'), $platformReqFilter, $cooldown);
+                assert($latestVersionSelector !== null);
+                $found = $this->findLatestPackage($package, $composer, $latestVersionSelector, $input->getOption('major-only'), $input->getOption('minor-only'), $input->getOption('patch-only'), $platformReqFilter, $cooldown);
                 $latestPackage = $found['latest'];
                 $withheld = $found['withheld'];
+                $blocked = $found['blocked'];
             }
             if (
                 $input->getOption('outdated')
@@ -377,9 +385,9 @@ EOT
             }
 
             if ('json' === $format) {
-                $this->printPackageInfoAsJson($package, $versions, $installedRepo, $latestPackage ?: null, $withheld);
+                $this->printPackageInfoAsJson($package, $versions, $installedRepo, $latestPackage ?: null, $withheld, $blocked);
             } else {
-                $this->printPackageInfo($package, $versions, $installedRepo, $latestPackage ?: null, $withheld);
+                $this->printPackageInfo($package, $versions, $installedRepo, $latestPackage ?: null, $withheld, $blocked);
             }
 
             return $exitCode;
@@ -475,6 +483,8 @@ EOT
         $latestPackages = [];
         /** @var array<string, array{package: PackageInterface, releaseDate: DateTimeInterface, availableIn: string}> newer releases still in the cooldown period than the newest installable version */
         $withheldPackages = [];
+        /** @var array<string, array{package: PackageInterface, reason: RejectionReason}> newer releases a dependency policy blocks than the newest installable version */
+        $blockedPackages = [];
         $exitCode = 0;
         $viewData = [];
         $viewMetaData = [];
@@ -501,6 +511,9 @@ EOT
                     }
                 }
                 $this->getRepositorySet($composer)->preloadPackages(array_keys($names));
+                if ($latestVersionSelector !== null) {
+                    $latestVersionSelector->preloadPolicyData(array_keys($names));
+                }
             }
         }
 
@@ -511,13 +524,17 @@ EOT
                 $nameLength = $versionLength = $latestLength = $releaseDateLength = 0;
 
                 foreach ($latestLookups[$type] ?? [] as $package) {
-                    unset($withheldPackages[$package->getPrettyName()]);
-                    $found = $this->findLatestPackage($package, $composer, $platformRepo, $showMajorOnly, $showMinorOnly, $showPatchOnly, $platformReqFilter, $cooldown);
+                    unset($withheldPackages[$package->getPrettyName()], $blockedPackages[$package->getPrettyName()]);
+                    assert($latestVersionSelector !== null);
+                    $found = $this->findLatestPackage($package, $composer, $latestVersionSelector, $showMajorOnly, $showMinorOnly, $showPatchOnly, $platformReqFilter, $cooldown);
                     if ($found['latest'] !== null) {
                         $latestPackages[$package->getPrettyName()] = $found['latest'];
                     }
                     if ($found['withheld'] !== null) {
                         $withheldPackages[$package->getPrettyName()] = $found['withheld'];
+                    }
+                    if ($found['blocked'] !== null) {
+                        $blockedPackages[$package->getPrettyName()] = $found['blocked'];
                     }
                 }
 
@@ -554,11 +571,12 @@ EOT
                         $packageIsUpToDate = $packageIsUpToDate || ($latestPackage === null && $showMajorOnly);
                         $packageIsIgnored = Preg::isMatch($ignoredPackagesRegex, $package->getPrettyName());
                         $withheld = $withheldPackages[$package->getPrettyName()] ?? null;
-                        if ($input->getOption('outdated') && ($packageIsIgnored || ($packageIsUpToDate && $withheld === null))) {
+                        $blocked = $blockedPackages[$package->getPrettyName()] ?? null;
+                        if ($input->getOption('outdated') && ($packageIsIgnored || ($packageIsUpToDate && $withheld === null && $blocked === null))) {
                             continue;
                         }
 
-                        // a release still in the cooldown period cannot be installed yet, so it does not make the package outdated
+                        // a release still in the cooldown period or blocked by a policy cannot be installed, so it does not make the package outdated
                         if (($input->getOption('outdated') || $input->getOption('strict')) && !$packageIsUpToDate) {
                             $hasOutdatedPackages = true;
                         }
@@ -614,6 +632,13 @@ EOT
                                     if ($format === 'text') {
                                         $packageViewData['latest'] .= ' ('.ltrim($packageViewData['cooldown-latest'], 'v').' in '.$shortAvailableIn.')';
                                     }
+                                }
+                            }
+                            if ($blocked !== null) {
+                                $packageViewData['blocked-latest'] = $blocked['package']->getFullPrettyVersion();
+                                $packageViewData['blocked-by'] = $blocked['reason']->getPolicyNames();
+                                if ($format === 'text') {
+                                    $packageViewData['latest'] .= ' ('.ltrim($packageViewData['blocked-latest'], 'v').' blocked by '.implode(', ', $packageViewData['blocked-by']).')';
                                 }
                             }
                             $latestLength = max($latestLength, strlen($packageViewData['latest']));
@@ -924,12 +949,13 @@ EOT
      *
      * @param array<string, string>    $versions
      * @param array{package: PackageInterface, releaseDate: DateTimeInterface, availableIn: string}|null $withheld newer release still in the cooldown period
+     * @param array{package: PackageInterface, reason: RejectionReason}|null $blocked newer release a dependency policy blocks
      */
-    protected function printPackageInfo(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, ?PackageInterface $latestPackage = null, ?array $withheld = null): void
+    protected function printPackageInfo(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, ?PackageInterface $latestPackage = null, ?array $withheld = null, ?array $blocked = null): void
     {
         $io = $this->getIO();
 
-        $this->printMeta($package, $versions, $installedRepo, $latestPackage ?: null, $withheld);
+        $this->printMeta($package, $versions, $installedRepo, $latestPackage ?: null, $withheld, $blocked);
         $this->printLinks($package, Link::TYPE_REQUIRE);
         $this->printLinks($package, Link::TYPE_DEV_REQUIRE, 'requires (dev)');
 
@@ -950,8 +976,9 @@ EOT
      *
      * @param array<string, string>    $versions
      * @param array{package: PackageInterface, releaseDate: DateTimeInterface, availableIn: string}|null $withheld newer release still in the cooldown period
+     * @param array{package: PackageInterface, reason: RejectionReason}|null $blocked newer release a dependency policy blocks
      */
-    protected function printMeta(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, ?PackageInterface $latestPackage = null, ?array $withheld = null): void
+    protected function printMeta(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, ?PackageInterface $latestPackage = null, ?array $withheld = null, ?array $blocked = null): void
     {
         $isInstalledPackage = !PlatformRepository::isPlatformPackage($package->getName()) && $installedRepo->hasPackage($package);
 
@@ -976,6 +1003,9 @@ EOT
             }
         } else {
             $latestPackage = $package;
+        }
+        if ($blocked !== null) {
+            $io->write('<info>blocked</info>  : ' . $blocked['package']->getPrettyVersion() . ' (' . $blocked['reason']->getDescription() . ')');
         }
         $io->write('<info>type</info>     : ' . $package->getType());
         $this->printLicenses($package);
@@ -1105,8 +1135,9 @@ EOT
      *
      * @param array<string, string>    $versions
      * @param array{package: PackageInterface, releaseDate: DateTimeInterface, availableIn: string}|null $withheld newer release still in the cooldown period
+     * @param array{package: PackageInterface, reason: RejectionReason}|null $blocked newer release a dependency policy blocks
      */
-    protected function printPackageInfoAsJson(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, ?PackageInterface $latestPackage = null, ?array $withheld = null): void
+    protected function printPackageInfoAsJson(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, ?PackageInterface $latestPackage = null, ?array $withheld = null, ?array $blocked = null): void
     {
         $json = [
             'name' => $package->getPrettyName(),
@@ -1134,6 +1165,10 @@ EOT
             }
         } else {
             $latestPackage = $package;
+        }
+        if ($blocked !== null) {
+            $json['blocked-latest'] = $blocked['package']->getPrettyVersion();
+            $json['blocked-by'] = $blocked['reason']->getPolicyNames();
         }
 
         if (null !== $package->getSourceType()) {
@@ -1575,16 +1610,33 @@ EOT
     }
 
     /**
-     * Given a package, this finds the latest package matching it, and the release still in the cooldown
-     * period that becomes installable first when a cooldown policy applies
-     *
-     * @return array{latest: ?PackageInterface, withheld: ?array{package: PackageInterface, releaseDate: DateTimeInterface, availableIn: string}}
+     * One selector for all lookups, so the data the policy rules need is fetched once for all packages
      */
-    private function findLatestPackage(PackageInterface $package, Composer $composer, PlatformRepository $platformRepo, bool $majorOnly, bool $minorOnly, bool $patchOnly, PlatformRequirementFilterInterface $platformReqFilter, ?CooldownPolicyConfig $cooldown = null): array
+    private function createLatestVersionSelector(Composer $composer, PlatformRepository $platformRepo, ?CooldownPolicyConfig $cooldown, InputInterface $input): VersionSelector
+    {
+        $repositorySet = $this->getRepositorySet($composer);
+        // abandonment is reported for the package as a whole, it should not make an older version look like the latest
+        $policyRules = array_values(array_filter(
+            $this->createBlockingPolicyRules($composer->getConfig(), $input, $repositorySet, $composer->getLoop()->getHttpDownloader()),
+            static function (RejectionRuleInterface $rule): bool {
+                return !$rule instanceof AbandonedRule;
+            }
+        ));
+
+        return new VersionSelector($repositorySet, $platformRepo, $cooldown, $policyRules);
+    }
+
+    /**
+     * Given a package, this finds the latest package matching it, the release still in the cooldown
+     * period that becomes installable first when a cooldown policy applies, and the newest release
+     * another policy blocks
+     *
+     * @return array{latest: ?PackageInterface, withheld: ?array{package: PackageInterface, releaseDate: DateTimeInterface, availableIn: string}, blocked: ?array{package: PackageInterface, reason: RejectionReason}}
+     */
+    private function findLatestPackage(PackageInterface $package, Composer $composer, VersionSelector $versionSelector, bool $majorOnly, bool $minorOnly, bool $patchOnly, PlatformRequirementFilterInterface $platformReqFilter, ?CooldownPolicyConfig $cooldown = null): array
     {
         // find the latest version allowed in this repo set
         $name = $package->getName();
-        $versionSelector = new VersionSelector($this->getRepositorySet($composer), $platformRepo, $cooldown);
         $stability = $composer->getPackage()->getMinimumStability();
         $flags = $composer->getPackage()->getStabilityFlags();
         if (isset($flags[$name])) {
@@ -1602,7 +1654,7 @@ EOT
 
             // dev-x branches are considered to be on the latest major version always, do not look up for a new commit as that is deemed a minor upgrade (albeit risky)
             if ($majorOnly) {
-                return ['latest' => null, 'withheld' => null];
+                return ['latest' => null, 'withheld' => null, 'blocked' => null];
             }
         }
 
@@ -1642,17 +1694,51 @@ EOT
         }
 
         $latest = $candidate !== false ? $candidate : null;
-        // versions exist but none is installable on this platform, so there is nothing to update to
-        if ($latest === null && count($versionSelector->getPlatformRejectedCandidates()) > 0) {
+        $result = $versionSelector->getLastResult();
+        $blockingPolicies = [RejectionReason::ABANDONED, RejectionReason::ADVISORIES, RejectionReason::FILTER_LIST];
+        // versions exist but none is installable on this platform or allowed by the policies, so there is nothing to update to
+        if ($latest === null && count($result->getRejectedOnlyBy(RejectionReason::PLATFORM, ...$blockingPolicies)) > 0) {
             $latest = $package;
         }
+
+        $blocked = null;
+        if (!str_starts_with($package->getVersion(), 'dev-')) {
+            $baseline = $latest !== null && version_compare($latest->getVersion(), $package->getVersion(), '>') ? $latest : $package;
+            foreach ($result->getRejectedOnlyBy(RejectionReason::COOLDOWN, ...$blockingPolicies) as $blockedPackage) {
+                $reason = null;
+                foreach ($result->getReasons($blockedPackage) as $candidateReason) {
+                    if ($candidateReason->getType() !== RejectionReason::COOLDOWN) {
+                        $reason = $candidateReason;
+                        break;
+                    }
+                }
+                while ($blockedPackage instanceof AliasPackage) {
+                    $blockedPackage = $blockedPackage->getAliasOf();
+                }
+                if ($reason === null) {
+                    continue;
+                }
+
+                // the installed version is itself blocked, so the older releases the selector fell back to are no update
+                if ($blockedPackage->getVersion() === $package->getVersion() && $latest !== null && version_compare($latest->getVersion(), $package->getVersion(), '<')) {
+                    $latest = $package;
+                }
+
+                // candidates come in order of preference, so the first one newer than what can be installed is the one to mention
+                if ($blocked === null && version_compare($blockedPackage->getVersion(), $baseline->getVersion(), '>')) {
+                    $blocked = ['package' => $blockedPackage, 'reason' => $reason];
+                }
+            }
+        }
+
         $withheld = null;
         if ($cooldown !== null && !str_starts_with($package->getVersion(), 'dev-')) {
             // a waiting release is only worth mentioning if it is newer than what can be installed already
             $baseline = $latest !== null && version_compare($latest->getVersion(), $package->getVersion(), '>') ? $latest : $package;
             $installedIsWithheld = false;
-            foreach ($versionSelector->getWithheldCandidates() as $withheldCandidate) {
-                $withheldPackage = $withheldCandidate['package'];
+            foreach ($result->getRejections(RejectionReason::COOLDOWN) as $rejection) {
+                $withheldPackage = $rejection['package'];
+                $cooldownInfo = $rejection['reason']->getCooldownInfo();
                 while ($withheldPackage instanceof AliasPackage) {
                     $withheldPackage = $withheldPackage->getAliasOf();
                 }
@@ -1661,11 +1747,12 @@ EOT
                 }
                 // the first release to clear the cooldown period among those newer than the baseline,
                 // a withheld backport to an older branch is no update
-                if (!version_compare($withheldPackage->getVersion(), $baseline->getVersion(), '>')) {
+                if ($cooldownInfo === null || !version_compare($withheldPackage->getVersion(), $baseline->getVersion(), '>')) {
                     continue;
                 }
-                if ($withheld === null || $withheldCandidate['releaseDate'] < $withheld['releaseDate']) {
-                    $withheld = ['package' => $withheldPackage, 'releaseDate' => $withheldCandidate['releaseDate']];
+                $releaseDate = new DateTimeImmutable($cooldownInfo['releaseDate']);
+                if ($withheld === null || $releaseDate < $withheld['releaseDate']) {
+                    $withheld = ['package' => $withheldPackage, 'releaseDate' => $releaseDate];
                 }
             }
 
@@ -1683,6 +1770,7 @@ EOT
         return [
             'latest' => $latest,
             'withheld' => $withheld,
+            'blocked' => $blocked,
         ];
     }
 

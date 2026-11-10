@@ -1,0 +1,136 @@
+<?php declare(strict_types=1);
+
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace Composer\Filter\PackageFilter;
+
+use Composer\Advisory\Auditor;
+use Composer\Advisory\PartialSecurityAdvisory;
+use Composer\Advisory\SecurityAdvisory;
+use Composer\IO\IOInterface;
+use Composer\Package\AliasPackage;
+use Composer\Package\PackageInterface;
+use Composer\Package\RootPackageInterface;
+use Composer\Policy\PolicyConfig;
+use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositorySet;
+use Composer\Semver\Constraint\Constraint;
+
+/**
+ * Rejects versions affected by security advisories when the advisories policy blocks them
+ *
+ * @internal
+ * @final
+ */
+class SecurityAdvisoryRule implements RejectionRuleInterface
+{
+    /** @var Auditor */
+    private $auditor;
+    /** @var PolicyConfig */
+    private $policyConfig;
+    /** @var RepositorySet the repositories the advisories are loaded from */
+    private $repositorySet;
+    /** @var IOInterface */
+    private $io;
+
+    public function __construct(Auditor $auditor, PolicyConfig $policyConfig, RepositorySet $repositorySet, IOInterface $io)
+    {
+        $this->auditor = $auditor;
+        $this->policyConfig = $policyConfig;
+        $this->repositorySet = $repositorySet;
+        $this->io = $io;
+    }
+
+    public function getRejections(array $packages): array
+    {
+        $advisories = $this->policyConfig->advisories;
+        if (!$advisories->block) {
+            return [];
+        }
+
+        $packagesForAdvisories = [];
+        foreach ($packages as $package) {
+            $package = self::getAdvisoryTarget($package);
+            if (!$package instanceof RootPackageInterface && !PlatformRepository::isPlatformPackage($package->getName())) {
+                $packagesForAdvisories[] = $package;
+            }
+        }
+        if (\count($packagesForAdvisories) === 0) {
+            return [];
+        }
+
+        $ignoreListForBlocking = $advisories->getIgnoreListForOperation('block');
+        $ignoreUnreachableUpdate = $this->policyConfig->ignoreUnreachable->update;
+        $allAdvisories = $this->repositorySet->getMatchingSecurityAdvisories($packagesForAdvisories, true, $ignoreUnreachableUpdate);
+        if ($this->auditor->needsCompleteAdvisoryLoad($allAdvisories['advisories'], $ignoreListForBlocking)) {
+            $allAdvisories = $this->repositorySet->getMatchingSecurityAdvisories($packagesForAdvisories, false, $ignoreUnreachableUpdate);
+        }
+
+        if ($ignoreUnreachableUpdate && \count($allAdvisories['unreachableRepos']) > 0) {
+            $this->io->writeError('<warning>Security advisory data could not be fetched from some repositories (ignored per policy.ignore-unreachable); matches may be incomplete:</warning>');
+            foreach ($allAdvisories['unreachableRepos'] as $repo) {
+                $this->io->writeError('  - ' . $repo);
+            }
+        }
+
+        $advisoryMap = $this->auditor->processAdvisories($allAdvisories['advisories'], $ignoreListForBlocking, $advisories->getIgnoreSeverityForOperation('block'))['advisories'];
+
+        $rejections = [];
+        foreach ($packages as $key => $package) {
+            $matchingAdvisories = $this->getMatchingAdvisories($package, $advisoryMap);
+            if (\count($matchingAdvisories) > 0) {
+                $rejections[$key] = RejectionReason::advisories($package->getName(), $package->getPrettyVersion(), $matchingAdvisories);
+            }
+        }
+
+        return $rejections;
+    }
+
+    /**
+     * @param array<string, array<PartialSecurityAdvisory|SecurityAdvisory>> $advisoryMap
+     * @return list<PartialSecurityAdvisory|SecurityAdvisory>
+     */
+    private function getMatchingAdvisories(PackageInterface $package, array $advisoryMap): array
+    {
+        $package = self::getAdvisoryTarget($package);
+        if (RepositorySet::isUnversionedBranch($package)) {
+            return [];
+        }
+
+        $matchingAdvisories = [];
+        foreach ($package->getNames(false) as $packageName) {
+            if (!isset($advisoryMap[$packageName])) {
+                continue;
+            }
+
+            $packageConstraint = new Constraint(Constraint::STR_OP_EQ, $package->getVersion());
+            foreach ($advisoryMap[$packageName] as $advisory) {
+                if ($advisory->affectedVersions->matches($packageConstraint)) {
+                    $matchingAdvisories[] = $advisory;
+                }
+            }
+        }
+
+        return $matchingAdvisories;
+    }
+
+    /**
+     * A root alias version is chosen by the root package author and says nothing about the actual code, so advisories are checked against the aliased package
+     */
+    private static function getAdvisoryTarget(PackageInterface $package): PackageInterface
+    {
+        if ($package instanceof AliasPackage && $package->isRootPackageAlias()) {
+            return $package->getAliasOf();
+        }
+
+        return $package;
+    }
+}

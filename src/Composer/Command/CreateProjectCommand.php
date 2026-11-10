@@ -14,7 +14,6 @@ namespace Composer\Command;
 
 use Composer\Config;
 use Composer\Factory;
-use Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\Installer;
@@ -25,7 +24,7 @@ use Composer\IO\ConsoleIO;
 use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
 use Composer\DependencyResolver\Operation\InstallOperation;
-use Composer\DependencyResolver\PolicyRemovalReason;
+use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\Package\Version\VersionSelector;
 use Composer\Package\AliasPackage;
 use Composer\Pcre\Preg;
@@ -449,16 +448,27 @@ EOT
         $cooldown = $this->getBlockingCooldownPolicy($config, $input);
 
         // find the latest version if there are multiple
-        $versionSelector = new VersionSelector($repositorySet, $platformRepo, $cooldown);
+        $versionSelector = new VersionSelector($repositorySet, $platformRepo, $cooldown, $this->createBlockingPolicyRules($config, $input, $repositorySet, $composer->getLoop()->getHttpDownloader()));
         $package = $versionSelector->findBestCandidate($name, $packageVersion, $stability, $platformRequirementFilter, 0, $io);
 
         if (!$package) {
             $errorMessage = "Could not find package $name with " . ($packageVersion ? "version $packageVersion" : "stability $stability");
-            if (!($platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter) && $versionSelector->findBestCandidate($name, $packageVersion, $stability, PlatformRequirementFilterFactory::ignoreAll())) {
+            $result = $versionSelector->getLastResult();
+            if (\count($result->getRejectedOnlyBy(RejectionReason::PLATFORM)) > 0) {
                 throw new \InvalidArgumentException($errorMessage .' in a version installable using your PHP version, PHP extensions and Composer version.');
             }
-            if ($cooldown !== null && false !== (new VersionSelector($repositorySet, $platformRepo))->findBestCandidate($name, $packageVersion, $stability, $platformRequirementFilter)) {
-                throw new \InvalidArgumentException($errorMessage .' that is past the cooldown period configured in "policy.cooldown". '.PolicyRemovalReason::COOLDOWN_REMEDY);
+            if (\count($result->getRejectedOnlyBy(RejectionReason::COOLDOWN)) > 0) {
+                throw new \InvalidArgumentException($errorMessage .' that is past the cooldown period configured in "policy.cooldown". '.RejectionReason::COOLDOWN_REMEDY);
+            }
+            $blocked = [];
+            foreach ($result->getRejectedOnlyBy(...RejectionReason::POLICIES) as $candidate) {
+                $blocked[$candidate->getVersion()] = $result->getReasons($candidate)[0];
+            }
+            if (\count($blocked) > 0) {
+                uksort($blocked, static function (string $a, string $b): int {
+                    return version_compare($a, $b);
+                });
+                throw new \InvalidArgumentException($errorMessage .' that is allowed by your dependency policies, '.RejectionReason::explainPolicyRejections($blocked, \count($blocked) > 1, false));
             }
 
             throw new \InvalidArgumentException($errorMessage .'.');
