@@ -22,7 +22,8 @@ jobs:
   tests:
     name: "CI"
 
-    runs-on: ubuntu-latest
+    # ubuntu-26.04 hosts fail to start threads in the i386 container
+    runs-on: ubuntu-24.04
     container: shivammathur/node:latest-i386@sha256:4423e9d5afa33b58f0371bc4f857c6ddf06ecc37937ac914dc984ff8d0e5a4b6
 
     steps:
