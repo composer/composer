@@ -129,7 +129,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         // candidate URL belongs to the same origin as the repository the package was resolved from
         $urlOrigin = function ($url) {
             $parts = parse_url($url);
-            if (!isset($parts['host'])) {
+            if (false === $parts || !isset($parts['host'])) {
                 return '';
             }
             $scheme = isset($parts['scheme']) ? strtolower($parts['scheme']) : '';

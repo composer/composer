@@ -334,7 +334,7 @@ class FileDownloaderTest extends TestCase
     /**
      * @dataProvider provideMirrorHeaderScenarios
      * @param string $distUrl
-     * @param array|null $mirror
+     * @param array{url: string, preferred: bool}|null $mirror
      * @param string $contactedUrl
      * @param bool $expectHeader
      */
