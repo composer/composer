@@ -879,6 +879,10 @@ repository's `packages.json`, but only for a single package. Again, the
 minimum required fields are `name`, `version`, and either of `dist` or
 `source`.
 
+A package definition can also set
+[`transport-options`](04-schema.md#transport-options) for its download, such
+as a longer HTTP timeout.
+
 Here is an example for the smarty template engine:
 
 ```json

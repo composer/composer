@@ -388,33 +388,65 @@ Optional.
 
 ### transport-options
 
-Options passed to the transport when the package is downloaded, as an array.
+Options passed to the downloader when the package is downloaded, as an object.
+This field is mostly internal: Composer writes it to `composer.lock` and
+`installed.json` so that later installs download the package the same way.
+
+Composer only reads it from package definitions in a
+[`package`](05-repositories.md#package-1) repository, and from `composer.lock`
+and `installed.json`. It is ignored everywhere else, including your project's
+`composer.json` and the metadata of [`composer`](05-repositories.md#composer)
+repositories (such as Packagist) and [`vcs`](05-repositories.md#vcs)
+repositories. A `composer` repository applies its own
+[`options`](05-repositories.md#curl-or-stream-options) to the packages whose
+dist URL it serves instead.
 
 ```json
 {
-    "transport-options": {
-        "http": {
-            "timeout": 60
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "acme/legacy-lib",
+                "version": "1.0.0",
+                "dist": {
+                    "url": "https://example.org/legacy-lib-1.0.0.zip",
+                    "type": "zip"
+                },
+                "transport-options": {
+                    "http": {
+                        "timeout": 60
+                    }
+                }
+            }
         }
-    }
+    ]
 }
 ```
 
-They take the same form as the `options` of a [Composer
-repository](05-repositories.md#curl-or-stream-options): `http` and `ssl` stream
-context options, or the limited set of them supported when cURL is used. For git
-source installs, `git.single_use_clone` is also supported.
+The following keys are used:
 
-This field is primarily for internal use. Composer repositories, such as
-Packagist and the [`composer`](05-repositories.md#composer) repository type, use
-it to pass their own transport options on to packages whose dist URL belongs to
-them, and plugins can adjust it through the
-[`pre-file-download`](articles/scripts.md) event.
+* **http** and **ssl:** stream context options for the dist download, in the
+  same form as a Composer repository's
+  [`options`](05-repositories.md#curl-or-stream-options), including the limited
+  set supported when cURL is used.
+* **git.single_use_clone:** when a git source is cloned from Composer's VCS
+  cache, clone without the `--reference` and `--dissociate` flags. Clones that
+  do not use the cache are not affected.
+* **symlink** and **relative:** set by [`path`](05-repositories.md#path)
+  repositories from their own `options`. Values in the package's own
+  `composer.json` are overwritten.
 
-You should normally not set this field in a package's `composer.json`: the
-options can be written to the lock file, are not portable between machines, and
-may expose credentials or local paths. Configure the options on the
-[repository](05-repositories.md#curl-or-stream-options) instead.
+Plugins can change the options of a package download in a
+[`pre-file-download`](articles/plugins.md#event-handler) handler by calling
+`setTransportOptions()` on the package returned by the event's `getContext()`.
+The event's own `setTransportOptions()` only applies to metadata downloads.
+
+Composer warns when `http.header` options would be written to `composer.lock`,
+as headers often contain credentials. Headers that a configured repository's
+`options` can restore are left out of the lock file. Credentials belong in
+[`auth.json`](articles/authentication-for-private-packages.md) or in the
+repository's `options`, not here.
 
 Optional.
 
