@@ -396,7 +396,7 @@ Composer only reads it from package definitions in a
 [`package`](05-repositories.md#package-1) repository, and from `composer.lock`
 and `installed.json`. It is ignored everywhere else, including your project's
 `composer.json` and the metadata of [`composer`](05-repositories.md#composer)
-repositories (such as Packagist) and [`vcs`](05-repositories.md#vcs)
+repositories (such as Packagist.org) and [`vcs`](05-repositories.md#vcs)
 repositories. A `composer` repository applies its own
 [`options`](05-repositories.md#curl-or-stream-options) to the packages whose
 dist URL it serves instead.
@@ -434,8 +434,7 @@ The following keys are used:
   cache, clone without the `--reference` and `--dissociate` flags. Clones that
   do not use the cache are not affected.
 * **symlink** and **relative:** set by [`path`](05-repositories.md#path)
-  repositories from their own `options`. Values in the package's own
-  `composer.json` are overwritten.
+  repositories from their own `options`.
 
 Plugins can change the options of a package download in a
 [`pre-file-download`](articles/plugins.md#event-handler) handler by calling
