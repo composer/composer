@@ -345,7 +345,7 @@ class FileDownloaderTest extends TestCase
 
     /**
      * @dataProvider provideMirrorHeaderScenarios
-     * @param ?array{url: string, preferred: bool} $mirror
+     * @param ?array{url: non-empty-string, preferred: bool} $mirror
      */
     public function testRepositoryHeadersAreOnlySentToTheRepositoryOrigin(string $distUrl, ?array $mirror, string $contactedUrl, bool $expectHeader): void
     {
