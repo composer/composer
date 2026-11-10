@@ -1,3 +1,24 @@
+### [2.11.2] 2026-11-11
+
+  * Security: Fixed arbitrary command execution via the `prevent_url_access_callable` transport option being loaded from `composer.lock` / `vendor/composer/installed.json` (GHSA-jhfp-4ppm-crmm)
+  * Security: Fixed malicious zip archives being able to write files outside of the package directory via symlinked entries when extraction falls back from `unzip` to `ZipArchive` (GHSA-w6hj-6587-3jh5)
+  * Security: Fixed inline repository HTTP credentials being sent to dist mirrors on other hosts supplied by a crafted `composer.lock` / `vendor/composer/installed.json` (GHSA-x82q-x274-r6pq)
+  * Security: Updated the bundled symfony/filesystem to a version fixing a disclosed vulnerability present in the one shipped with 2.11.1 (GHSA-6prc-h956-hxjq)
+  * Security: Fixed `Authorization` and `Cookie` headers set in request options, e.g. via a repository's `http.header` option, being resent when following a redirect to another origin (#13253)
+  * Security: Fixed non-auth config settings being read from a project's `auth.json` and the `COMPOSER_AUTH` env var, and `home` being read from a project's composer.json, these are now ignored with a warning (#13208)
+  * Security: Fixed IPs blocked by the `prevent_ip_access_callable` transport option only being rejected after the request had been sent, and rejected in-flight downloads not being stopped (#13255)
+  * Added `exclude-branches` option to VCS repositories to skip branches matching the given patterns, e.g. bot-managed ones (#13235)
+  * Added support for setting `allow-git-fallback` to `false` in GitLab, Bitbucket and Forgejo repositories to fail on API errors instead of falling back to a git clone (#13234)
+  * Added a 30 seconds stall timeout so downloads from a server which accepts the connection but never responds are aborted and retried instead of hanging for 300 seconds, configurable or disabled via the `COMPOSER_HTTP_STALL_TIMEOUT` env var (#13243)
+  * Improved performance of security advisory lookups by querying the API only once per package name (#13202)
+  * Improved performance of VCS repository updates by skipping the default branch lookup when the git mirror is up to date (#13224)
+  * Improved performance and memory usage of dependency resolution, package loading and sorting, and repository traversal (#13187, #13188, #13194, #13197, #13200, #13211, #13217, #13218)
+  * Improved performance with micro-optimizations in path and URL handling, lock file and `installed.php` generation, archiving and TLS/HTTP helpers (#13189, #13190, #13191, #13192, #13193, #13195, #13196, #13198, #13214, #13215, #13216, #13220, #13222)
+  * Fixed `config` failing with a schema error or corrupting composer.json by turning nested `{}` into `[]` when adding or removing dotted sub-keys (#13210)
+  * Fixed `config --unset`, `remove` and `require` leaving in place or duplicating composer.json keys which are set to `null` (#13225)
+  * Fixed dist URLs of codeberg.org packages and bitbucket zip archives not being updated when requiring a specific commit with `dev-branch#hash` (#13242)
+  * Fixed an undefined array key warning hiding the real error when curl 8.23+ fails to parse a URL (#13252)
+
 ### [2.11.1] 2026-10-30
 
   * Added a warning when the cache dir is on a Windows drive while running in WSL, as this makes filesystem operations very slow (#13175)
@@ -2289,6 +2310,7 @@
 
   * Initial release
 
+[2.11.2]: https://github.com/composer/composer/compare/2.11.1...2.11.2
 [2.11.1]: https://github.com/composer/composer/compare/2.11.0...2.11.1
 [2.11.0]: https://github.com/composer/composer/compare/2.11.0-RC1...2.11.0
 [2.11.0-RC1]: https://github.com/composer/composer/compare/2.10.3...2.11.0-RC1
