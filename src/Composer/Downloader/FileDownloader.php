@@ -159,7 +159,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
         // repository http headers may carry credentials, so remember the canonical dist origin
         // to ensure they are only ever sent to the repository's own origin, not to a dist mirror
-        $canonicalDistOrigin = $urlOrigin($this->processUrl($package, (string) $package->getDistUrl()));
+        $canonicalDistOrigin = $urlOrigin($this->processUrl($package, $package->getDistUrl()));
 
         $fileName = $this->getFileName($package, $path);
         $this->filesystem->ensureDirectoryExists($path);
