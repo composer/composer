@@ -220,6 +220,12 @@ class CurlDownloader
 
         $originalOptions = $options;
 
+        foreach (['prevent_url_access_callable', 'prevent_ip_access_callable'] as $callableOption) {
+            if (isset($options[$callableOption]) && !$options[$callableOption] instanceof \Closure) {
+                throw new \InvalidArgumentException('The "'.$callableOption.'" transport option must be a Closure, got '.get_debug_type($options[$callableOption]).'.');
+            }
+        }
+
         // check URL can be accessed (i.e. is not insecure), but allow insecure Packagist calls to $hashed providers as file integrity is verified with sha256
         if (!Preg::isMatch('{^http://(repo\.)?packagist\.org/p/}', $url) || (false === strpos($url, '$') && false === strpos($url, '%24'))) {
             $this->config->prohibitUrlByConfig($url, $this->io, $options);
@@ -227,7 +233,7 @@ class CurlDownloader
 
         if (
             isset($options['prevent_url_access_callable']) &&
-            is_callable($options['prevent_url_access_callable']) &&
+            $options['prevent_url_access_callable'] instanceof \Closure &&
             $options['prevent_url_access_callable']($url)
         ) {
             throw new TransportException('Access to "'.Url::sanitize($url).'" is blocked.');
@@ -671,7 +677,7 @@ class CurlDownloader
                     if (
                         !\defined('CURLOPT_PREREQFUNCTION') &&
                         isset($this->jobs[$i]['options']['prevent_ip_access_callable']) &&
-                        is_callable($this->jobs[$i]['options']['prevent_ip_access_callable']) &&
+                        $this->jobs[$i]['options']['prevent_ip_access_callable'] instanceof \Closure &&
                         $this->jobs[$i]['options']['prevent_ip_access_callable']($progress['primary_ip'])
                     ) {
                         $this->rejectInFlightJob($i, new TransportException(sprintf('IP "%s" is blocked for "%s".', $progress['primary_ip'], Url::sanitize($this->jobs[$i]['url']))));

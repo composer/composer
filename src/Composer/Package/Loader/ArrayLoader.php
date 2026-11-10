@@ -317,8 +317,12 @@ class ArrayLoader implements LoaderInterface
             }
         }
 
-        if ($this->loadOptions && isset($config['transport-options'])) {
-            $package->setTransportOptions($config['transport-options']);
+        if ($this->loadOptions && isset($config['transport-options']) && is_array($config['transport-options'])) {
+            $transportOptions = $config['transport-options'];
+            // these options are invoked as callables while downloading, so they must never be
+            // taken from externally provided package data such as the lock or installed.json
+            unset($transportOptions['prevent_url_access_callable'], $transportOptions['prevent_ip_access_callable']);
+            $package->setTransportOptions($transportOptions);
         }
 
         if ($aliasNormalized = $this->getBranchAlias($config)) {

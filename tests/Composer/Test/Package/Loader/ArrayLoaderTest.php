@@ -313,6 +313,23 @@ class ArrayLoaderTest extends TestCase
         self::assertEquals($expectedConfig, $dumper->dump($package));
     }
 
+    public function testTransportOptionCallablesAreNotLoadedFromPackageData(): void
+    {
+        $loader = new ArrayLoader(null, true);
+        $package = $loader->load([
+            'name' => 'a/b',
+            'version' => '1.0.0',
+            'transport-options' => [
+                'ssl' => ['verify_peer' => true],
+                'prevent_url_access_callable' => 'system',
+                'prevent_ip_access_callable' => 'system',
+            ],
+        ]);
+
+        // the callable options must be dropped so externally provided data cannot cause a call
+        self::assertSame(['ssl' => ['verify_peer' => true]], $package->getTransportOptions());
+    }
+
     public function testPackageWithBranchAlias(): void
     {
         $config = [

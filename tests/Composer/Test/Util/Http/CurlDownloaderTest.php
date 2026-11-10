@@ -628,6 +628,30 @@ class CurlDownloaderTest extends TestCase
     }
 
     /**
+     * @dataProvider provideAccessCallableOptions
+     */
+    public function testAccessCallableOptionWhichIsNotAClosureIsRejected(string $option): void
+    {
+        $downloader = $this->createDownloader();
+
+        self::expectException(\InvalidArgumentException::class);
+        self::expectExceptionMessage('The "'.$option.'" transport option must be a Closure, got string.');
+
+        $downloader->download(static function (): void {
+        }, static function (): void {
+        }, 'example.org', 'https://example.org/packages.json', [$option => 'is_string']);
+    }
+
+    /**
+     * @return iterable<array{string}>
+     */
+    public static function provideAccessCallableOptions(): iterable
+    {
+        yield ['prevent_url_access_callable'];
+        yield ['prevent_ip_access_callable'];
+    }
+
+    /**
      * @param list<string> $headers
      */
     private function createResponse(int $statusCode, array $headers): Response
