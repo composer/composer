@@ -357,6 +357,13 @@ can be configured.
 }
 ```
 
+A `transport-options` key in the package metadata served by a `composer`
+repository is deliberately ignored: Composer only loads transport options
+from the lock file and from repositories which define the package locally.
+The repository-wide `options` above are applied instead, to every package
+whose `dist` URL belongs to this repository. See
+[`transport-options`](04-schema.md#transport-options) for details.
+
 #### filter
 
 A Composer repository can advertise filter list support to clients by including a `filter` object in
@@ -878,6 +885,13 @@ Basically, you define the same information that is included in the `composer`
 repository's `packages.json`, but only for a single package. Again, the
 minimum required fields are `name`, `version`, and either of `dist` or
 `source`.
+
+A package definition may additionally carry a
+[`transport-options`](04-schema.md#transport-options) key to pass extra
+options to the downloader which fetches this package (HTTP headers, client
+certificates, timeouts, ...). This is an advanced, mostly internal feature —
+prefer the repository-wide [`options`](#curl-or-stream-options) or credentials
+in `auth.json` where possible.
 
 Here is an example for the smarty template engine:
 

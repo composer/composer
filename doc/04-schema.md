@@ -386,6 +386,69 @@ the VCS it names is cloned once and then checked out at the reference.
 
 Optional.
 
+### transport-options
+
+Extra options passed to the downloader when fetching this specific package's
+`dist` (or `source`). It must be an array, `composer validate` rejects any
+other type.
+
+> **Warning:** This is an advanced, mostly internal feature which exists
+> primarily for use on Packagist.org and by Composer/plugin integrations. The
+> option keys are not a stable public API and may change between releases, so
+> avoid setting `transport-options` on your own packages unless you have a
+> concrete need. In almost all cases you should configure
+> [repository options](05-repositories.md#curl-or-stream-options) or
+> credentials in [`auth.json`](articles/authentication-for-private-packages.md) instead.
+
+The options are grouped by transport and use the format of
+[PHP stream context options](https://php.net/manual/en/context.php):
+
+- `http` and `ssl`: applied when downloading the package's `dist`. With the
+  PHP stream transport any stream context option is accepted, while the
+  default cURL transport only understands `http.method`, `http.content`,
+  `http.header`, `http.timeout`, `ssl.cafile`, `ssl.capath`, `ssl.verify_peer`,
+  `ssl.verify_peer_name`, `ssl.local_cert`, `ssl.local_pk` and
+  `ssl.passphrase`. Setting `ssl.allow_self_signed` makes Composer use the
+  stream transport for that download instead of cURL.
+- `git`: `single_use_clone` (bool) omits the `--reference`/`--dissociate`
+  flags when cloning this package's `source` from Composer's local VCS cache.
+- `symlink` and `relative` (bool): only meaningful for packages installed from
+  a [`path` repository](05-repositories.md#path), where they control
+  symlinking vs. mirroring. For path repositories these come from the
+  repository's own `options`, a `transport-options` key in the package's own
+  composer.json is overwritten.
+
+Plugins can change the options of an individual download through the
+`PreFileDownloadEvent` (`getTransportOptions()`/`setTransportOptions()`).
+
+Which repositories read a `transport-options` key from the package metadata:
+
+- `package` repositories and `filesystem` repositories (`installed.json`),
+  and
+- `composer.lock`, so that the same options keep applying on later installs,
+- [`path`](05-repositories.md#path) repositories, which set them from the
+  repository's `options` as described above.
+
+It is deliberately **ignored** in the metadata of [`composer`](05-repositories.md#composer)
+repositories (including Packagist.org), [`vcs`](05-repositories.md#vcs) and
+[`artifact`](05-repositories.md#artifact) repositories: Composer only loads
+transport options from the lock file and from repositories which define the
+package locally, never from standard metadata. A `composer` repository
+instead applies its own [`options`](05-repositories.md#curl-or-stream-options)
+to the packages whose `dist` URL it serves. Setting `transport-options` in the
+root composer.json has no effect either, as the root package is never
+downloaded.
+
+If `http.header` options reach `composer.lock` (for example because they were
+set on a package defined in a `package` repository), Composer prints a warning
+suggesting `auth.json` or repository options instead. Headers which match the
+serving repository's own `options` are stripped from the lock file and
+restored again on install.
+
+Defaults to empty.
+
+Optional.
+
 ### Package links
 
 All of the following take an object which maps package names to
