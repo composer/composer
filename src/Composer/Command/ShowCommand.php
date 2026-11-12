@@ -1648,8 +1648,10 @@ EOT
         }
         $withheld = null;
         if ($cooldown !== null && !str_starts_with($package->getVersion(), 'dev-')) {
+            // with prefer-stable, a less stable version is only selected when every stable one in range was withheld or rejected
+            $isStabilityFallback = $latest !== null && $composer->getPackage()->getPreferStable() && BasePackage::STABILITIES[$latest->getStability()] > BasePackage::STABILITIES[$package->getStability()];
             // a waiting release is only worth mentioning if it is newer than what can be installed already
-            $baseline = $latest !== null && version_compare($latest->getVersion(), $package->getVersion(), '>') ? $latest : $package;
+            $baseline = $latest !== null && !$isStabilityFallback && version_compare($latest->getVersion(), $package->getVersion(), '>') ? $latest : $package;
             $installedIsWithheld = false;
             foreach ($versionSelector->getWithheldCandidates() as $withheldCandidate) {
                 $withheldPackage = $withheldCandidate['package'];
@@ -1671,7 +1673,7 @@ EOT
 
             // the installed version is itself still in the cooldown period, e.g. the period was configured after
             // installing it, so the older releases the selector fell back to are no update either
-            if ($installedIsWithheld && ($latest === null || version_compare($latest->getVersion(), $package->getVersion(), '<'))) {
+            if ($installedIsWithheld && ($latest === null || $isStabilityFallback || version_compare($latest->getVersion(), $package->getVersion(), '<'))) {
                 $latest = $package;
             }
 

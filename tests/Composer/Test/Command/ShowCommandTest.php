@@ -1201,6 +1201,32 @@ vendor/longpackagename', trim($appTester->getDisplay(true))); // trim() is fine 
         self::assertStringNotContainsString('[none matched]', $display);
     }
 
+    public function testOutdatedMinorOnlyDoesNotOfferTheDevBranchWhenTheInstalledVersionIsStillInTheCooldownPeriod(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.0.0', 'published-time' => '2020-01-01T00:00:00+00:00'],
+                        ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.1.0', 'published-time' => '2999-01-01T00:00:00+00:00'],
+                        ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.1.x-dev'],
+                    ],
+                ],
+            ],
+            'require' => ['vendor/package' => '^1.0'],
+            'minimum-stability' => 'dev',
+            'prefer-stable' => true,
+            'config' => ['policy' => ['cooldown' => ['period' => '1 week']]],
+        ]);
+
+        $this->createInstalledJson([self::getPackage('vendor/package', '1.1.0')]);
+
+        $appTester = $this->getApplicationTester();
+        self::assertSame(0, $appTester->run(['command' => 'outdated', '--strict' => true, '--minor-only' => true]));
+        self::assertStringNotContainsString('1.1.x-dev', $appTester->getDisplay(true));
+    }
+
     public function testShowingASinglePackageMentionsAReleaseStillInTheCooldownPeriod(): void
     {
         $this->initProjectWithCooldownPeriod('1.1.0');
