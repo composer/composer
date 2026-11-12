@@ -13,6 +13,7 @@
 namespace Composer\Test\Util;
 
 use Composer\Config;
+use Composer\Downloader\TransportException;
 use Composer\IO\IOInterface;
 use Composer\Util\AuthHelper;
 use Composer\Util\RemoteFilesystem;
@@ -256,6 +257,40 @@ class RemoteFilesystemTest extends TestCase
             });
 
         $fs->getContents('http://example.org', 'http://example.org/packages.json', false);
+    }
+
+    /**
+     * @dataProvider provideFailedResponseHeaders
+     * @param string[] $responseHeaders
+     */
+    public function testErrorMessagesDoNotContainUrlCredentials(array $responseHeaders): void
+    {
+        $fs = $this->getRemoteFilesystemWithMockedMethods(['getRemoteContents']);
+        $fs->expects($this->once())->method('getRemoteContents')
+            ->willReturnCallback(static function ($originUrl, $fileUrl, $ctx, &$http_response_header) use ($responseHeaders): string {
+                $http_response_header = $responseHeaders;
+
+                return '';
+            });
+
+        try {
+            $fs->getContents('example.org', 'https://user:secret@example.org/packages.json', false);
+            self::fail('Expected a TransportException');
+        } catch (TransportException $e) {
+            self::assertStringNotContainsString('secret', $e->getMessage());
+            self::assertStringContainsString('https://user:***@example.org/packages.json', $e->getMessage());
+        }
+    }
+
+    /**
+     * @return array<string, array{string[]}>
+     */
+    public static function provideFailedResponseHeaders(): array
+    {
+        return [
+            'not found' => [['HTTP/1.1 404 Not Found']],
+            'redirect without location' => [['HTTP/1.1 302 Found']],
+        ];
     }
 
     /**

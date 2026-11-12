@@ -433,7 +433,7 @@ class RemoteFilesystem
                     $this->io->overwriteError("Downloading (<error>failed</error>)", false);
                 }
 
-                $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.$http_response_header[0].')', $statusCode);
+                $e = new TransportException('The "'.Url::sanitize($this->fileUrl).'" file could not be downloaded ('.$http_response_header[0].')', $statusCode);
                 $e->setHeaders($http_response_header);
                 $e->setResponse($this->decodeResult($result, $http_response_header));
                 $e->setStatusCode($statusCode);
@@ -469,7 +469,7 @@ class RemoteFilesystem
         // handle copy command if download was successful
         if (false !== $result && null !== $fileName && !$isRedirect) {
             if ('' === $result) {
-                throw new TransportException('"'.$this->fileUrl.'" appears broken, and returned an empty 200 response');
+                throw new TransportException('"'.Url::sanitize($this->fileUrl).'" appears broken, and returned an empty 200 response');
             }
 
             $errorMessage = '';
@@ -484,7 +484,7 @@ class RemoteFilesystem
             $result = (bool) file_put_contents($fileName, $result);
             restore_error_handler();
             if (false === $result) {
-                throw new TransportException('The "'.$this->fileUrl.'" file could not be written to '.$fileName.': '.$errorMessage);
+                throw new TransportException('The "'.Url::sanitize($this->fileUrl).'" file could not be written to '.$fileName.': '.$errorMessage);
             }
         }
 
@@ -502,7 +502,7 @@ class RemoteFilesystem
         }
 
         if (false === $result) {
-            $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded: '.$errorMessage, $errorCode);
+            $e = new TransportException('The "'.Url::sanitize($this->fileUrl).'" file could not be downloaded: '.$errorMessage, $errorCode);
             if (!empty($http_response_header[0])) {
                 $e->setHeaders($http_response_header);
             }
@@ -600,7 +600,7 @@ class RemoteFilesystem
                 if (400 === $messageCode) {
                     // This might happen if your host is secured by ssl client certificate authentication
                     // but you do not send an appropriate certificate
-                    throw new TransportException("The '" . $this->fileUrl . "' URL could not be accessed: " . $message, $messageCode);
+                    throw new TransportException("The '" . Url::sanitize($this->fileUrl) . "' URL could not be accessed: " . $message, $messageCode);
                 }
                 break;
 
@@ -724,7 +724,7 @@ class RemoteFilesystem
         }
 
         if (!$this->retry) {
-            $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded, got redirect without Location ('.$responseHeaders[0].')');
+            $e = new TransportException('The "'.Url::sanitize($this->fileUrl).'" file could not be downloaded, got redirect without Location ('.$responseHeaders[0].')');
             $e->setHeaders($responseHeaders);
             $e->setResponse($this->decodeResult($result, $responseHeaders));
 
