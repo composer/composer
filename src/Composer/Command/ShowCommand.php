@@ -1648,7 +1648,8 @@ EOT
         }
         $withheld = null;
         if ($cooldown !== null && !str_starts_with($package->getVersion(), 'dev-')) {
-            // with prefer-stable, a less stable version is only selected when every stable one in range was withheld or rejected
+            // with prefer-stable, a less stable version is only selected when every stable one in range
+            // was withheld or rejected
             $isStabilityFallback = $latest !== null && $composer->getPackage()->getPreferStable() && BasePackage::STABILITIES[$latest->getStability()] > BasePackage::STABILITIES[$package->getStability()];
             // a waiting release is only worth mentioning if it is newer than what can be installed already
             $baseline = $latest !== null && !$isStabilityFallback && version_compare($latest->getVersion(), $package->getVersion(), '>') ? $latest : $package;
