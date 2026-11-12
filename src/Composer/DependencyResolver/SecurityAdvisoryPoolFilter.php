@@ -23,6 +23,7 @@ use Composer\Policy\PolicyConfig;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositorySet;
+use Composer\Semver\CompilingMatcher;
 use Composer\Semver\Constraint\Constraint;
 
 /**
@@ -124,15 +125,16 @@ class SecurityAdvisoryPoolFilter
             return [];
         }
 
+        $version = $package->getVersion();
         $matchingAdvisories = [];
+
         foreach ($package->getNames(false) as $packageName) {
             if (!isset($advisoryMap[$packageName])) {
                 continue;
             }
 
-            $packageConstraint = new Constraint(Constraint::STR_OP_EQ, $package->getVersion());
             foreach ($advisoryMap[$packageName] as $advisory) {
-                if ($advisory->affectedVersions->matches($packageConstraint)) {
+                if (CompilingMatcher::match($advisory->affectedVersions, Constraint::OP_EQ, $version)) {
                     $matchingAdvisories[] = $advisory;
                 }
             }
