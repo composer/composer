@@ -86,7 +86,7 @@ EOT
         $allowlist = ['name', 'description', 'author', 'type', 'homepage', 'require', 'require-dev', 'stability', 'license', 'autoload'];
         $options = array_filter(array_intersect_key($input->getOptions(), array_flip($allowlist)), static function ($val) { return $val !== null && $val !== []; });
 
-        if (isset($options['name']) && !Preg::isMatch('{^[a-z0-9]([_.-]?[a-z0-9]+)*\/[a-z0-9](([_.]|-{1,2})?[a-z0-9]+)*$}D', $options['name'])) {
+        if (isset($options['name']) && !Preg::isMatch('{^[a-z0-9]([_.-]?[a-z0-9]++)*+\/[a-z0-9](([_.]|-{1,2})?[a-z0-9]++)*+$}D', $options['name'])) {
             throw new \InvalidArgumentException(
                 'The package name '.$options['name'].' is invalid, it should be lowercase and have a vendor name, a forward slash, and a package name, matching: [a-z0-9_.-]+/[a-z0-9_.-]+'
             );
@@ -297,7 +297,7 @@ EOT
                     return $name;
                 }
 
-                if (!Preg::isMatch('{^[a-z0-9]([_.-]?[a-z0-9]+)*\/[a-z0-9](([_.]|-{1,2})?[a-z0-9]+)*$}D', $value)) {
+                if (!Preg::isMatch('{^[a-z0-9]([_.-]?[a-z0-9]++)*+\/[a-z0-9](([_.]|-{1,2})?[a-z0-9]++)*+$}D', $value)) {
                     throw new \InvalidArgumentException(
                         'The package name '.$value.' is invalid, it should be lowercase and have a vendor name, a forward slash, and a package name, matching: [a-z0-9_.-]+/[a-z0-9_.-]+'
                     );
