@@ -164,6 +164,90 @@ class CooldownPoolFilterTest extends TestCase
         $this->assertSame([$devPackage], $filteredPool->getPackages());
     }
 
+    public function testDevBranchIsWithheldWhenEveryMatchingReleaseIsWithheld(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $release = new Package('vendor/pkg', '1.0.0.0', '1.0.0');
+        $release->setPublishedDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+        $branch = new Package('vendor/pkg', '1.9999999.9999999-dev', '1.x-dev');
+        $branch->setPublishedDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+
+        $request = new Request();
+        $request->requireName('vendor/pkg', new Constraint('>=', '1.0.0.0'));
+
+        $filteredPool = $filter->filter(new Pool([$release, $branch]), $request);
+
+        $this->assertSame([], $filteredPool->getPackages());
+        $this->assertSame(PolicyRemovalReason::COOLDOWN, self::getRemovalType($filteredPool, 'vendor/pkg', '1.9999999.9999999-dev'));
+    }
+
+    public function testDevBranchIsKeptWhenAReleaseSatisfyingTheRequirementClearedTheCooldown(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $oldRelease = new Package('vendor/pkg', '1.0.0.0', '1.0.0');
+        $oldRelease->setPublishedDate(new DateTimeImmutable('2020-01-01 12:00:00'));
+        $newRelease = new Package('vendor/pkg', '1.1.0.0', '1.1.0');
+        $newRelease->setPublishedDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+        $branch = new Package('vendor/pkg', '1.9999999.9999999-dev', '1.x-dev');
+        $branch->setPublishedDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+
+        $request = new Request();
+        $request->requireName('vendor/pkg', new Constraint('>=', '1.0.0.0'));
+
+        $filteredPool = $filter->filter(new Pool([$oldRelease, $newRelease, $branch]), $request);
+
+        $this->assertSame([$oldRelease, $branch], $filteredPool->getPackages());
+    }
+
+    public function testDevBranchRequiredDirectlyIsKeptWhenAllReleasesAreWithheld(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $release = new Package('vendor/pkg', '1.0.0.0', '1.0.0');
+        $release->setPublishedDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+        $branch = new Package('vendor/pkg', 'dev-main', 'dev-main');
+        $branch->setPublishedDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+
+        $request = new Request();
+        $request->requireName('vendor/pkg', new Constraint('==', 'dev-main'));
+
+        $filteredPool = $filter->filter(new Pool([$release, $branch]), $request);
+
+        $this->assertSame([$branch], $filteredPool->getPackages());
+    }
+
+    public function testDevBranchWithheldByATransitiveRequirement(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $release = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
+        $release->setPublishedDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+        $branch = new Package('vendor/pkg', '2.9999999.9999999-dev', '2.x-dev');
+        $branch->setPublishedDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+
+        $dependent = new Package('vendor/dependent', '1.0.0.0', '1.0.0');
+        $dependent->setPublishedDate(new DateTimeImmutable('2020-01-01 12:00:00'));
+        $dependent->setRequires(['vendor/pkg' => new Link('vendor/dependent', 'vendor/pkg', new Constraint('>=', '2.0.0.0'), Link::TYPE_REQUIRE, '^2.0')]);
+
+        $request = new Request();
+        $request->requireName('vendor/dependent', new MatchAllConstraint());
+
+        $filteredPool = $filter->filter(new Pool([$release, $branch, $dependent]), $request);
+
+        $this->assertSame([$dependent], $filteredPool->getPackages());
+        $this->assertSame(PolicyRemovalReason::COOLDOWN, self::getRemovalType($filteredPool, 'vendor/pkg', '2.9999999.9999999-dev'));
+    }
+
     public function testPackagesWithoutReleaseDateAreNotFiltered(): void
     {
         $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600);

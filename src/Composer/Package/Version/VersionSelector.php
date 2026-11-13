@@ -259,24 +259,44 @@ class VersionSelector
         $alreadySeenNames = [];
         /** @var array<string, true> $acceptedNames */
         $acceptedNames = [];
-        $result = [];
+        /** @var array<string, array<string, true>> $withheldReleases */
+        $withheldReleases = [];
+        /** @var array<string, array<string, true>> $keptReleases */
+        $keptReleases = [];
+        /** @var array<int, true> $kept */
+        $kept = [];
+        /** @var list<PackageInterface> $devCandidates */
+        $devCandidates = [];
 
         foreach ($candidates as $pkg) {
             // decide on the aliased package, as the pool filter does
             $target = $pkg instanceof AliasPackage ? $pkg->getAliasOf() : $pkg;
-            if ($target->isDev() || $cooldown->isIgnored($target, 'block')) {
-                $result[] = $pkg;
+            if ($cooldown->isIgnored($target, 'block')) {
+                $kept[spl_object_id($pkg)] = true;
                 $acceptedNames[$pkg->getName()] = true;
+                if (!$target->isDev()) {
+                    $keptReleases[$target->getName()][$target->getVersion()] = true;
+                }
+                continue;
+            }
+
+            // Dev versions are mutable and have no release of their own, they are only
+            // withheld when they would stand in for releases the cooldown removed, see below
+            if ($target->isDev()) {
+                $devCandidates[] = $pkg;
                 continue;
             }
 
             $cooldown->assertPublishedTimeProvided($target);
             $releaseDate = $cooldown->getEffectiveDate($target);
             if ($releaseDate === null || !$cooldown->isWithinCooldown($releaseDate, $now)) {
-                $result[] = $pkg;
+                $kept[spl_object_id($pkg)] = true;
                 $acceptedNames[$pkg->getName()] = true;
+                $keptReleases[$target->getName()][$target->getVersion()] = true;
                 continue;
             }
+
+            $withheldReleases[$target->getName()][$target->getVersion()] = true;
 
             if ($this->firstClearingWithheldCandidate === null || $releaseDate < $this->firstClearingWithheldCandidate['releaseDate']) {
                 $this->firstClearingWithheldCandidate = ['package' => $pkg, 'releaseDate' => $releaseDate];
@@ -303,6 +323,48 @@ class VersionSelector
                     true,
                     $isLatestVersion ? IOInterface::NORMAL : IOInterface::VERBOSE
                 );
+            }
+        }
+
+        // A dev branch has no waiting period, so it must not stand in for releases the cooldown
+        // withheld. The candidates are already constrained, so a branch is only withheld when the
+        // requirement matches a withheld release and no release past the cooldown matches, which
+        // keeps a requirement asking for the branch itself working
+        foreach ($devCandidates as $pkg) {
+            $target = $pkg instanceof AliasPackage ? $pkg->getAliasOf() : $pkg;
+            $name = $target->getName();
+
+            if (!isset($withheldReleases[$name]) || isset($keptReleases[$name])) {
+                $kept[spl_object_id($pkg)] = true;
+                continue;
+            }
+
+            $branchDate = $cooldown->getEffectiveDate($target);
+            if ($branchDate === null || !$cooldown->isWithinCooldown($branchDate, $now)) {
+                $kept[spl_object_id($pkg)] = true;
+                continue;
+            }
+
+            if ($io !== null && ($showWarnings === true || (is_callable($showWarnings) && $showWarnings($pkg)))) {
+                $reason = PolicyRemovalReason::cooldown(
+                    $pkg->getName(),
+                    $pkg->getPrettyVersion(),
+                    $branchDate->format(\DateTimeInterface::ATOM),
+                    $cooldown->formatTimeUntilAvailable($branchDate, $now),
+                    $target->getPublishedDate() !== null ? 'published-time' : 'time'
+                );
+                $io->writeError(
+                    '<warning>Cannot use '.$pkg->getPrettyName().' '.$pkg->getPrettyVersion().' as it '.$reason->getVerb(false).' '.$reason->getDescription().'.</>',
+                    true,
+                    IOInterface::VERBOSE
+                );
+            }
+        }
+
+        $result = [];
+        foreach ($candidates as $pkg) {
+            if (isset($kept[spl_object_id($pkg)])) {
+                $result[] = $pkg;
             }
         }
 
