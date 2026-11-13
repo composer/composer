@@ -29,7 +29,12 @@ use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositorySet;
+use Composer\Advisory\PartialSecurityAdvisory;
+use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\ConstraintInterface;
+use Composer\Semver\Constraint\MatchNoneConstraint;
 use Composer\Semver\Constraint\MultiConstraint;
+use Composer\Semver\Interval;
 use Composer\Semver\Intervals;
 use Composer\Util\HttpDownloader;
 use Composer\Advisory\Auditor;
@@ -86,6 +91,7 @@ class UpdateCommand extends BaseCommand
                 new InputOption('prefer-lowest', null, InputOption::VALUE_NONE, 'Prefer lowest versions of dependencies (can also be set via the COMPOSER_PREFER_LOWEST=1 env var).'),
                 new InputOption('minimal-changes', 'm', InputOption::VALUE_NONE, 'Only perform absolutely necessary changes to dependencies. If packages cannot be kept at their currently locked version they are updated. For partial updates the allow-listed packages are always updated fully. (can also be set via the COMPOSER_MINIMAL_CHANGES=1 env var).'),
                 new InputOption('patch-only', null, InputOption::VALUE_NONE, 'Only allow patch version updates for currently installed dependencies.'),
+                new InputOption('vulnerable-only', null, InputOption::VALUE_NONE, 'Restricts the update to locked packages affected by security advisories (implies --with-all-dependencies and --minimal-changes).'),
                 new InputOption('interactive', 'i', InputOption::VALUE_NONE, 'Interactive interface with autocompletion to select the packages to update.'),
                 new InputOption('root-reqs', null, InputOption::VALUE_NONE, 'Restricts the update to your first degree dependencies.'),
                 new InputOption('bump-after-update', null, InputOption::VALUE_OPTIONAL, 'Runs bump after performing the update.', false, ['dev', 'no-dev', 'all']),
@@ -141,6 +147,29 @@ EOT
         }
 
         $packages = $input->getArgument('packages');
+
+        $vulnerableConstraints = [];
+        if ($input->getOption('vulnerable-only')) {
+            if (count($packages) > 0) {
+                throw new \InvalidArgumentException('--vulnerable-only cannot be combined with package arguments.');
+            }
+            if ($input->getOption('interactive') || $input->getOption('root-reqs') || $input->getOption('lock')) {
+                throw new \InvalidArgumentException('--vulnerable-only cannot be combined with --interactive, --root-reqs or --lock.');
+            }
+            if (!$composer->getLocker()->isLocked()) {
+                throw new \UnexpectedValueException('A valid composer.lock file is required to run this command with --vulnerable-only.');
+            }
+
+            $vulnerableConstraints = $this->getVulnerablePackageConstraints($composer, $input);
+            $packages = array_keys($vulnerableConstraints);
+
+            if (count($packages) === 0) {
+                $io->writeError('<info>No packages with known security vulnerabilities found in composer.lock.</info>');
+            } else {
+                $io->writeError('<info>Updating vulnerable packages: '.implode(', ', $packages).'</info>');
+            }
+        }
+
         $reqs = $this->formatRequirements($input->getOption('with'));
 
         // extract --with shorthands from the allowlist
@@ -217,6 +246,14 @@ EOT
             }
         }
 
+        foreach ($vulnerableConstraints as $package => $constraint) {
+            if (isset($temporaryConstraints[$package])) {
+                $temporaryConstraints[$package] = MultiConstraint::create([$temporaryConstraints[$package], $constraint], true);
+            } else {
+                $temporaryConstraints[$package] = $constraint;
+            }
+        }
+
         if ($input->getOption('interactive')) {
             $packages = $this->getPackagesInteractively($io, $input, $output, $composer, $packages);
         }
@@ -239,7 +276,8 @@ EOT
         $filteredPackages = array_filter($packages, static function ($package): bool {
             return !in_array($package, ['lock', 'nothing', 'mirrors'], true);
         });
-        $updateMirrors = $input->getOption('lock') || count($filteredPackages) !== count($packages);
+        // an empty allow list would update everything, so with nothing vulnerable only the lock file metadata is refreshed
+        $updateMirrors = $input->getOption('lock') || count($filteredPackages) !== count($packages) || ($input->getOption('vulnerable-only') && count($filteredPackages) === 0);
         $packages = $filteredPackages;
 
         if ($updateMirrors && !empty($packages)) {
@@ -263,14 +301,15 @@ EOT
         $strictPsrAutoloader = $input->getOption('strict-psr-autoloader') || $config->get('strict-psr-autoloader');
         $apcuPrefix = $input->getOption('apcu-autoloader-prefix');
         $apcu = $apcuPrefix !== null || $input->getOption('apcu-autoloader') || $config->get('apcu-autoloader');
-        $minimalChanges = $input->getOption('minimal-changes') || $config->get('update-with-minimal-changes');
+        // vulnerable packages may need their dependencies or dependents bumped, but everything else should change as little as possible
+        $minimalChanges = $input->getOption('minimal-changes') || $config->get('update-with-minimal-changes') || $input->getOption('vulnerable-only');
 
         if ($strictPsrAutoloader && !$optimize && !$authoritative) {
             throw new \InvalidArgumentException('--strict-psr-autoloader mode only works with optimized autoloader, use --optimize-autoloader or --classmap-authoritative if you want a strict return value.');
         }
 
         $updateAllowTransitiveDependencies = Request::UPDATE_ONLY_LISTED;
-        if ($input->getOption('with-all-dependencies')) {
+        if ($input->getOption('with-all-dependencies') || $input->getOption('vulnerable-only')) {
             $updateAllowTransitiveDependencies = Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS;
         } elseif ($input->getOption('with-dependencies')) {
             $updateAllowTransitiveDependencies = Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE;
@@ -343,6 +382,65 @@ EOT
         }
 
         return $result;
+    }
+
+    /**
+     * @return array<string, ConstraintInterface> vulnerable package names => constraint excluding all their affected versions
+     */
+    private function getVulnerablePackageConstraints(Composer $composer, InputInterface $input): array
+    {
+        $repositorySet = new RepositorySet();
+        foreach ($composer->getRepositoryManager()->getRepositories() as $repository) {
+            $repositorySet->addRepository($repository);
+        }
+
+        $lockedPackages = $composer->getLocker()->getLockedRepository(!$input->getOption('no-dev'))->getPackages();
+        $advisories = (new Auditor())->findAdvisories($repositorySet, $this->createPolicyConfig($composer->getConfig(), $input), $lockedPackages, false, false)['advisories'];
+
+        $constraints = [];
+        foreach ($advisories as $packageName => $packageAdvisories) {
+            $affectedVersions = MultiConstraint::create(array_map(static function (PartialSecurityAdvisory $advisory): ConstraintInterface {
+                return $advisory->affectedVersions;
+            }, $packageAdvisories), false);
+            $constraints[$packageName] = self::getComplementConstraint($affectedVersions);
+        }
+
+        return $constraints;
+    }
+
+    /**
+     * Returns a constraint matching all non-dev versions which the given constraint does not match
+     */
+    private static function getComplementConstraint(ConstraintInterface $constraint): ConstraintInterface
+    {
+        $zero = Interval::fromZero();
+        $infinity = Interval::untilPositiveInfinity();
+        $invert = static function (Constraint $bound): Constraint {
+            $inverseOperators = ['>=' => '<', '>' => '<=', '<' => '>=', '<=' => '>'];
+            if (!isset($inverseOperators[$bound->getOperator()])) {
+                throw new \LogicException('Unexpected interval bound '.$bound);
+            }
+
+            return new Constraint($inverseOperators[$bound->getOperator()], $bound->getVersion());
+        };
+
+        $parts = [];
+        $lowerBound = $zero;
+        foreach (Intervals::get($constraint)['numeric'] as $interval) {
+            if ((string) $interval->getStart() !== (string) $zero) {
+                $parts[] = MultiConstraint::create([$lowerBound, $invert($interval->getStart())], true);
+            }
+            if ((string) $interval->getEnd() === (string) $infinity) {
+                $lowerBound = null;
+                break;
+            }
+            $lowerBound = $invert($interval->getEnd());
+        }
+        if ($lowerBound !== null) {
+            $parts[] = $lowerBound;
+        }
+
+        return count($parts) > 0 ? MultiConstraint::create($parts, false) : new MatchNoneConstraint();
     }
 
     /**
