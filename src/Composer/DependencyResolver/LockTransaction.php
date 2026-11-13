@@ -135,7 +135,7 @@ class LockTransaction extends Transaction
                 continue;
             }
 
-            if ($presentPackage->getSourceReference() === null) {
+            if ($presentPackage->getSourceReference() === null && $presentPackage->getDistReference() === null) {
                 continue;
             }
 
