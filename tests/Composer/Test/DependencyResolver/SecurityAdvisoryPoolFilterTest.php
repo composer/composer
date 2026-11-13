@@ -148,6 +148,41 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
         $this->assertCount(0, self::getRemovals($filteredPool, PolicyRemovalReason::ADVISORIES));
     }
 
+    public function testIgnoreRulesMatchVersionConstraintAndWildcard(): void
+    {
+        $policyConfig = self::policyConfig(
+            true,
+            true,
+            IgnorePackageRule::parseIgnoreMap(['acme/package' => ['constraint' => '^2.0'], 'other/*' => null]),
+            IgnorePackageRule::parseIgnoreMap(['acme/abandoned' => ['constraint' => '^2.0']])
+        );
+        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $policyConfig, new NullIO());
+
+        $repository = new PackageRepository([
+            'package' => [],
+            'security-advisories' => [
+                'acme/package' => [$this->generateSecurityAdvisory('acme/package', 'CVE-2024-1234', '>=1.0.0,<3.0.0')],
+                'other/package' => [$this->generateSecurityAdvisory('other/package', 'CVE-2024-5678', '>=1.0.0,<3.0.0')],
+            ],
+        ]);
+        $abandoned1 = new CompletePackage('acme/abandoned', '1.0.0.0', '1.0');
+        $abandoned1->setAbandoned(true);
+        $abandoned2 = new CompletePackage('acme/abandoned', '2.0.0.0', '2.0');
+        $abandoned2->setAbandoned(true);
+        $pool = new Pool([
+            new Package('acme/package', '1.0.0.0', '1.0'),
+            $expectedPackage1 = new Package('acme/package', '2.0.0.0', '2.0'),
+            $expectedPackage2 = new Package('other/package', '1.0.0.0', '1.0'),
+            $abandoned1,
+            $abandoned2,
+        ]);
+        $filteredPool = $filter->filter($pool, [$repository], new Request());
+
+        $this->assertSame([$expectedPackage1, $expectedPackage2, $abandoned2], $filteredPool->getPackages());
+        $this->assertSame(PolicyRemovalReason::ADVISORIES, self::getRemovalType($filteredPool, 'acme/package', '1.0.0.0'));
+        $this->assertSame(PolicyRemovalReason::ABANDONED, self::getRemovalType($filteredPool, 'acme/abandoned', '1.0.0.0'));
+    }
+
     public function testDontFilterPackagesWithAbandonedPackage(): void
     {
         $packageNameIgnoreAbandoned = 'acme/ignore-abandoned';
