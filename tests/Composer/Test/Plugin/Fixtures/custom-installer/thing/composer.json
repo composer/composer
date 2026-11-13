@@ -1,0 +1,9 @@
+{
+    "name": "acme/thing",
+    "version": "1.0.0",
+    "type": "acme-plugin",
+    "autoload": {
+        "psr-4": { "Acme\\Thing\\": "src/" },
+        "classmap": ["thing.php", "sub/"]
+    }
+}
