@@ -247,6 +247,11 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
 * **--interactive:** Interactive interface with autocompletion to select the packages to update.
 * **--root-reqs:** Restricts the update to your first degree dependencies.
 * **--bump-after-update:** Runs `bump` after performing the update. Set to `dev` or `no-dev` to only bump those dependencies.
+* **--format (-f):** Lets you pick between text (default) or json output format. With json,
+  the lock file operations (installs, updates and uninstalls with their from/to versions and
+  references, and whether the package is a direct dependency) are written to stdout as JSON,
+  while the regular output stays on stderr. Combine with `--dry-run` to get a report of what
+  an update would change without applying it.
 
 Specifying one of the words `mirrors`, `lock`, or `nothing` as an argument has the same effect as specifying the option `--lock`, for example `composer update mirrors` is exactly the same as `composer update --lock`.
 
