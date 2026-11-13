@@ -14,6 +14,7 @@ namespace Composer\IO;
 
 use Composer\Config;
 use Composer\Pcre\Preg;
+use Composer\Plugin\Capability\AuthenticationProvider;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Silencer;
 use Psr\Log\LogLevel;
@@ -22,6 +23,9 @@ abstract class BaseIO implements IOInterface
 {
     /** @var array<string, array{username: string|null, password: string|null}> */
     protected $authentications = [];
+
+    /** @var AuthenticationProvider[] */
+    private $authenticationProviders = [];
 
     /**
      * @inheritDoc
@@ -44,7 +48,17 @@ abstract class BaseIO implements IOInterface
      */
     public function hasAuthentication($repositoryName)
     {
-        return isset($this->authentications[$repositoryName]);
+        if (isset($this->authentications[$repositoryName])) {
+            return true;
+        }
+
+        foreach ($this->authenticationProviders as $provider) {
+            if ($provider->getAuthentication($repositoryName) !== null) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -56,6 +70,13 @@ abstract class BaseIO implements IOInterface
             return $this->authentications[$repositoryName];
         }
 
+        foreach ($this->authenticationProviders as $provider) {
+            $authentication = $provider->getAuthentication($repositoryName);
+            if ($authentication !== null) {
+                return $authentication;
+            }
+        }
+
         return ['username' => null, 'password' => null];
     }
 
@@ -65,6 +86,25 @@ abstract class BaseIO implements IOInterface
     public function setAuthentication($repositoryName, $username, $password = null)
     {
         $this->authentications[$repositoryName] = ['username' => $username, 'password' => $password];
+    }
+
+    /**
+     * Register authentication providers, used as a fallback source of
+     * credentials for origins without locally set authentication.
+     *
+     * @param AuthenticationProvider[] $providers
+     *
+     * @return void
+     */
+    public function setAuthenticationProviders(array $providers)
+    {
+        foreach ($providers as $provider) {
+            if (!$provider instanceof AuthenticationProvider) {
+                throw new \InvalidArgumentException('Authentication providers must implement '.AuthenticationProvider::class);
+            }
+        }
+
+        $this->authenticationProviders = $providers;
     }
 
     /**
