@@ -33,14 +33,14 @@ setlocale(LC_ALL, 'C');
 require __DIR__.'/../src/bootstrap.php';
 
 use Composer\Console\Application;
-use Composer\XdebugHandler\XdebugHandler;
 use Composer\Util\Platform;
 use Composer\Util\ErrorHandler;
+use Composer\Util\ProcessRestarter;
 
 error_reporting(-1);
 
 // Restart without Xdebug
-$xdebug = new XdebugHandler('Composer');
+$xdebug = new ProcessRestarter('Composer');
 $xdebug->check();
 unset($xdebug);
 
