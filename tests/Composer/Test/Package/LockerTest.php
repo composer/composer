@@ -313,6 +313,36 @@ class LockerTest extends TestCase
         self::assertSame('2026-01-02T00:00:00+00:00', $written['packages'][0]['published-time']);
     }
 
+    public function testSetLockDataSkipsVcsTimeLookupForOptionLikeReference(): void
+    {
+        $json = $this->createJsonFileMock();
+        $inst = $this->createInstallationManagerMock();
+        $inst->method('getInstallPath')->willReturn(__DIR__);
+        $process = $this->getProcessExecutorMock();
+        $process->expects([], true);
+
+        $locker = new Locker(new NullIO, $json, $inst, $this->getJsonContent(), $process);
+
+        $package = self::getPackage('pkg1', 'dev-main');
+        $package->setInstallationSource('source');
+        $package->setSourceType('git');
+        $package->setSourceUrl('https://example.org/pkg1.git');
+        $package->setSourceReference('--output=/tmp/composer-locker-test');
+
+        $written = null;
+        $json
+            ->expects($this->once())
+            ->method('write')
+            ->willReturnCallback(static function (array $data) use (&$written): void {
+                $written = $data;
+            });
+
+        $locker->setLockData([$package], [], [], [], [], 'dev', [], false, false, []);
+
+        self::assertNotNull($written);
+        self::assertArrayNotHasKey('time', $written['packages'][0]);
+    }
+
     public function testSetLockDataRemovesRestorableHttpHeaders(): void
     {
         $json = $this->createJsonFileMock();
