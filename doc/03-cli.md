@@ -1164,6 +1164,24 @@ Lists the name, version and license of every package installed. Use
 * **--format:** Format of the output: text, json or summary (default: "text").
 * **--no-dev:** Remove dev dependencies from the output.
 
+## sbom
+
+Outputs a Software Bill of Materials (SBOM) of every package installed, with
+their versions, licenses, source and dist references and dependency
+relationships. Packages installed through require-dev get the `optional` scope
+in the CycloneDX output.
+
+```shell
+php composer.phar sbom --locked > sbom.cdx.json
+```
+
+### Options
+
+* **--locked:** Use the lock file, regardless of what is currently in vendor dir.
+* **--format (-f):** Format of the output: `cyclonedx` (CycloneDX 1.6 JSON) or
+  `spdx` (SPDX 2.3 JSON) (default: "cyclonedx").
+* **--no-dev:** Remove dev dependencies from the output.
+
 ## run-script / run
 
 To run [scripts](articles/scripts.md) manually you can use this command,
