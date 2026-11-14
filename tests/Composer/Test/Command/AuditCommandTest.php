@@ -76,6 +76,18 @@ class AuditCommandTest extends TestCase
         );
     }
 
+    public function testSuccessfulResponseCodeWhenOnlyPlatformPackagesAreRequired(): void
+    {
+        $this->initTempComposer(['require' => ['php' => '*'], 'require-dev' => ['ext-json' => '*']]);
+        $this->createComposerLock();
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'audit', '--locked' => true]);
+
+        $appTester->assertCommandIsSuccessful();
+        self::assertEquals('No packages - skipping audit.', trim($appTester->getDisplay(true)));
+    }
+
     public function testAuditPackageWithNoDevOptionPassed(): void
     {
         $this->initTempComposer();
