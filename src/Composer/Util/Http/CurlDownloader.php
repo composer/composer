@@ -21,6 +21,7 @@ use Composer\Util\StreamContextFactory;
 use Composer\Util\AuthHelper;
 use Composer\Util\Url;
 use Composer\Util\HttpDownloader;
+use Composer\Util\Platform;
 use React\Promise\Promise;
 
 /**
@@ -214,7 +215,8 @@ class CurlDownloader
         curl_setopt($curlHandle, CURLOPT_ENCODING, ""); // let cURL set the Accept-Encoding header to what it supports
         curl_setopt($curlHandle, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
 
-        if (null !== $hostKey) {
+        // CURLOPT_CERTINFO crashes the process on PHP < 5.5 on Windows, skip the chain check there
+        if (null !== $hostKey && (PHP_VERSION_ID >= 50500 || !Platform::isWindows())) {
             curl_setopt($curlHandle, CURLOPT_CERTINFO, true);
             if (\defined('CURLOPT_PREREQFUNCTION')) {
                 // runs after the TLS handshake but before the request and its credentials are sent
