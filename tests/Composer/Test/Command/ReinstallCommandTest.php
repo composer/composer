@@ -14,10 +14,18 @@ namespace Composer\Test\Command;
 
 use Composer\Exception\SecurityException;
 use Composer\Test\TestCase;
+use Composer\Util\Platform;
 use Generator;
 
 class ReinstallCommandTest extends TestCase
 {
+    public function tearDown(): void
+    {
+        parent::tearDown();
+        Platform::clearEnv('COMPOSER_TEST_PRE_AUTOLOAD_DUMP');
+        Platform::clearEnv('COMPOSER_TEST_POST_AUTOLOAD_DUMP');
+    }
+
     /**
      * @dataProvider caseProvider
      * @param array<mixed> $options
@@ -74,6 +82,63 @@ class ReinstallCommandTest extends TestCase
             '--no-plugins' => true,
             'packages' => ['root/*'],
         ]);
+    }
+
+    /**
+     * @dataProvider autoloadDumpEventsProvider
+     * @param array<mixed> $options
+     */
+    public function testReinstallDispatchesAutoloadDumpEvents(array $options, string $expected): void
+    {
+        $this->initTempComposer([
+            'require' => [
+                'root/req' => '1.*',
+            ],
+            'scripts' => [
+                'pre-autoload-dump' => '@putenv COMPOSER_TEST_PRE_AUTOLOAD_DUMP=1',
+                'post-autoload-dump' => '@putenv COMPOSER_TEST_POST_AUTOLOAD_DUMP=1',
+            ],
+        ]);
+
+        $package = self::getPackage('root/req');
+        $package->setType('metapackage');
+
+        $this->createComposerLock([$package]);
+        $this->createInstalledJson([$package]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(array_merge([
+            'command' => 'reinstall',
+            '--no-progress' => true,
+            '--no-plugins' => true,
+            'packages' => ['root/req'],
+        ], $options));
+
+        $appTester->assertCommandIsSuccessful();
+        self::assertSame($expected, trim($appTester->getDisplay(true)));
+    }
+
+    public function autoloadDumpEventsProvider(): Generator
+    {
+        yield 'scripts run around the autoloader dump' => [
+            [],
+'- Removing root/req (1.0.0)
+  - Installing root/req (1.0.0)
+> @putenv COMPOSER_TEST_PRE_AUTOLOAD_DUMP=1
+> @putenv COMPOSER_TEST_POST_AUTOLOAD_DUMP=1',
+        ];
+
+        yield 'scripts do not run with --no-scripts' => [
+            ['--no-scripts' => true],
+'- Removing root/req (1.0.0)
+  - Installing root/req (1.0.0)',
+        ];
+
+        yield 'scripts do not run with --no-autoloader' => [
+            ['--no-autoloader' => true],
+'- Removing root/req (1.0.0)
+  - Installing root/req (1.0.0)',
+        ];
     }
 
     public function caseProvider(): Generator
