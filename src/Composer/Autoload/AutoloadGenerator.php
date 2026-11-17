@@ -1212,15 +1212,19 @@ HEADER;
 
         $filesystem = new Filesystem();
 
-        $vendorPathCode = ' => ' . $filesystem->findShortestPathCode(realpath($targetDir), $vendorPath, true, true) . " . '/";
+        $vendorDirCode = ' => ' . $filesystem->findShortestPathCode(realpath($targetDir), $vendorPath, true, true);
+        $vendorPathCode = $vendorDirCode . " . '/";
         $vendorPharPathCode = ' => \'phar://\' . ' . $filesystem->findShortestPathCode(realpath($targetDir), $vendorPath, true, true) . " . '/";
         $appBaseDirCode = ' => ' . $filesystem->findShortestPathCode(realpath($targetDir), $basePath, true, true) . " . '/";
         $appBaseDirPharCode = ' => \'phar://\' . ' . $filesystem->findShortestPathCode(realpath($targetDir), $basePath, true, true) . " . '/";
 
-        $absoluteVendorPathCode = ' => ' . substr(var_export(rtrim($vendorDir, '\\/') . '/', true), 0, -1);
-        $absoluteVendorPharPathCode = ' => ' . substr(var_export(rtrim('phar://' . $vendorDir, '\\/') . '/', true), 0, -1);
-        $absoluteAppBaseDirCode = ' => ' . substr(var_export(rtrim($baseDir, '\\/') . '/', true), 0, -1);
-        $absoluteAppBaseDirPharCode = ' => ' . substr(var_export(rtrim('phar://' . $baseDir, '\\/') . '/', true), 0, -1);
+        // paths are built as $vendorDir . '/path' (or $vendorDir . '' for the vendor dir itself), so match them as such,
+        // without trimming: $vendorDir and $baseDir end with a separator when they are a filesystem root like W:\
+        $absoluteVendorDirCode = ' => ' . var_export($vendorDir, true);
+        $absoluteVendorPathCode = ' => ' . substr(var_export($vendorDir . '/', true), 0, -1);
+        $absoluteVendorPharPathCode = ' => ' . substr(var_export('phar://' . $vendorDir . '/', true), 0, -1);
+        $absoluteAppBaseDirCode = ' => ' . substr(var_export($baseDir . '/', true), 0, -1);
+        $absoluteAppBaseDirPharCode = ' => ' . substr(var_export('phar://' . $baseDir . '/', true), 0, -1);
 
         $initializer = '';
         $prefix = "\0Composer\Autoload\ClassLoader\0";
@@ -1242,6 +1246,7 @@ HEADER;
             $value = strtr(
                 var_export($value, true),
                 [
+                    $absoluteVendorDirCode => $vendorDirCode,
                     $absoluteVendorPathCode => $vendorPathCode,
                     $absoluteVendorPharPathCode => $vendorPharPathCode,
                     $absoluteAppBaseDirCode => $appBaseDirCode,
