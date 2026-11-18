@@ -1027,8 +1027,7 @@ You give it a `composer.json` containing repositories, typically VCS and
 package repository definitions. It will fetch all the packages that are
 `require`d and dump a `packages.json` that is your `composer` repository.
 
-Check [the satis GitHub repository](https://github.com/composer/satis) and
-the [handling private packages article](articles/handling-private-packages.md) for more
+Check the [Satis documentation](https://composer.github.io/satis/) for more
 information.
 
 ## Disabling Packagist.org
