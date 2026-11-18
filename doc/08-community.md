@@ -30,7 +30,7 @@ The IRC channel is on irc.libera.chat: [#composer](ircs://irc.libera.chat:6697/c
 collection of Composer related questions.
 
 For paid support, we do provide Composer-related support via chat and email to
-[Private Packagist](https://packagist.com) customers.
+[Private Packagist](https://packagist.com/?utm_source=getcomposer.org&utm_medium=docs&utm_campaign=community) customers.
 
 
 &larr; [Runtime](07-runtime.md)
