@@ -40,6 +40,18 @@ class PathRepositoryTest extends TestCase
         self::assertTrue($repository->hasPackage(self::getPackage('test/path-versioned', '0.0.2')));
     }
 
+    public function testLoadPackageFromFileSystemIgnoresPublishedTime(): void
+    {
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', 'with-published-time']);
+        $repository = $this->createPathRepo(['url' => $repositoryUrl]);
+        $packages = $repository->getPackages();
+
+        self::assertCount(1, $packages);
+        self::assertSame('test/path-published-time', $packages[0]->getName());
+        // a publication date can only come from a Composer repository, not from the package itself
+        self::assertNull($packages[0]->getPublishedDate());
+    }
+
     public function testLoadPackageFromFileSystemWithoutVersion(): void
     {
         $repositoryUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', 'without-version']);
@@ -60,18 +72,14 @@ class PathRepositoryTest extends TestCase
         $repositoryUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', '*']);
         $repository = $this->createPathRepo(['url' => $repositoryUrl]);
         $packages = $repository->getPackages();
-        $names = [];
 
-        self::assertGreaterThanOrEqual(2, $repository->count());
+        self::assertGreaterThanOrEqual(3, $repository->count());
 
-        $package = $packages[0];
-        $names[] = $package->getName();
-
-        $package = $packages[1];
-        $names[] = $package->getName();
-
+        $names = array_values(array_unique(array_map(static function ($package): string {
+            return $package->getName();
+        }, $packages)));
         sort($names);
-        self::assertEquals(['test/path-unversioned', 'test/path-versioned'], $names);
+        self::assertEquals(['test/path-published-time', 'test/path-unversioned', 'test/path-versioned'], $names);
     }
 
     public function testLoadPackageWithExplicitVersions(): void
@@ -80,6 +88,7 @@ class PathRepositoryTest extends TestCase
             'versions' => [
                 'test/path-unversioned' => '4.3.2.1',
                 'test/path-versioned' => '3.2.1.0',
+                'test/path-published-time' => '2.1.0.0',
             ],
         ];
         $repositoryUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', '*']);
@@ -88,16 +97,14 @@ class PathRepositoryTest extends TestCase
 
         $versions = [];
 
-        self::assertEquals(2, $repository->count());
+        self::assertEquals(3, $repository->count());
 
-        $package = $packages[0];
-        $versions[$package->getName()] = $package->getVersion();
-
-        $package = $packages[1];
-        $versions[$package->getName()] = $package->getVersion();
+        foreach ($packages as $package) {
+            $versions[$package->getName()] = $package->getVersion();
+        }
 
         ksort($versions);
-        self::assertSame(['test/path-unversioned' => '4.3.2.1', 'test/path-versioned' => '3.2.1.0'], $versions);
+        self::assertSame(['test/path-published-time' => '2.1.0.0', 'test/path-unversioned' => '4.3.2.1', 'test/path-versioned' => '3.2.1.0'], $versions);
     }
 
     /**

@@ -13,6 +13,7 @@
 namespace Composer\Test\Downloader;
 
 use Composer\Downloader\FileDownloader;
+use Composer\Downloader\TransportException;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PreFileDownloadEvent;
@@ -80,6 +81,45 @@ class FileDownloaderTest extends TestCase
             }
             self::assertInstanceOf('RuntimeException', $e);
             self::assertStringContainsString('exists and is not a directory', $e->getMessage());
+        }
+    }
+
+    public function testInstallDoesNotChmodBinOutsideOfPackage(): void
+    {
+        $rootDir = self::getUniqueTmpDirectory();
+        $vendorDir = $rootDir.'/vendor';
+        $path = $vendorDir.'/attacker/pkg';
+
+        $package = self::getPackage();
+        $package->setDistUrl('http://example.com/script.js');
+        // a ".." bin which never went through ValidatingArrayLoader::validatePackage(), as is the
+        // case for composer reinstall which builds its operations straight from installed.json
+        $package->setBinaries(['../../../victim.sh']);
+
+        $victim = $rootDir.'/victim.sh';
+        file_put_contents($victim, "#!/bin/sh\necho pwned\n");
+        chmod($victim, 0600);
+        clearstatcache();
+        $modeBefore = fileperms($victim);
+
+        $downloader = $this->getDownloader(null, $this->getConfig(['vendor-dir' => $vendorDir]));
+
+        // seed the downloaded file where install() expects to find it
+        $method = new \ReflectionMethod($downloader, 'getFileName');
+        (\PHP_VERSION_ID < 80100) and $method->setAccessible(true);
+        $tmpFile = $method->invoke($downloader, $package, $path);
+        $fs = new Filesystem();
+        $fs->ensureDirectoryExists(dirname($tmpFile));
+        file_put_contents($tmpFile, 'downloaded');
+
+        try {
+            $downloader->install($package, $path, false);
+
+            self::assertFileExists($path.'/script.js');
+            clearstatcache();
+            self::assertSame($modeBefore, fileperms($victim), 'A bin escaping the package dir must not be chmod\'d');
+        } finally {
+            $fs->removeDirectory($rootDir);
         }
     }
 
@@ -301,6 +341,162 @@ class FileDownloaderTest extends TestCase
             self::assertInstanceOf('UnexpectedValueException', $e, $e->getMessage());
             self::assertStringContainsString('could not be saved to', $e->getMessage());
         }
+    }
+
+    /**
+     * @dataProvider provideMirrorHeaderScenarios
+     * @param ?array{url: non-empty-string, preferred: bool} $mirror
+     */
+    public function testRepositoryHeadersAreOnlySentToTheRepositoryOrigin(string $distUrl, ?array $mirror, string $contactedUrl, bool $expectHeader): void
+    {
+        $path = self::getUniqueTmpDirectory();
+
+        $package = self::getPackage();
+        $package->setDistType('zip');
+        $package->setDistUrl($distUrl);
+        if ($mirror !== null) {
+            // a preferred mirror is tried before the canonical URL
+            $package->setDistMirrors([$mirror]);
+        }
+        // the repository http header (restored from the repository config) carries a credential
+        $package->setTransportOptions(['http' => ['header' => ['Authorization: Bearer SECRET']]]);
+
+        $config = $this->getConfig([
+            'vendor-dir' => $path.'/vendor',
+            'bin-dir' => $path.'/vendor/bin',
+        ]);
+
+        $seenOptions = [];
+        $httpDownloaderMock = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
+        $httpDownloaderMock
+            ->expects($this->any())
+            ->method('addCopy')
+            ->will($this->returnCallback(static function ($url, $to, $options) use (&$seenOptions) {
+                $seenOptions[$url] = $options;
+
+                return \React\Promise\resolve(
+                    new Response(['url' => $url], 200, [], 'file~')
+                );
+            }));
+
+        $downloader = $this->getDownloader(null, $config, null, null, $httpDownloaderMock);
+
+        try {
+            $loop = new Loop($this->httpDownloader);
+            $promise = $downloader->download($package, $path);
+            $loop->wait([$promise]);
+
+            $this->fail('Download was expected to throw');
+        } catch (\Exception $e) {
+            if (is_dir($path)) {
+                $fs = new Filesystem();
+                $fs->removeDirectory($path);
+            } elseif (is_file($path)) {
+                unlink($path);
+            }
+
+            self::assertInstanceOf('UnexpectedValueException', $e, $e->getMessage());
+        }
+
+        self::assertArrayHasKey($contactedUrl, $seenOptions, 'expected the first candidate URL to be contacted');
+        if ($expectHeader) {
+            self::assertSame(['Authorization: Bearer SECRET'], $seenOptions[$contactedUrl]['http']['header'] ?? null, 'the repository header must be sent to the repository origin');
+        } else {
+            self::assertArrayNotHasKey('header', $seenOptions[$contactedUrl]['http'] ?? [], 'the repository header must not be sent to a mirror on another origin');
+        }
+    }
+
+    /**
+     * @return array<string, array{string, ?array{url: string, preferred: bool}, string, bool}>
+     */
+    public function provideMirrorHeaderScenarios(): array
+    {
+        $canonical = 'https://repo.example.org/dist/pkg.zip';
+        $pref = static function (string $url): array {
+            return ['url' => $url, 'preferred' => true];
+        };
+
+        return [
+            'no mirror: canonical receives the header' => [
+                $canonical, null, $canonical, true,
+            ],
+            'preferred mirror on the same origin keeps the header' => [
+                $canonical, $pref('https://repo.example.org/mirror/pkg.zip'), 'https://repo.example.org/mirror/pkg.zip', true,
+            ],
+            'preferred mirror on another host is stripped' => [
+                $canonical, $pref('https://mirror.example.net/pkg.zip'), 'https://mirror.example.net/pkg.zip', false,
+            ],
+            'userinfo pointing at another host is stripped' => [
+                $canonical, $pref('https://repo.example.org@evil.example.net/pkg.zip'), 'https://repo.example.org@evil.example.net/pkg.zip', false,
+            ],
+            'different port on the same host is stripped' => [
+                $canonical, $pref('https://repo.example.org:8443/pkg.zip'), 'https://repo.example.org:8443/pkg.zip', false,
+            ],
+            'http scheme on the same host is stripped' => [
+                $canonical, $pref('http://repo.example.org/pkg.zip'), 'http://repo.example.org/pkg.zip', false,
+            ],
+            'URLs without a parseable origin never match each other' => [
+                'https:///dist/pkg.zip', $pref('https:///mirror/pkg.zip'), 'https:///mirror/pkg.zip', false,
+            ],
+        ];
+    }
+
+    public function testRepositoryHeadersAreSentToTheCanonicalUrlAfterAMirrorFailed(): void
+    {
+        $path = self::getUniqueTmpDirectory();
+        $canonical = 'https://repo.example.org/dist/pkg.zip';
+        $mirror = 'https://mirror.example.net/pkg.zip';
+
+        $package = self::getPackage();
+        $package->setDistType('zip');
+        $package->setDistUrl($canonical);
+        $package->setDistMirrors([['url' => $mirror, 'preferred' => true]]);
+        $package->setTransportOptions(['http' => ['header' => ['Authorization: Bearer SECRET']]]);
+
+        $config = $this->getConfig([
+            'vendor-dir' => $path.'/vendor',
+            'bin-dir' => $path.'/vendor/bin',
+        ]);
+
+        $seenOptions = [];
+        $httpDownloaderMock = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
+        $httpDownloaderMock
+            ->expects($this->any())
+            ->method('addCopy')
+            ->will($this->returnCallback(static function ($url, $to, $options) use (&$seenOptions, $mirror) {
+                $seenOptions[$url] = $options;
+                if ($url === $mirror) {
+                    // a 404 moves on to the next URL without retrying
+                    return \React\Promise\reject(new TransportException('Not found', 404));
+                }
+
+                return \React\Promise\resolve(
+                    new Response(['url' => $url], 200, [], 'file~')
+                );
+            }));
+
+        $downloader = $this->getDownloader(null, $config, null, null, $httpDownloaderMock);
+
+        try {
+            $loop = new Loop($this->httpDownloader);
+            $promise = $downloader->download($package, $path);
+            $loop->wait([$promise]);
+
+            $this->fail('Download was expected to throw');
+        } catch (\Exception $e) {
+            if (is_dir($path)) {
+                $fs = new Filesystem();
+                $fs->removeDirectory($path);
+            } elseif (is_file($path)) {
+                unlink($path);
+            }
+
+            self::assertInstanceOf('UnexpectedValueException', $e, $e->getMessage());
+        }
+
+        self::assertSame([$mirror, $canonical], array_keys($seenOptions));
+        self::assertArrayNotHasKey('header', $seenOptions[$mirror]['http'] ?? []);
+        self::assertSame(['Authorization: Bearer SECRET'], $seenOptions[$canonical]['http']['header'] ?? null);
     }
 
     public function testCacheGarbageCollectionIsCalled(): void

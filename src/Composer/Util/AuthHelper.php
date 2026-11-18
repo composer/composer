@@ -22,12 +22,16 @@ use Composer\Pcre\Preg;
  */
 class AuthHelper
 {
+    private const GITLAB_COMPOSER_REGISTRY_URL_REGEX = '{/api/v4/(?:group/[^/]+/-|projects/[^/]+)/packages/composer(?:/|$)}i';
+
     /** @var IOInterface */
     protected $io;
     /** @var Config */
     protected $config;
     /** @var array<string, string> Map of origins to message displayed */
     private $displayedOriginAuthentications = [];
+    /** @var array<string, true> Map of origins already warned about invalid custom headers */
+    private $warnedInvalidCustomHeaders = [];
     /** @var array<string, bool> Map of URLs and whether they already retried with authentication from Bitbucket */
     private $bitbucketRetry = [];
 
@@ -76,16 +80,23 @@ class AuthHelper
      * @param  int         $statusCode HTTP status code that triggered this call
      * @param  string|null $reason     a message/description explaining why this was called
      * @param  string[]    $headers
-     * @param  int         $retryCount the amount of retries already done on this URL
+     * @param  int         $retryCount the amount of authentication retries already done on this URL, network retries do not count
      * @return array       containing retry (bool) and storeAuth (string|bool) keys, if retry is true the request should be
      *                                retried, if storeAuth is true then on a successful retry the authentication should be persisted to auth.json
      * @phpstan-return array{retry: bool, storeAuth: 'prompt'|bool}
      */
-    public function promptAuthIfNeeded(string $url, string $origin, int $statusCode, ?string $reason = null, array $headers = [], int $retryCount = 0): array
+    public function promptAuthIfNeeded(string $url, string $origin, int $statusCode, ?string $reason = null, array $headers = [], int $retryCount = 0, ?string $responseBody = null): array
     {
         $storeAuth = false;
 
         if (in_array($origin, $this->config->get('github-domains'), true)) {
+            // if two or more requests are started together for the same GitHub origin, the first one
+            // will prompt for and store a token; the others should retry with that token before
+            // prompting again, so the user is not asked for the same token multiple times
+            // see https://github.com/composer/composer/issues/12905
+            if ($this->io->hasAuthentication($origin) && $retryCount === 0) {
+                return ['retry' => true, 'storeAuth' => false];
+            }
             $gitHubUtil = new GitHub($this->io, $this->config, null);
             $message = "\n";
 
@@ -94,7 +105,7 @@ class AuthHelper
 
             if ($requiresSso) {
                 $ssoUrl = $gitHubUtil->getSsoUrl($headers);
-                $message = 'GitHub API token requires SSO authorization. Authorize this token at ' . $ssoUrl . "\n";
+                $message = 'GitHub API token requires SSO authorization. Authorize this token at ' . Url::sanitize($ssoUrl ?? '') . "\n";
                 $this->io->writeError($message);
                 if (!$this->io->isInteractive()) {
                     throw new TransportException('Could not authenticate against ' . $origin, 403);
@@ -113,16 +124,29 @@ class AuthHelper
                 }
 
                 $message = sprintf(
-                    'GitHub API limit (%d calls/hr) is exhausted, could not fetch '.$url.'. '.$message.' You can also wait until %s for the rate limit to reset.',
+                    'GitHub API limit (%d calls/hr) is exhausted, could not fetch '.Url::sanitize($url).'. '.$message.' You can also wait until %s for the rate limit to reset.',
                     $rateLimit['limit'],
                     $rateLimit['reset']
                 )."\n";
             } else {
-                $message .= 'Could not fetch '.$url.', please ';
-                if ($this->io->hasAuthentication($origin)) {
-                    $message .= 'review your configured GitHub OAuth token or enter a new one to access private repos';
+                // Try to extract a more specific error message from GitHub's API response
+                $gitHubApiMessage = null;
+                if ($responseBody !== null) {
+                    $decoded = json_decode($responseBody, true);
+                    if (is_array($decoded) && isset($decoded['message']) && is_string($decoded['message'])) {
+                        $gitHubApiMessage = $decoded['message'];
+                    }
+                }
+
+                if ($gitHubApiMessage !== null) {
+                    $message .= 'Could not fetch '.Url::sanitize($url).': '.$gitHubApiMessage;
                 } else {
-                    $message .= 'create a GitHub OAuth token to access private repos';
+                    $message .= 'Could not fetch '.Url::sanitize($url).', please ';
+                    if ($this->io->hasAuthentication($origin)) {
+                        $message .= 'review your configured GitHub OAuth token or enter a new one to access private repos';
+                    } else {
+                        $message .= 'create a GitHub OAuth token to access private repos';
+                    }
                 }
             }
 
@@ -132,14 +156,16 @@ class AuthHelper
                 throw new TransportException('Could not authenticate against '.$origin, 401);
             }
         } elseif (in_array($origin, $this->config->get('gitlab-domains'), true)) {
-            $message = "\n".'Could not fetch '.$url.', enter your ' . $origin . ' credentials ' .($statusCode === 401 ? 'to access private repos' : 'to go over the API rate limit');
+            $message = "\n".'Could not fetch '.Url::sanitize($url).', enter your ' . $origin . ' credentials ' .($statusCode === 401 ? 'to access private repos' : 'to go over the API rate limit');
             $gitLabUtil = new GitLab($this->io, $this->config, null);
 
             $auth = null;
             if ($this->io->hasAuthentication($origin)) {
                 $auth = $this->io->getAuthentication($origin);
-                if (in_array($auth['password'], ['gitlab-ci-token', 'private-token', 'oauth2'], true)) {
-                    throw new TransportException("Invalid credentials for '" . $url . "', aborting.", $statusCode);
+                if (in_array($auth['password'], ['gitlab-ci-token', 'private-token', 'oauth2'], true)
+                    || $auth['username'] === 'gitlab-ci-token'
+                ) {
+                    throw new TransportException("Invalid credentials for '" . Url::sanitize($url) . "', aborting.", $statusCode);
                 }
             }
 
@@ -151,7 +177,7 @@ class AuthHelper
 
             if ($auth !== null && $this->io->hasAuthentication($origin)) {
                 if ($auth === $this->io->getAuthentication($origin)) {
-                    throw new TransportException("Invalid credentials for '" . $url . "', aborting.", $statusCode);
+                    throw new TransportException("Invalid credentials for '" . Url::sanitize($url) . "', aborting.", $statusCode);
                 }
             }
         } elseif ($origin === 'bitbucket.org' || $origin === 'api.bitbucket.org') {
@@ -178,7 +204,7 @@ class AuthHelper
             }
 
             if ($askForOAuthToken) {
-                $message = "\n".'Could not fetch ' . $url . ', please create a bitbucket OAuth token to ' . (($statusCode === 401 || $statusCode === 403) ? 'access private repos' : 'go over the API rate limit');
+                $message = "\n".'Could not fetch ' . Url::sanitize($url) . ', please create a bitbucket OAuth token to ' . (($statusCode === 401 || $statusCode === 403) ? 'access private repos' : 'go over the API rate limit');
                 $bitBucketUtil = new Bitbucket($this->io, $this->config);
                 if (!$bitBucketUtil->authorizeOAuth($origin)
                     && (!$this->io->isInteractive() || !$bitBucketUtil->authorizeOAuthInteractively($origin, $message))
@@ -195,9 +221,9 @@ class AuthHelper
             // fail if the console is not interactive
             if (!$this->io->isInteractive()) {
                 if ($statusCode === 401) {
-                    $message = "The '" . $url . "' URL required authentication (HTTP 401).\nYou must be using the interactive console to authenticate";
+                    $message = "The '" . Url::sanitize($url) . "' URL required authentication (HTTP 401).\nYou must be using the interactive console to authenticate";
                 } elseif ($statusCode === 403) {
-                    $message = "The '" . $url . "' URL could not be accessed (HTTP 403): " . $reason;
+                    $message = "The '" . Url::sanitize($url) . "' URL could not be accessed (HTTP 403): " . $reason;
                 } else {
                     $message = "Unknown error code '" . $statusCode . "', reason: " . $reason;
                 }
@@ -213,7 +239,7 @@ class AuthHelper
                     return ['retry' => true, 'storeAuth' => false];
                 }
 
-                throw new TransportException("Invalid credentials (HTTP $statusCode) for '$url', aborting.", $statusCode);
+                throw new TransportException("Invalid credentials (HTTP $statusCode) for '" . Url::sanitize($url) . "', aborting.", $statusCode);
             }
 
             $this->io->writeError('    Authentication required (<info>'.$origin.'</info>):');
@@ -256,68 +282,187 @@ class AuthHelper
         if (!isset($options['http']['header'])) {
             $options['http']['header'] = [];
         }
-        $headers = &$options['http']['header'];
-        if ($this->io->hasAuthentication($origin)) {
-            $authenticationDisplayMessage = null;
-            $auth = $this->io->getAuthentication($origin);
-            if ($auth['password'] === 'bearer') {
-                $headers[] = 'Authorization: Bearer '.$auth['username'];
-            } elseif ($auth['password'] === 'custom-headers') {
-                // Handle custom HTTP headers from auth.json
-                $customHeaders = null;
-                if (is_string($auth['username'])) {
-                    $customHeaders = json_decode($auth['username'], true);
-                }
-                if (is_array($customHeaders)) {
-                    foreach ($customHeaders as $header) {
-                        $headers[] = $header;
-                    }
-                    $authenticationDisplayMessage = 'Using custom HTTP headers for authentication';
-                }
-            } elseif ('github.com' === $origin && 'x-oauth-basic' === $auth['password']) {
-                // only add the access_token if it is actually a github API URL
-                if (Preg::isMatch('{^https?://api\.github\.com/}', $url)) {
-                    $headers[] = 'Authorization: token '.$auth['username'];
-                    $authenticationDisplayMessage = 'Using GitHub token authentication';
-                }
-            } elseif (
-                in_array($auth['password'], ['oauth2', 'private-token', 'gitlab-ci-token'], true)
-                && in_array($origin, $this->config->get('gitlab-domains'), true)
-            ) {
-                if ($auth['password'] === 'oauth2') {
-                    $headers[] = 'Authorization: Bearer '.$auth['username'];
-                    $authenticationDisplayMessage = 'Using GitLab OAuth token authentication';
-                } else {
-                    $headers[] = 'PRIVATE-TOKEN: '.$auth['username'];
-                    $authenticationDisplayMessage = 'Using GitLab private token authentication';
-                }
-            } elseif (
-                'bitbucket.org' === $origin
-                && $url !== Bitbucket::OAUTH2_ACCESS_TOKEN_URL
-                && 'x-token-auth' === $auth['username']
-            ) {
-                if (!$this->isPublicBitBucketDownload($url)) {
-                    $headers[] = 'Authorization: Bearer ' . $auth['password'];
-                    $authenticationDisplayMessage = 'Using Bitbucket OAuth token authentication';
-                }
-            } elseif ('client-certificate' === $auth['username']) {
-                $options['ssl'] = array_merge($options['ssl'] ?? [], json_decode((string) $auth['password'], true));
-                $authenticationDisplayMessage = 'Using SSL client certificate';
-            } else {
-                $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
-                $headers[] = 'Authorization: Basic '.$authStr;
-                $authenticationDisplayMessage = 'Using HTTP basic authentication with username "' . $auth['username'] . '"';
-            }
-
-            if ($authenticationDisplayMessage && (!isset($this->displayedOriginAuthentications[$origin]) || $this->displayedOriginAuthentications[$origin] !== $authenticationDisplayMessage)) {
-                $this->io->writeError($authenticationDisplayMessage, true, IOInterface::DEBUG);
-                $this->displayedOriginAuthentications[$origin] = $authenticationDisplayMessage;
-            }
-        } elseif (in_array($origin, ['api.bitbucket.org', 'api.github.com'], true)) {
-            return $this->addAuthenticationOptions($options, str_replace('api.', '', $origin), $url);
+        $authOrigin = self::findAuthOrigin($this->io, $origin);
+        if ($authOrigin === null) {
+            return $options;
         }
 
+        $auth = $this->io->getAuthentication($authOrigin);
+        $message = $this->applyAuthentication($options, $authOrigin, $url, $auth);
+        $this->displayAuthenticationMessage($authOrigin, $message);
+
         return $options;
+    }
+
+    /**
+     * Drops credential headers from request options when a redirect leaves the origin (scheme, host and port)
+     * of the previous request. Auth configured per origin is re-added for the new URL by addAuthenticationOptions.
+     *
+     * @internal
+     * @param array<string, mixed> $options
+     * @return array<string, mixed> updated options
+     */
+    public static function stripCredentialHeadersOnRedirect(array $options, string $fromUrl, string $toUrl): array
+    {
+        if (!isset($options['http']['header']) || self::getRedirectOrigin($fromUrl) === self::getRedirectOrigin($toUrl)) {
+            return $options;
+        }
+
+        $headers = $options['http']['header'];
+        if (is_string($headers)) {
+            $headers = Preg::split('{\r?\n}', $headers);
+        }
+
+        $options['http']['header'] = array_values(array_filter((array) $headers, static function ($header): bool {
+            return !is_string($header) || !Preg::isMatch('{^\s*(?:authorization|cookie)\s*:}i', $header);
+        }));
+
+        return $options;
+    }
+
+    private static function getRedirectOrigin(string $url): string
+    {
+        $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
+        $port = parse_url($url, PHP_URL_PORT) ?? ($scheme === 'https' ? 443 : ($scheme === 'http' ? 80 : null));
+
+        return $scheme.'://'.strtolower((string) parse_url($url, PHP_URL_HOST)).':'.$port;
+    }
+
+    /**
+     * @param array{http: array{header: string[]}}&array<string, mixed> $options
+     * @param array{username: string|null, password: string|null} $auth
+     * @return string|null message describing the authentication in use, if any was added
+     */
+    private function applyAuthentication(array &$options, string $origin, string $url, array $auth): ?string
+    {
+        $headers = &$options['http']['header'];
+
+        if ($auth['password'] === 'bearer') {
+            $headers[] = 'Authorization: Bearer '.$auth['username'];
+            return 'Using Bearer token authentication';
+        }
+
+        if ($auth['password'] === 'custom-headers') {
+            // Handle custom HTTP headers from auth.json
+            return $this->addCustomHeaders($headers, $origin, $auth['username']);
+        }
+
+        if ('github.com' === $origin && 'x-oauth-basic' === $auth['password']) {
+            // only add the access_token if it is actually a github API URL
+            if (!Preg::isMatch('{^https?://api\.github\.com/}', $url)) {
+                return null;
+            }
+            $headers[] = 'Authorization: token '.$auth['username'];
+            return 'Using GitHub token authentication';
+        }
+
+        if (self::hasGitLabTokenMarker($auth) && in_array($origin, $this->config->get('gitlab-domains'), true)) {
+            return $this->addGitLabAuthentication($headers, $url, $auth);
+        }
+
+        if (
+            'bitbucket.org' === $origin
+            && $url !== Bitbucket::OAUTH2_ACCESS_TOKEN_URL
+            && 'x-token-auth' === $auth['username']
+        ) {
+            if ($this->isPublicBitBucketDownload($url)) {
+                return null;
+            }
+            $headers[] = 'Authorization: Bearer ' . $auth['password'];
+            return 'Using Bitbucket OAuth token authentication';
+        }
+
+        if ('client-certificate' === $auth['username']) {
+            $options['ssl'] = array_merge($options['ssl'] ?? [], json_decode((string) $auth['password'], true));
+            return 'Using SSL client certificate';
+        }
+
+        $headers[] = 'Authorization: Basic '.base64_encode($auth['username'].':'.$auth['password']);
+
+        return 'Using HTTP basic authentication with username "'.Url::sanitizeUsername((string) $auth['username']).'"';
+    }
+
+    /**
+     * @param string[] $headers
+     * @param-out string[] $headers
+     */
+    private function addCustomHeaders(array &$headers, string $origin, ?string $encodedHeaders): ?string
+    {
+        $customHeaders = is_string($encodedHeaders) ? json_decode($encodedHeaders, true) : null;
+        if (!is_array($customHeaders) || array_filter($customHeaders, 'is_string') !== $customHeaders) {
+            if (!isset($this->warnedInvalidCustomHeaders[$origin])) {
+                $this->io->writeError('<warning>Ignoring custom-headers authentication for '.$origin.' as it is not a list of header strings</warning>');
+                $this->warnedInvalidCustomHeaders[$origin] = true;
+            }
+
+            return null;
+        }
+
+        foreach ($customHeaders as $header) {
+            $headers[] = $header;
+        }
+
+        return 'Using custom HTTP headers for authentication';
+    }
+
+    /**
+     * @param array{username: string|null, password: string|null} $auth
+     */
+    private static function hasGitLabTokenMarker(array $auth): bool
+    {
+        return $auth['username'] === 'gitlab-ci-token'
+            || in_array($auth['password'], ['gitlab-ci-token', 'oauth2', 'private-token'], true);
+    }
+
+    /**
+     * @param string[] $headers
+     * @param-out string[] $headers
+     * @param array{username: string|null, password: string|null} $auth
+     */
+    private function addGitLabAuthentication(array &$headers, string $url, array $auth): string
+    {
+        // the marker ends up in either slot depending on whether GitLab::authorizeOAuth normalized the credentials
+        if ($auth['username'] === 'gitlab-ci-token' || $auth['password'] === 'gitlab-ci-token') {
+            $jobToken = $auth['password'] === 'gitlab-ci-token' ? $auth['username'] : $auth['password'];
+            if (Preg::isMatch(self::GITLAB_COMPOSER_REGISTRY_URL_REGEX, (string) parse_url($url, PHP_URL_PATH))) {
+                $headers[] = 'Authorization: Basic '.base64_encode('gitlab-ci-token:'.$jobToken);
+                return 'Using HTTP basic authentication with username "gitlab-ci-token"';
+            }
+            $headers[] = 'JOB-TOKEN: '.$jobToken;
+            return 'Using GitLab CI job token authentication';
+        }
+        if ($auth['password'] === 'oauth2') {
+            $headers[] = 'Authorization: Bearer '.$auth['username'];
+            return 'Using GitLab OAuth token authentication';
+        }
+        if ($auth['password'] === 'private-token') {
+            $headers[] = 'PRIVATE-TOKEN: '.$auth['username'];
+            return 'Using GitLab private token authentication';
+        }
+
+        throw new \LogicException('Unhandled GitLab token marker, hasGitLabTokenMarker() and addGitLabAuthentication() are out of sync');
+    }
+
+    private function displayAuthenticationMessage(string $origin, ?string $message): void
+    {
+        if ($message && (!isset($this->displayedOriginAuthentications[$origin]) || $this->displayedOriginAuthentications[$origin] !== $message)) {
+            $this->io->writeError($message, true, IOInterface::DEBUG);
+            $this->displayedOriginAuthentications[$origin] = $message;
+        }
+    }
+
+    public static function findAuthOrigin(IOInterface $io, string $origin ): ?string
+    {
+        if ($io->hasAuthentication($origin)) {
+            return $origin;
+        }
+        if (in_array($origin, ['api.bitbucket.org', 'api.github.com'], true)) {
+            $canonical = str_replace('api.', '', $origin);
+            if ($io->hasAuthentication($canonical)) {
+                return $canonical;
+            }
+        }
+        return null;
     }
 
     /**

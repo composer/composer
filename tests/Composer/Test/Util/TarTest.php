@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Util;
 
+use Composer\Util\Platform;
 use Composer\Util\Tar;
 use Composer\Test\TestCase;
 
@@ -57,9 +58,36 @@ class TarTest extends TestCase
         self::assertEquals("{\n    \"name\": \"foo/bar\"\n}\n", $result);
     }
 
+    public function testReturnsComposerJsonIgnoringOsMetadataEntries(): void
+    {
+        $result = Tar::getComposerJson(__DIR__.'/Fixtures/Tar/metadata.tar.gz');
+        self::assertEquals("{\n    \"name\": \"foo/bar\"\n}\n", $result);
+    }
+
     public function testMultipleTopLevelDirsIsInvalid(): void
     {
         self::expectException('RuntimeException');
         Tar::getComposerJson(__DIR__.'/Fixtures/Tar/multiple.tar.gz');
+    }
+
+    public function testThrowsOnUnsafePhpVersionWithoutOptIn(): void
+    {
+        if (\PHP_VERSION_ID >= 80000) {
+            self::markTestSkipped('Parsing phar/tar metadata is only unsafe on PHP < 8.0');
+        }
+
+        $original = Platform::getEnv('COMPOSER_ALLOW_UNSAFE_PHAR_METADATA');
+        Platform::clearEnv('COMPOSER_ALLOW_UNSAFE_PHAR_METADATA');
+        try {
+            self::expectException('RuntimeException');
+            self::expectExceptionMessage('Refusing to parse a tar/phar archive on PHP < 8.0');
+            Tar::getComposerJson(__DIR__.'/Fixtures/Tar/root.tar.gz');
+        } finally {
+            if (false === $original) {
+                Platform::clearEnv('COMPOSER_ALLOW_UNSAFE_PHAR_METADATA');
+            } else {
+                Platform::putEnv('COMPOSER_ALLOW_UNSAFE_PHAR_METADATA', $original);
+            }
+        }
     }
 }

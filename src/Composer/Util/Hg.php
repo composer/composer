@@ -80,13 +80,15 @@ class Hg
 
             $error = $this->process->getErrorOutput();
         } else {
-            $error = 'The given URL (' .$url. ') does not match the required format (ssh|http(s)://(username:password@)example.com/path-to-repository)';
+            $error = 'The given URL (' .Url::sanitize($url). ') does not match the required format (ssh|http(s)://(username:password@)example.com/path-to-repository)';
         }
 
         $this->throwException("Failed to clone $url, \n\n" . $error, $url);
     }
 
     /**
+     * Wraps $message in Url::sanitize() before throwing, so callers do not need to pre-sanitize the URL they pass in.
+     *
      * @param non-empty-string $message
      *
      * @return never

@@ -27,6 +27,9 @@ use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginEvents;
 use Composer\Advisory\Auditor;
 use Composer\Advisory\AuditConfig;
+use Composer\Policy\CooldownPolicyConfig;
+use Composer\Policy\ListPolicyConfig;
+use Composer\Policy\PolicyConfig;
 use Composer\Util\Platform;
 use Symfony\Component\Console\Completion\CompletionInput;
 use Symfony\Component\Console\Completion\CompletionSuggestions;
@@ -260,6 +263,7 @@ abstract class BaseCommand extends Command
             'COMPOSER_WITH_DEPENDENCIES' => ['with-dependencies'],
             'COMPOSER_WITH_ALL_DEPENDENCIES' => ['with-all-dependencies'],
             'COMPOSER_NO_SECURITY_BLOCKING' => ['no-security-blocking'],
+            'COMPOSER_NO_BLOCKING' => ['no-blocking'],
         ];
         foreach ($envOptions as $envName => $optionNames) {
             foreach ($optionNames as $optionName) {
@@ -469,11 +473,50 @@ abstract class BaseCommand extends Command
     }
 
     /**
-     * Creates an AuditConfig from the Config object, optionally overriding security blocking based on input options
+     * Creates a PolicyConfig from the Config object, applying --no-blocking / --no-security-blocking / --no-cooldown overrides.
      *
      * @internal
      */
-    protected function createAuditConfig(Config $config, InputInterface $input): AuditConfig
+    protected function createPolicyConfig(Config $config, ?InputInterface $input): PolicyConfig
+    {
+        $policyConfig = PolicyConfig::fromConfig($config);
+
+        // --no-blocking / --no-security-blocking: disable ALL blocking (advisories + malware + abandoned + cooldown + custom)
+        $noBlocking = Platform::getBoolEnv('COMPOSER_NO_BLOCKING', false)
+            || Platform::getBoolEnv('COMPOSER_NO_SECURITY_BLOCKING', false)
+            || ($input !== null && $input->hasOption('no-security-blocking') && $input->getOption('no-security-blocking'))
+            || ($input !== null && $input->hasOption('no-blocking') && $input->getOption('no-blocking'));
+
+        if ($noBlocking) {
+            $policyConfig = $policyConfig->withBlockingDisabled();
+        } elseif ($input !== null && $input->hasOption('no-cooldown') && $input->getOption('no-cooldown')) {
+            $policyConfig = $policyConfig->withCooldownBlockingDisabled();
+        }
+
+        return $policyConfig;
+    }
+
+    /**
+     * The cooldown policy that would block during an update, to apply when picking versions, or null when none applies.
+     *
+     * @internal
+     */
+    protected function getBlockingCooldownPolicy(Config $config, ?InputInterface $input): ?CooldownPolicyConfig
+    {
+        $policyConfig = $this->createPolicyConfig($config, $input);
+        if ($policyConfig->enabled && $policyConfig->cooldown->shouldBlock(ListPolicyConfig::BLOCK_SCOPE_UPDATE)) {
+            return $policyConfig->cooldown;
+        }
+
+        return null;
+    }
+
+    /**
+     * Creates an AuditConfig from the input options.
+     *
+     * @internal
+     */
+    protected function createAuditConfig(InputInterface $input): AuditConfig
     {
         // Handle both --audit and --no-audit flags
         if ($input->hasOption('audit')) {
@@ -483,25 +526,6 @@ abstract class BaseCommand extends Command
         }
         $auditFormat = $input->hasOption('audit-format') ? $this->getAuditFormat($input) : Auditor::FORMAT_SUMMARY;
 
-        $auditConfig = AuditConfig::fromConfig($config, $audit, $auditFormat);
-
-        if ((bool) Platform::getEnv('COMPOSER_NO_SECURITY_BLOCKING') || ($input->hasOption('no-security-blocking') && $input->getOption('no-security-blocking'))) {
-            $auditConfig = new AuditConfig(
-                $auditConfig->audit,
-                $auditConfig->auditFormat,
-                $auditConfig->auditAbandoned,
-                false, // blockInsecure
-                $auditConfig->blockAbandoned,
-                $auditConfig->ignoreUnreachable,
-                $auditConfig->ignoreListForAudit,
-                $auditConfig->ignoreListForBlocking,
-                $auditConfig->ignoreSeverityForAudit,
-                $auditConfig->ignoreSeverityForBlocking,
-                $auditConfig->ignoreAbandonedForAudit,
-                $auditConfig->ignoreAbandonedForBlocking
-            );
-        }
-
-        return $auditConfig;
+        return new AuditConfig($audit, $auditFormat);
     }
 }

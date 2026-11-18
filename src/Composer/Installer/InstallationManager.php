@@ -12,6 +12,7 @@
 
 namespace Composer\Installer;
 
+use Composer\Console\ProgramStatus;
 use Composer\IO\IOInterface;
 use Composer\IO\ConsoleIO;
 use Composer\Package\PackageInterface;
@@ -186,6 +187,9 @@ class InstallationManager
         $signalHandler = SignalHandler::create([SignalHandler::SIGINT, SignalHandler::SIGTERM, SignalHandler::SIGHUP], function (string $signal, SignalHandler $handler) use (&$cleanupPromises) {
             $this->io->writeError('Received '.$signal.', aborting', true, IOInterface::DEBUG);
             $this->runCleanup($cleanupPromises);
+            if ($this->io instanceof ConsoleIO) {
+                $this->io->writeProgramStatus(ProgramStatus::idle());
+            }
             $handler->exitWithLastSignal();
         });
 
@@ -431,7 +435,14 @@ class InstallationManager
         ) {
             $progress = $this->io->getProgressBar();
         }
-        $this->loop->wait($promises, $progress);
+        $onProgress = $progress !== null && $this->io instanceof ConsoleIO ? [$this->io, 'writeProgress'] : null;
+        try {
+            $this->loop->wait($promises, $progress, $onProgress);
+        } finally {
+            if ($onProgress !== null) {
+                $onProgress(null);
+            }
+        }
         if ($progress !== null) {
             $progress->clear();
             // ProgressBar in non-decorated output does not output a final line-break and clear() does nothing

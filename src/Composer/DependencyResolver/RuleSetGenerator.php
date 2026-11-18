@@ -250,6 +250,21 @@ class RuleSetGenerator
     protected function addRulesForRequest(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter): void
     {
         foreach ($request->getFixedPackages() as $package) {
+            // Locked package was dropped from this pool by a policy filter list
+            // (e.g. malware). Solver::checkForFilterListRemovedLockedPackages
+            // surfaces a SolverProblemsException for it; here we simply skip
+            // adding rules for the now-missing pool member.
+            //
+            // We must dispatch on the filter-list-removed map directly rather
+            // than `$package->id === -1` because the package object retains a
+            // stale positive id from any prior Pool it was part of (Pool only
+            // re-assigns ids for packages it actually contains, so removed
+            // entries keep their previous id).
+            $policyRemoval = $request->isLockedPackage($package) ? $this->pool->getPolicyRemovalReason($package->getName(), $package->getVersion()) : null;
+            if ($policyRemoval !== null && $policyRemoval->getType() === PolicyRemovalReason::FILTER_LIST) {
+                continue;
+            }
+
             if ($package->id === -1) {
                 // fixed package was not added to the pool as it did not pass the stability requirements, this is fine
                 if ($this->pool->isUnacceptableFixedOrLockedPackage($package)) {

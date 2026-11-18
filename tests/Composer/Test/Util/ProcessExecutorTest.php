@@ -81,10 +81,40 @@ class ProcessExecutorTest extends TestCase
         return [
             ['echo https://foo:bar@example.org/', 'echo https://foo:***@example.org/'],
             ['echo http://foo@example.org', 'echo http://foo@example.org'],
-            ['echo http://abcdef1234567890234578:x-oauth-token@github.com/', 'echo http://***:***@github.com/'],
-            ['echo http://github_pat_1234567890abcdefghijkl_1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVW:x-oauth-token@github.com/', 'echo http://***:***@github.com/'],
+            ['echo http://abcdef1234567890234578:x-oauth-token@github.com/', 'echo http://abc***:***@github.com/'],
+            ['echo http://github_pat_1234567890abcdefghijkl_1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVW:x-oauth-token@github.com/', 'echo http://git***:***@github.com/'],
+            ['echo http://ghp_1234567890abcdefghijklmnopqrstuvwxyzAB@github.com/', 'echo http://ghp***@github.com/'],
+            ['echo http://abcdef1234567890234578@github.com/', 'echo http://abc***@github.com/'],
             ["svn ls --verbose --non-interactive  --username 'foo' --password 'bar'  'https://foo.example.org/svn/'", "svn ls --verbose --non-interactive  --username 'foo' --password '***'  'https://foo.example.org/svn/'"],
             ["svn ls --verbose --non-interactive  --username 'foo' --password 'bar \'bar'  'https://foo.example.org/svn/'", "svn ls --verbose --non-interactive  --username 'foo' --password '***'  'https://foo.example.org/svn/'"],
+        ];
+    }
+
+    /**
+     * @dataProvider hidePasswordInArrayCommandsProvider
+     * @param non-empty-list<string> $command
+     * @param list<string> $expectedCommand
+     */
+    public function testHidePasswordsInArrayCommands(array $command, array $expectedCommand): void
+    {
+        $process = new ProcessExecutor($buffer = new BufferIO('', StreamOutput::VERBOSITY_DEBUG));
+        $process->execute($command, $output);
+        $expected = implode(' ', array_map([ProcessExecutor::class, 'escape'], $expectedCommand));
+        self::assertEquals('Executing command (CWD): ' . $expected, trim($buffer->getOutput()));
+        self::assertStringNotContainsString('s3cr3t', $buffer->getOutput());
+    }
+
+    public static function hidePasswordInArrayCommandsProvider(): array
+    {
+        return [
+            [
+                ['echo', '--username', 'foo', '--password', 's3cr3t', '--', 'https://foo.example.org/svn/'],
+                ['echo', '--username', 'foo', '--password', '***', '--', 'https://foo.example.org/svn/'],
+            ],
+            [
+                ['echo', '--username', 'foo', '--password=s3cr3t', '--', 'https://foo.example.org/svn/'],
+                ['echo', '--username', 'foo', '--password=***', '--', 'https://foo.example.org/svn/'],
+            ],
         ];
     }
 

@@ -12,11 +12,16 @@
 
 namespace Composer\Test\Repository;
 
+use Composer\Advisory\SecurityAdvisory;
+use Composer\FilterList\FilterListEntry;
+use Composer\IO\BufferIO;
 use Composer\IO\NullIO;
+use Composer\Package\Package;
 use Composer\Json\JsonFile;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Test\Mock\FactoryMock;
 use Composer\Test\TestCase;
 use Composer\Package\Loader\ArrayLoader;
@@ -133,7 +138,10 @@ class ComposerRepositoryTest extends TestCase
 
         foreach ($properties as $property => $value) {
             $ref = new \ReflectionProperty($repo, $property);
-            (\PHP_VERSION_ID < 80100) and $ref->setAccessible(true);
+            if (\PHP_VERSION_ID < 80100) {
+                $ref->setAccessible(true);
+            }
+
             $ref->setValue($repo, $value);
         }
 
@@ -382,6 +390,40 @@ class ComposerRepositoryTest extends TestCase
         self::assertEquals(['foo/bar'], $repository->getPackageNames());
     }
 
+    public function testFindPackageWithPartialPackagesWithoutUid(): void
+    {
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader->expects(
+            [
+                [
+                    'url' => 'http://example.org/packages.json',
+                    'body' => JsonFile::encode([
+                        'metadata-url' => '/p2/%package%.json',
+                        'packages' => ['fbi-gov/x-files' => [
+                            'dev-main' => ['name' => 'fbi-gov/x-files', 'version' => 'dev-main', 'extra' => ['branch-alias' => ['dev-main' => '1.x-dev']]],
+                            '1.0.0' => ['name' => 'fbi-gov/x-files', 'version' => '1.0.0'],
+                            '1.1.0' => ['name' => 'fbi-gov/x-files', 'version' => '1.1.0'],
+                        ]],
+                    ]),
+                ],
+            ],
+            true
+        );
+
+        $repository = new ComposerRepository(
+            ['url' => 'http://example.org/packages.json'],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        $package = $repository->findPackage('fbi-gov/x-files', '1.0.0');
+        self::assertNotNull($package);
+        self::assertSame('1.0.0.0', $package->getVersion());
+        // 3 versions + the dev-main alias
+        self::assertCount(4, $repository->findPackages('fbi-gov/x-files'));
+    }
+
     public function testGetSecurityAdvisoriesAssertRepositoryHttpOptionsAreUsed(): void
     {
         $httpDownloader = $this->getHttpDownloaderMock();
@@ -510,6 +552,741 @@ class ComposerRepositoryTest extends TestCase
         }
     }
 
+    public function testGetSecurityAdvisoriesFallsBackToPartialAdvisoriesWithoutApiUrl(): void
+    {
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader->expects(
+            [
+                [
+                    'url' => 'https://example.org/packages.json',
+                    'body' => JsonFile::encode([
+                        'packages' => [],
+                        'metadata-url' => 'https://example.org/p2/%package%.json',
+                        'available-package-patterns' => ['foo/*'],
+                        'security-advisories' => ['metadata' => true],
+                    ]),
+                ],
+                [
+                    'url' => 'https://example.org/p2/foo/bar.json',
+                    'body' => JsonFile::encode([
+                        'packages' => ['foo/bar' => [['name' => 'foo/bar', 'version' => '1.0.0']]],
+                        'security-advisories' => [['advisoryId' => 'ACME-2026-001', 'affectedVersions' => '<1.0.1']],
+                        'minified' => 'composer/2.0',
+                    ]),
+                ],
+            ],
+            true
+        );
+
+        $repository = new ComposerRepository(
+            ['url' => 'https://example.org/packages.json'],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        $advisories = $repository->getSecurityAdvisories(['foo/bar' => new Constraint('=', '1.0.0.0')], false)['advisories'];
+
+        self::assertCount(1, $advisories['foo/bar']);
+        self::assertSame('ACME-2026-001', $advisories['foo/bar'][0]->advisoryId);
+        self::assertNotInstanceOf(SecurityAdvisory::class, $advisories['foo/bar'][0]);
+    }
+
+    public function testGetSecurityAdvisoriesBatchesLargeRequests(): void
+    {
+        $packageNames = [];
+        for ($i = 0; $i < 1200; $i++) {
+            $packageNames[] = 'foo/pkg'.$i;
+        }
+        $advisory = $this->generateSecurityAdvisory('foo/pkg1100', 'CVE-1999-1000', '>=1.0.0');
+
+        $expectations = [
+            [
+                'url' => 'https://example.org/packages.json',
+                'body' => JsonFile::encode([
+                    'metadata-url' => 'https://example.org/p2/%package%.json',
+                    'security-advisories' => [
+                        'api-url' => 'https://example.org/security-advisories',
+                    ],
+                ]),
+                'options' => ['http' => ['verify_peer' => false]],
+            ],
+        ];
+        // 1200 names must be split into 500/500/200 so that no request exceeds the
+        // servers' max_input_vars, which would silently drop the trailing packages
+        foreach ([array_slice($packageNames, 0, 500), array_slice($packageNames, 500, 500), array_slice($packageNames, 1000)] as $index => $batch) {
+            $expectations[] = [
+                'url' => 'https://example.org/security-advisories',
+                'body' => JsonFile::encode(['advisories' => $index === 2 ? ['foo/pkg1100' => [$advisory]] : []]),
+                'options' => ['http' => [
+                    'verify_peer' => false,
+                    'method' => 'POST',
+                    'header' => ['Content-type: application/x-www-form-urlencoded'],
+                    'timeout' => 10,
+                    'content' => http_build_query(['packages' => $batch]),
+                ]],
+            ];
+        }
+
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader->expects($expectations, true);
+
+        $repository = new ComposerRepository(
+            ['url' => 'https://example.org/packages.json', 'options' => ['http' => ['verify_peer' => false]]],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        $constraintMap = [];
+        foreach ($packageNames as $packageName) {
+            $constraintMap[$packageName] = new MatchAllConstraint();
+        }
+
+        $result = $repository->getSecurityAdvisories($constraintMap);
+
+        $httpDownloader->assertComplete();
+        self::assertSame(['foo/pkg1100'], array_keys($result['advisories']));
+        self::assertSame($advisory['advisoryId'], $result['advisories']['foo/pkg1100'][0]->advisoryId);
+    }
+
+    public function testGetSecurityAdvisoriesOnlyQueriesTheApiOncePerPackageName(): void
+    {
+        $fooAdvisory = $this->generateSecurityAdvisory('foo/bar', 'CVE-1999-1000', '>=1.0.0');
+        $bazAdvisory = $this->generateSecurityAdvisory('baz/qux', 'CVE-1999-2000', '>=2.0.0');
+
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader->expects([
+            [
+                'url' => 'https://example.org/packages.json',
+                'body' => JsonFile::encode([
+                    'metadata-url' => 'https://example.org/p2/%package%.json',
+                    'security-advisories' => [
+                        'api-url' => 'https://example.org/security-advisories',
+                    ],
+                ]),
+                'options' => ['http' => ['verify_peer' => false]],
+            ],
+            [
+                'url' => 'https://example.org/security-advisories',
+                'body' => JsonFile::encode(['advisories' => ['foo/bar' => [$fooAdvisory]]]),
+                'options' => ['http' => [
+                    'verify_peer' => false,
+                    'method' => 'POST',
+                    'header' => ['Content-type: application/x-www-form-urlencoded'],
+                    'timeout' => 10,
+                    'content' => http_build_query(['packages' => ['foo/bar', 'nope/missing']]),
+                ]],
+            ],
+            [
+                'url' => 'https://example.org/security-advisories',
+                // foo/bar was requested by the caller and served from the cache, so returning it must not warn
+                'body' => JsonFile::encode(['advisories' => ['baz/qux' => [$bazAdvisory], 'foo/bar' => [$fooAdvisory]]]),
+                'options' => ['http' => [
+                    'verify_peer' => false,
+                    'method' => 'POST',
+                    'header' => ['Content-type: application/x-www-form-urlencoded'],
+                    'timeout' => 10,
+                    'content' => http_build_query(['packages' => ['baz/qux']]),
+                ]],
+            ],
+        ], true);
+
+        $repository = new ComposerRepository(
+            ['url' => 'https://example.org/packages.json', 'options' => ['http' => ['verify_peer' => false]]],
+            $io = new BufferIO(),
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        $first = $repository->getSecurityAdvisories(['foo/bar' => new MatchAllConstraint(), 'nope/missing' => new MatchAllConstraint()]);
+        self::assertSame(['foo/bar'], $first['namesFound']);
+        self::assertSame($fooAdvisory['advisoryId'], $first['advisories']['foo/bar'][0]->advisoryId);
+
+        // different casing still hits the cache
+        $second = $repository->getSecurityAdvisories(['Foo/Bar' => new Constraint('==', '0.9.0.0')]);
+        self::assertSame(['foo/bar'], $second['namesFound']);
+        self::assertSame([], $second['advisories']);
+
+        $third = $repository->getSecurityAdvisories(['foo/bar' => new MatchAllConstraint(), 'nope/missing' => new MatchAllConstraint(), 'baz/qux' => new MatchAllConstraint()]);
+        self::assertSame(['foo/bar', 'baz/qux'], $third['namesFound']);
+        self::assertSame($fooAdvisory['advisoryId'], $third['advisories']['foo/bar'][0]->advisoryId);
+        self::assertSame($bazAdvisory['advisoryId'], $third['advisories']['baz/qux'][0]->advisoryId);
+
+        self::assertStringNotContainsString('not requested', $io->getOutput());
+        $httpDownloader->assertComplete();
+    }
+
+    public function testGetFilterWithMatchingLists(): void
+    {
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader->expects(
+            [
+                [
+                    'url' => 'https://example.org/packages.json',
+                    'body' => JsonFile::encode([
+                        'metadata-url' => 'https://example.org/p2/%package%.json',
+                        'filter' => [
+                            'metadata' => true,
+                            'lists' => ['test' => ['enabled' => true]],
+                        ],
+                    ]),
+                    'options' => ['http' => ['verify_peer' => false]],
+                ],
+                [
+                    'url' => 'https://example.org/p2/acme/package.json',
+                    'body' => JsonFile::encode([
+                        'filter' => [
+                            'test' => [[
+                                'constraint' => '*',
+                                'url' => 'https://example.org/acme/package/filters.json',
+                                'reason' => 'Malicious code detected',
+                                'id' => 'ID-test',
+                            ]],
+                        ],
+                    ]),
+                    'options' => ['http' => ['verify_peer' => false]],
+                ],
+            ],
+            true
+        );
+
+        $repository = new ComposerRepository(
+            ['url' => 'https://example.org/packages.json', 'options' => ['http' => ['verify_peer' => false]]],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        ['filter' => $filter] = $repository->getFilter(['acme/package' => new Constraint('=', '1.0.0.0')], ['test']);
+
+        $constraint = new MatchAllConstraint();
+        $constraint->setPrettyString('*');
+        $this->assertEquals(['test' => [new FilterListEntry('acme/package', $constraint, 'test', 'https://example.org/acme/package/filters.json', 'Malicious code detected', 'ID-test')]], $filter);
+    }
+
+    public function testUserFilterDisabledFalseShortCircuitsHasFilterAndGetFilterLists(): void
+    {
+        // No HTTP requests should be issued when the user has set `filter: false`,
+        // so we configure the mock with no expectations.
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader->expects([], true);
+
+        $repository = new ComposerRepository(
+            ['url' => 'https://example.org/packages.json', 'filter' => false],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        $this->assertFalse($repository->hasFilter());
+        $this->assertSame([], $repository->getFilterLists());
+    }
+
+    public function testUserFilterPerListOptOut(): void
+    {
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader->expects(
+            [
+                [
+                    'url' => 'https://example.org/packages.json',
+                    'body' => JsonFile::encode([
+                        'metadata-url' => 'https://example.org/p2/%package%.json',
+                        'filter' => [
+                            'metadata' => true,
+                            'lists' => [
+                                'malware' => ['enabled' => true],
+                                'typosquatting' => ['enabled' => true],
+                                'deprecated' => ['enabled' => true],
+                            ],
+                        ],
+                    ]),
+                    'options' => ['http' => ['verify_peer' => false]],
+                ],
+            ],
+            true
+        );
+
+        $repository = new ComposerRepository(
+            [
+                'url' => 'https://example.org/packages.json',
+                'options' => ['http' => ['verify_peer' => false]],
+                'filter' => [
+                    'typosquatting' => false,
+                    // Opting out of a list this repo doesn't advertise is harmless.
+                    'unknown-list' => false,
+                ],
+            ],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        $this->assertTrue($repository->hasFilter());
+        $this->assertSame(['malware', 'deprecated'], $repository->getFilterLists());
+    }
+
+    public function testUserFilterAcceptsTrueAsNoOp(): void
+    {
+        // `true` is undocumented but accepted silently so layered configs can
+        // round-trip a key without losing data; it has no effect because
+        // unmentioned lists are already enabled.
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader->expects(
+            [
+                [
+                    'url' => 'https://example.org/packages.json',
+                    'body' => JsonFile::encode([
+                        'metadata-url' => 'https://example.org/p2/%package%.json',
+                        'filter' => [
+                            'metadata' => true,
+                            'lists' => [
+                                'malware' => ['enabled' => true],
+                                'typosquatting' => ['enabled' => true],
+                            ],
+                        ],
+                    ]),
+                    'options' => ['http' => ['verify_peer' => false]],
+                ],
+            ],
+            true
+        );
+
+        $repository = new ComposerRepository(
+            [
+                'url' => 'https://example.org/packages.json',
+                'options' => ['http' => ['verify_peer' => false]],
+                'filter' => [
+                    'malware' => true,
+                    'typosquatting' => false,
+                ],
+            ],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        $this->assertTrue($repository->hasFilter());
+        $this->assertSame(['malware'], $repository->getFilterLists());
+    }
+
+    public function testGetFilterSkipsMetadataFetchesForPackagesNotInSummary(): void
+    {
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader->expects(
+            [
+                [
+                    'url' => 'https://example.org/packages.json',
+                    'body' => JsonFile::encode([
+                        'metadata-url' => 'https://example.org/p2/%package%.json',
+                        'filter' => [
+                            'metadata' => true,
+                            'lists' => ['malware' => ['enabled' => true]],
+                            'summary-url' => '/lists/all/summary.json',
+                        ],
+                    ]),
+                    'options' => ['http' => ['verify_peer' => false]],
+                ],
+                [
+                    'url' => 'https://example.org/lists/all/summary.json',
+                    'body' => JsonFile::encode([
+                        'filter' => [
+                            'malware' => ['evil/pkg' => '^1.0'],
+                        ],
+                    ]),
+                    'options' => ['http' => ['verify_peer' => false]],
+                ],
+                [
+                    'url' => 'https://example.org/p2/evil/pkg.json',
+                    'body' => JsonFile::encode([
+                        'filter' => [
+                            'malware' => [[
+                                'constraint' => '*',
+                                'url' => 'https://example.org/evil/pkg/filters.json',
+                                'reason' => 'Confirmed malware',
+                                'id' => 'ID-test',
+                            ]],
+                        ],
+                    ]),
+                    'options' => ['http' => ['verify_peer' => false]],
+                ],
+            ],
+            true
+        );
+
+        $repository = new ComposerRepository(
+            ['url' => 'https://example.org/packages.json', 'options' => ['http' => ['verify_peer' => false]]],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        ['filter' => $filter] = $repository->getFilter(
+            [
+                'evil/pkg' => new Constraint('=', '1.0.0.0'),
+                'safe/pkg' => new Constraint('=', '1.0.0.0'),
+            ],
+            ['malware']
+        );
+
+        $this->assertArrayHasKey('malware', $filter);
+        $this->assertCount(1, $filter['malware']);
+        $this->assertSame('evil/pkg', $filter['malware'][0]->packageName);
+    }
+
+    public function testGetFilterSkipsSummaryListsNotInConfiguredLists(): void
+    {
+        $httpDownloader = $this->getHttpDownloaderMock();
+        // typosquatting list is in the summary but not in configuredLists; no metadata fetch should happen.
+        $httpDownloader->expects(
+            [
+                [
+                    'url' => 'https://example.org/packages.json',
+                    'body' => JsonFile::encode([
+                        'metadata-url' => 'https://example.org/p2/%package%.json',
+                        'filter' => [
+                            'metadata' => true,
+                            'lists' => [
+                                'malware' => ['enabled' => true],
+                                'typosquatting' => ['enabled' => true],
+                            ],
+                            'summary-url' => '/lists/all/summary.json',
+                        ],
+                    ]),
+                    'options' => ['http' => ['verify_peer' => false]],
+                ],
+                [
+                    'url' => 'https://example.org/lists/all/summary.json',
+                    'body' => JsonFile::encode([
+                        'filter' => [
+                            'typosquatting' => ['lookalike/pkg' => '*'],
+                        ],
+                    ]),
+                    'options' => ['http' => ['verify_peer' => false]],
+                ],
+            ],
+            true
+        );
+
+        $repository = new ComposerRepository(
+            ['url' => 'https://example.org/packages.json', 'options' => ['http' => ['verify_peer' => false]]],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        ['filter' => $filter] = $repository->getFilter(
+            ['lookalike/pkg' => new Constraint('=', '1.0.0.0')],
+            ['malware']
+        );
+
+        $this->assertSame([], $filter);
+    }
+
+    public function testGetFilterSkipsPackagesWithNonIntersectingSummaryConstraint(): void
+    {
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader->expects(
+            [
+                [
+                    'url' => 'https://example.org/packages.json',
+                    'body' => JsonFile::encode([
+                        'metadata-url' => 'https://example.org/p2/%package%.json',
+                        'filter' => [
+                            'metadata' => true,
+                            'lists' => ['malware' => ['enabled' => true]],
+                            'summary-url' => '/lists/all/summary.json',
+                        ],
+                    ]),
+                    'options' => ['http' => ['verify_peer' => false]],
+                ],
+                [
+                    'url' => 'https://example.org/lists/all/summary.json',
+                    'body' => JsonFile::encode([
+                        'filter' => [
+                            'malware' => ['evil/pkg' => '^1.0'],
+                        ],
+                    ]),
+                    'options' => ['http' => ['verify_peer' => false]],
+                ],
+            ],
+            true
+        );
+
+        $repository = new ComposerRepository(
+            ['url' => 'https://example.org/packages.json', 'options' => ['http' => ['verify_peer' => false]]],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        // Requested constraint =2.5.0 does not intersect summary constraint ^1.0; no metadata fetch.
+        ['filter' => $filter] = $repository->getFilter(
+            ['evil/pkg' => new Constraint('=', '2.5.0.0')],
+            ['malware']
+        );
+
+        $this->assertSame([], $filter);
+    }
+
+    public function testGetFilterSkipsSummaryWhenMetadataAlreadyFetched(): void
+    {
+        $httpDownloader = $this->getHttpDownloaderMock();
+        // Only one fetch of each URL is expected: the second getFilter() call must skip the
+        // summary entirely (freshMetadataUrls is non-empty) and short-circuit the metadata fetch.
+        $httpDownloader->expects(
+            [
+                [
+                    'url' => 'https://example.org/packages.json',
+                    'body' => JsonFile::encode([
+                        'metadata-url' => 'https://example.org/p2/%package%.json',
+                        'filter' => [
+                            'metadata' => true,
+                            'lists' => ['malware' => ['enabled' => true]],
+                            'summary-url' => '/lists/all/summary.json',
+                        ],
+                    ]),
+                    'headers' => ['Last-Modified: Tue, 01 Jan 2099 00:00:00 GMT'],
+                ],
+                [
+                    'url' => 'https://example.org/lists/all/summary.json',
+                    'body' => JsonFile::encode([
+                        'filter' => [
+                            'malware' => ['evil/pkg' => '*'],
+                        ],
+                    ]),
+                    'headers' => ['Last-Modified: Tue, 01 Jan 2099 00:00:00 GMT'],
+                ],
+                [
+                    'url' => 'https://example.org/p2/evil/pkg.json',
+                    'body' => JsonFile::encode([
+                        'filter' => [
+                            'malware' => [[
+                                'constraint' => '*',
+                                'url' => 'https://example.org/evil/pkg/filters.json',
+                                'reason' => 'Confirmed malware',
+                                'id' => 'ID-test',
+                            ]],
+                        ],
+                    ]),
+                    'headers' => ['Last-Modified: Tue, 01 Jan 2030 00:00:00 GMT'],
+                ],
+            ],
+            true
+        );
+
+        $repository = new ComposerRepository(
+            ['url' => 'https://example.org/packages.json', 'options' => ['http' => ['verify_peer' => false]]],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        ['filter' => $firstFilter] = $repository->getFilter(
+            ['evil/pkg' => new Constraint('=', '1.0.0.0')],
+            ['malware']
+        );
+        $this->assertCount(1, $firstFilter['malware']);
+
+        // Second call on the same instance: freshMetadataUrls is populated, so no further HTTP requests should be issued.
+        ['filter' => $secondFilter] = $repository->getFilter(
+            ['evil/pkg' => new Constraint('=', '1.0.0.0')],
+            ['malware']
+        );
+        $this->assertCount(1, $secondFilter['malware']);
+        $this->assertSame('evil/pkg', $secondFilter['malware'][0]->packageName);
+    }
+
+    public function testGetFilterReusesCachedSummaryOn304(): void
+    {
+        $config = FactoryMock::createConfig();
+        $repoArgs = ['url' => 'https://example.org/packages.json', 'options' => ['http' => ['verify_peer' => false]]];
+
+        $packagesJsonBody = JsonFile::encode([
+            'metadata-url' => 'https://example.org/p2/%package%.json',
+            'filter' => [
+                'metadata' => true,
+                'lists' => ['malware' => ['enabled' => true]],
+                'summary-url' => '/lists/all/summary.json',
+            ],
+        ]);
+        $summaryBody = JsonFile::encode([
+            'filter' => ['malware' => ['evil/pkg' => '*']],
+        ]);
+        $metadataBody = JsonFile::encode([
+            'filter' => [
+                'malware' => [[
+                    'constraint' => '*',
+                    'url' => 'https://example.org/evil/pkg/filters.json',
+                    'reason' => 'Confirmed malware',
+                    'id' => 'ID-test',
+                ]],
+            ],
+        ]);
+
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader->expects(
+            [
+                // First call: fresh fetches, populating the on-disk cache.
+                ['url' => 'https://example.org/packages.json', 'body' => $packagesJsonBody, 'headers' => ['Last-Modified: Tue, 01 Jan 2030 00:00:00 GMT']],
+                ['url' => 'https://example.org/lists/all/summary.json', 'body' => $summaryBody, 'headers' => ['Last-Modified: Tue, 01 Jan 2030 00:00:00 GMT']],
+                ['url' => 'https://example.org/p2/evil/pkg.json', 'body' => $metadataBody, 'headers' => ['Last-Modified: Tue, 01 Jan 2030 00:00:00 GMT']],
+                // Second call: cache age on packages.json keeps it cache-fresh; summary + metadata revalidate via 304.
+                ['url' => 'https://example.org/lists/all/summary.json', 'status' => 304, 'body' => ''],
+                ['url' => 'https://example.org/p2/evil/pkg.json', 'status' => 304, 'body' => ''],
+            ],
+            true
+        );
+
+        $firstRepo = new ComposerRepository($repoArgs, new NullIO(), $config, $httpDownloader);
+        ['filter' => $firstFilter] = $firstRepo->getFilter(
+            ['evil/pkg' => new Constraint('=', '1.0.0.0')],
+            ['malware']
+        );
+        $this->assertCount(1, $firstFilter['malware']);
+
+        $secondRepo = new ComposerRepository($repoArgs, new NullIO(), $config, $httpDownloader);
+        ['filter' => $secondFilter] = $secondRepo->getFilter(
+            ['evil/pkg' => new Constraint('=', '1.0.0.0')],
+            ['malware']
+        );
+
+        $this->assertCount(1, $secondFilter['malware']);
+        $this->assertSame('evil/pkg', $secondFilter['malware'][0]->packageName);
+    }
+
+    public function testGetFilterUsesApiUrlInsteadOfSummary(): void
+    {
+        $expectedApiRequestBody = json_encode([
+            'packages' => ['pkg://composer/evil/pkg', 'pkg://composer/safe/pkg'],
+            'lists' => ['malware'],
+        ]);
+
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader->expects(
+            [
+                [
+                    'url' => 'https://example.org/packages.json',
+                    'body' => JsonFile::encode([
+                        'metadata-url' => 'https://example.org/p2/%package%.json',
+                        'filter' => [
+                            'metadata' => true,
+                            'lists' => ['malware' => ['enabled' => true]],
+                            'api-url' => '/api/filter',
+                        ],
+                    ]),
+                    'options' => ['http' => ['verify_peer' => false]],
+                ],
+                [
+                    'url' => 'https://example.org/api/filter',
+                    'options' => [
+                        'http' => [
+                            'verify_peer' => false,
+                            'method' => 'POST',
+                            'header' => ['Content-type: application/json'],
+                            'timeout' => 10,
+                            'content' => $expectedApiRequestBody,
+                        ],
+                    ],
+                    'body' => JsonFile::encode([
+                        'filter' => [
+                            'malware' => [[
+                                'package' => 'evil/pkg',
+                                'constraint' => '*',
+                                'url' => 'https://example.org/evil/pkg/filters.json',
+                                'reason' => 'Confirmed malware',
+                                'id' => 'ID-api',
+                            ]],
+                        ],
+                    ]),
+                ],
+            ],
+            true
+        );
+
+        $repository = new ComposerRepository(
+            ['url' => 'https://example.org/packages.json', 'options' => ['http' => ['verify_peer' => false]]],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        ['filter' => $filter] = $repository->getFilter(
+            [
+                'evil/pkg' => new Constraint('=', '1.0.0.0'),
+                'safe/pkg' => new Constraint('=', '1.0.0.0'),
+            ],
+            ['malware']
+        );
+
+        $this->assertArrayHasKey('malware', $filter);
+        $this->assertCount(1, $filter['malware']);
+        $this->assertSame('evil/pkg', $filter['malware'][0]->packageName);
+        $this->assertSame('ID-api', $filter['malware'][0]->id);
+    }
+
+    public function testGetFilterSkipsApiUrlWhenMetadataAlreadyFetched(): void
+    {
+        // When per-package metadata has already been fetched in this run, api-url must be
+        // skipped: the existing per-package metadata loop will short-circuit on the cache and
+        // surface the filter entries from there. We simulate that prior fetch by seeding
+        // freshMetadataUrls via reflection.
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader->expects(
+            [
+                [
+                    'url' => 'https://example.org/packages.json',
+                    'body' => JsonFile::encode([
+                        'metadata-url' => 'https://example.org/p2/%package%.json',
+                        'filter' => [
+                            'metadata' => true,
+                            'lists' => ['malware' => ['enabled' => true]],
+                            'api-url' => '/api/filter',
+                        ],
+                    ]),
+                    'options' => ['http' => ['verify_peer' => false]],
+                ],
+                [
+                    'url' => 'https://example.org/p2/evil/pkg.json',
+                    'body' => JsonFile::encode([
+                        'filter' => [
+                            'malware' => [[
+                                'constraint' => '*',
+                                'url' => 'https://example.org/evil/pkg/filters.json',
+                                'reason' => 'From metadata',
+                                'id' => 'ID-meta',
+                            ]],
+                        ],
+                    ]),
+                    'options' => ['http' => ['verify_peer' => false]],
+                ],
+            ],
+            true
+        );
+
+        $repository = new ComposerRepository(
+            ['url' => 'https://example.org/packages.json', 'options' => ['http' => ['verify_peer' => false]]],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        // Pretend a previous metadata fetch has already happened in this run.
+        $reflFresh = new \ReflectionProperty($repository, 'freshMetadataUrls');
+        (\PHP_VERSION_ID < 80100) and $reflFresh->setAccessible(true);
+        $reflFresh->setValue($repository, ['https://example.org/p2/some-other/pkg.json' => true]);
+
+        ['filter' => $filter] = $repository->getFilter(
+            ['evil/pkg' => new Constraint('=', '1.0.0.0')],
+            ['malware']
+        );
+
+        // api-url POST is not in the expectations list — strict mode would fail if it was hit.
+        // The filter entry comes from the per-package metadata file, not from api-url.
+        $this->assertCount(1, $filter['malware']);
+        $this->assertSame('ID-meta', $filter['malware'][0]->id);
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -534,5 +1311,81 @@ class ComposerRepositoryTest extends TestCase
                 ],
             ],
         ];
+    }
+
+    /**
+     * @dataProvider provideTransportOptionsDistUrls
+     * @param non-empty-string $repositoryUrl
+     */
+    public function testTransportOptionsOnlyApplyToDistUrlsUnderTheRepositoryUrl(string $repositoryUrl, string $distUrl, bool $expected): void
+    {
+        $options = ['http' => ['header' => ['Authorization: Bearer secret']]];
+        $repository = new ComposerRepository(
+            ['url' => $repositoryUrl, 'options' => $options],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock()
+        );
+
+        $package = new Package('foo/bar', '1.0.0.0', '1.0.0');
+        $package->setDistType('zip');
+        $package->setDistUrl($distUrl);
+
+        $method = new \ReflectionMethod($repository, 'configurePackageTransportOptions');
+        if (\PHP_VERSION_ID < 80100) {
+            $method->setAccessible(true);
+        }
+        $method->invoke($repository, $package);
+
+        self::assertSame($expected, $repository->isOwnDistUrl($package));
+        self::assertSame($expected ? $options : [], $package->getTransportOptions());
+    }
+
+    public static function provideTransportOptionsDistUrls(): array
+    {
+        return [
+            ['https://example.org/packages.json', 'https://example.org/dists/foo.zip', true],
+            ['https://example.org/packages.json', 'https://example.org?file=foo.zip', true],
+            ['https://example.org/packages.json', 'https://example.org', true],
+            ['https://example.org/repo/packages.json', 'https://example.org/repo/dists/foo.zip', true],
+            ['https://example.org/packages.json', 'https://example.org.evil.com/foo.zip', false],
+            ['https://example.org/packages.json', 'https://example.organization/foo.zip', false],
+            ['https://example.org/packages.json', 'https://example.org@evil.com/foo.zip', false],
+            ['https://example.org/packages.json', 'https://example.org:secret@evil.com/foo.zip', false],
+            ['https://example.org/repo/packages.json', 'https://example.org/repository/foo.zip', false],
+            ['https://example.org/packages.json', 'https://evil.com/foo.zip', false],
+        ];
+    }
+
+    public function testIsOwnDistUrlIgnoresMirrors(): void
+    {
+        $options = ['http' => ['header' => ['Authorization: Bearer secret']]];
+        $repository = new ComposerRepository(
+            ['url' => 'https://example.org/packages.json', 'options' => $options],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock()
+        );
+
+        // the canonical dist URL is on another host; only a mirror (which may come from untrusted
+        // lock/installed data) points under the repository URL
+        $package = new Package('foo/bar', '1.0.0.0', '1.0.0');
+        $package->setDistType('zip');
+        $package->setDistUrl('https://evil.com/foo.zip');
+        $package->setDistMirrors([['url' => 'https://example.org/dists/foo.zip', 'preferred' => true]]);
+
+        self::assertFalse($repository->isOwnDistUrl($package), 'a mirror must not make the repository claim ownership of the dist URL');
+    }
+
+    public function testRequirePublishedTimeOption(): void
+    {
+        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
+        $config = FactoryMock::createConfig();
+
+        $repository = new ComposerRepository(['url' => 'https://example.org'], new NullIO, $config, $httpDownloader);
+        self::assertTrue($repository->requiresPublishedTime());
+
+        $repository = new ComposerRepository(['url' => 'https://example.org', 'require-published-time' => false], new NullIO, $config, $httpDownloader);
+        self::assertFalse($repository->requiresPublishedTime());
     }
 }

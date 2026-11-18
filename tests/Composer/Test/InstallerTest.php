@@ -25,7 +25,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Composer\IO\BufferIO;
 use Composer\Json\JsonFile;
 use Composer\Package\Dumper\ArrayDumper;
-use Composer\Util\Filesystem;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\RepositoryInterface;
@@ -65,8 +64,7 @@ class InstallerTest extends TestCase
 
         chdir($this->prevCwd);
         if (isset($this->tempComposerHome) && is_dir($this->tempComposerHome)) {
-            $fs = new Filesystem;
-            $fs->removeDirectory($this->tempComposerHome);
+            self::removeTestDirectory($this->tempComposerHome);
         }
     }
 
@@ -96,6 +94,8 @@ class InstallerTest extends TestCase
                     case 'platform':
                     case 'audit':
                         return [];
+                    case 'policy':
+                        return false;
                 }
 
                 throw new \UnexpectedValueException('Unknown key '.$key);
@@ -137,7 +137,7 @@ class InstallerTest extends TestCase
         $autoloadGenerator = $this->getMockBuilder('Composer\Autoload\AutoloadGenerator')->disableOriginalConstructor()->getMock();
 
         $installer = new Installer($io, $config, clone $rootPackage, $downloadManager, $repositoryManager, $locker, $installationManager, $eventDispatcher, $autoloadGenerator);
-        $installer->setAuditConfig(AuditConfig::fromConfig($config, false));
+        $installer->setAuditConfig(new AuditConfig(false));
         $result = $installer->run();
 
         $output = str_replace("\r", '', $io->getOutput());
@@ -180,13 +180,13 @@ class InstallerTest extends TestCase
         // when A requires B and B requires A, and A is a non-published root package
         // the install of B should succeed
 
-        $a = self::getPackage('A', '1.0.0', 'Composer\Package\RootPackage');
+        $a = self::getPackage('a/a', '1.0.0', 'Composer\Package\RootPackage');
         $a->setRequires([
-            'b' => new Link('A', 'B', $v = self::getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
+            'b/b' => new Link('a/a', 'b/b', $v = self::getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
         ]);
-        $b = self::getPackage('B', '1.0.0');
+        $b = self::getPackage('b/b', '1.0.0');
         $b->setRequires([
-            'a' => new Link('B', 'A', $v = self::getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
+            'a/a' => new Link('b/b', 'a/a', $v = self::getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
         ]);
 
         $cases[] = [
@@ -200,13 +200,13 @@ class InstallerTest extends TestCase
         // #480: when A requires B and B requires A, and A is a published root package
         // only B should be installed, as A is the root
 
-        $a = self::getPackage('A', '1.0.0', 'Composer\Package\RootPackage');
+        $a = self::getPackage('a/a', '1.0.0', 'Composer\Package\RootPackage');
         $a->setRequires([
-            'b' => new Link('A', 'B', $v = self::getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
+            'b/b' => new Link('a/a', 'b/b', $v = self::getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
         ]);
-        $b = self::getPackage('B', '1.0.0');
+        $b = self::getPackage('b/b', '1.0.0');
         $b->setRequires([
-            'a' => new Link('B', 'A', $v = self::getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
+            'a/a' => new Link('b/b', 'a/a', $v = self::getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
         ]);
 
         $cases[] = [
@@ -363,14 +363,14 @@ class InstallerTest extends TestCase
         $install->addOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY);
         $install->addOption('no-dev', null, InputOption::VALUE_NONE);
         $install->addOption('dry-run', null, InputOption::VALUE_NONE);
-        $install->setCode(static function (InputInterface $input, OutputInterface $output) use ($installer, $composer): int {
+        $install->setCode(static function (InputInterface $input, OutputInterface $output) use ($installer): int {
             $ignorePlatformReqs = true === $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
 
             $installer
                 ->setDevMode(false === $input->getOption('no-dev'))
                 ->setDryRun($input->getOption('dry-run'))
                 ->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs))
-                ->setAuditConfig(AuditConfig::fromConfig($composer->getConfig(), false));
+                ->setAuditConfig(new AuditConfig(false));
 
             return $installer->run();
         });
@@ -391,7 +391,7 @@ class InstallerTest extends TestCase
         $update->addOption('prefer-stable', null, InputOption::VALUE_NONE);
         $update->addOption('prefer-lowest', null, InputOption::VALUE_NONE);
         $update->addArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL);
-        $update->setCode(static function (InputInterface $input, OutputInterface $output) use ($installer, $composer): int {
+        $update->setCode(static function (InputInterface $input, OutputInterface $output) use ($installer): int {
             $packages = $input->getArgument('packages');
             $filteredPackages = array_filter($packages, static function ($package): bool {
                 return !in_array($package, ['lock', 'nothing', 'mirrors'], true);
@@ -419,7 +419,7 @@ class InstallerTest extends TestCase
                 ->setPreferStable($input->getOption('prefer-stable'))
                 ->setPreferLowest($input->getOption('prefer-lowest'))
                 ->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs))
-                ->setAuditConfig(AuditConfig::fromConfig($composer->getConfig(), false))
+                ->setAuditConfig(new AuditConfig(false))
                 ->setMinimalUpdate($input->getOption('minimal-changes'));
 
             return $installer->run();

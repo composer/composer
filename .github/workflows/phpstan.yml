@@ -8,6 +8,10 @@ on:
     paths-ignore:
       - 'doc/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   COMPOSER_FLAGS: "--ansi --no-interaction --prefer-dist"
   SYMFONY_PHPUNIT_VERSION: ""
@@ -27,26 +31,29 @@ jobs:
         include:
           - php-version: "7.2"
             experimental: false
-          - php-version: "8.4"
+          - php-version: "8.3" # phpstan 1.x has trouble parsing php 8.4+ code so we need to ensure we don't upgrade dependencies that far
             experimental: true
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1 # 2.36.0
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           coverage: "none"
           extensions: "intl, zip"
           ini-values: "memory_limit=-1"
           php-version: "${{ matrix.php-version }}"
+          tools: "composer:snapshot"
 
       - name: "Determine composer cache directory"
         id: "determine-composer-cache-directory"
         run: "echo \"directory=$(composer config cache-dir)\" >> $GITHUB_OUTPUT"
 
       - name: "Cache dependencies installed with composer"
-        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: "${{ steps.determine-composer-cache-directory.outputs.directory }}"
           key: "php-${{ matrix.php-version }}-symfony-php-unit-version-${{ env.SYMFONY_PHPUNIT_VERSION }}-${{ hashFiles('**/composer.lock') }}"
@@ -54,14 +61,31 @@ jobs:
 
       - name: "Install highest dependencies"
         if: "matrix.experimental == true"
-        run: "composer config platform --unset && composer update ${{ env.COMPOSER_FLAGS }}"
+        run: 'composer config platform --unset && composer update $COMPOSER_FLAGS'
+        env:
+          COMPOSER_POLICY_COOLDOWN_PERIOD: "0" # do not withhold fresh releases when updating deps
 
       - name: "Install locked dependencies"
         if: "matrix.experimental == false"
-        run: "composer config platform --unset && composer install ${{ env.COMPOSER_FLAGS }}"
+        run: 'composer config platform --unset && composer install $COMPOSER_FLAGS'
 
       - name: "Initialize PHPUnit sources"
         run: "vendor/bin/simple-phpunit --filter NO_TEST_JUST_AUTOLOAD_THANKS"
 
+      - name: "Restore PHPStan result cache"
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: "phpstan/tmp"
+          key: "result-cache-v1-${{ matrix.php-version }}-${{ github.run_id }}"
+          restore-keys: |
+            result-cache-v1-${{ matrix.php-version }}-
+
       - name: "Run PHPStan"
-        run: "composer phpstan"
+        run: "composer phpstan -- -vv"
+
+      - name: "Save result cache"
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: ${{ !cancelled() }}
+        with:
+          path: "phpstan/tmp"
+          key: "result-cache-v1-${{ matrix.php-version }}-${{ github.run_id }}"

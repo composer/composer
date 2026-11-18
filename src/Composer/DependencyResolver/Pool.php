@@ -12,8 +12,6 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Advisory\PartialSecurityAdvisory;
-use Composer\Advisory\SecurityAdvisory;
 use Composer\Package\BasePackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Semver\CompilingMatcher;
@@ -40,30 +38,26 @@ class Pool implements \Countable
     protected $unacceptableFixedOrLockedPackages;
     /** @var array<string, array<string, string>> Map of package name => normalized version => pretty version */
     protected $removedVersions = [];
-    /** @var array<string, array<string, string>> Map of package object hash => removed normalized versions => removed pretty version */
+    /** @var array<int, array<string, string>> Map of package object id => removed normalized versions => removed pretty version */
     protected $removedVersionsByPackage = [];
-    /** @var array<string, array<string, array<SecurityAdvisory|PartialSecurityAdvisory>>> Map of package name => normalized version => security advisories */
-    private $securityRemovedVersions = [];
-    /** @var array<string, array<string, string>> Map of package name => normalized version => pretty version */
-    private $abandonedRemovedVersions = [];
+    /** @var array<string, array<string, PolicyRemovalReason>> Map of package name => normalized version => why a policy removed it */
+    private $policyRemovedVersions = [];
 
     /**
      * @param BasePackage[] $packages
      * @param BasePackage[] $unacceptableFixedOrLockedPackages
      * @param array<string, array<string, string>> $removedVersions
-     * @param array<string, array<string, string>> $removedVersionsByPackage
-     * @param array<string, array<string, array<SecurityAdvisory|PartialSecurityAdvisory>>> $securityRemovedVersions
-     * @param array<string, array<string, string>> $abandonedRemovedVersions
+     * @param array<int, array<string, string>> $removedVersionsByPackage
+     * @param array<string, array<string, PolicyRemovalReason>> $policyRemovedVersions
      */
-    public function __construct(array $packages = [], array $unacceptableFixedOrLockedPackages = [], array $removedVersions = [], array $removedVersionsByPackage = [], array $securityRemovedVersions = [], array $abandonedRemovedVersions = [])
+    public function __construct(array $packages = [], array $unacceptableFixedOrLockedPackages = [], array $removedVersions = [], array $removedVersionsByPackage = [], array $policyRemovedVersions = [])
     {
         $this->versionParser = new VersionParser;
         $this->setPackages($packages);
         $this->unacceptableFixedOrLockedPackages = $unacceptableFixedOrLockedPackages;
         $this->removedVersions = $removedVersions;
         $this->removedVersionsByPackage = $removedVersionsByPackage;
-        $this->securityRemovedVersions = $securityRemovedVersions;
-        $this->abandonedRemovedVersions = $abandonedRemovedVersions;
+        $this->policyRemovedVersions = $policyRemovedVersions;
     }
 
     /**
@@ -96,75 +90,70 @@ class Pool implements \Countable
     /**
      * @return array<string, string>
      */
-    public function getRemovedVersionsByPackage(string $objectHash): array
+    public function getRemovedVersionsByPackage(int $objectId): array
     {
-        if (!isset($this->removedVersionsByPackage[$objectHash])) {
+        if (!isset($this->removedVersionsByPackage[$objectId])) {
             return [];
         }
 
-        return $this->removedVersionsByPackage[$objectHash];
+        return $this->removedVersionsByPackage[$objectId];
     }
 
     /**
-     * @return array<string, array<string, string>>
+     * @return array<int, array<string, string>>
      */
     public function getAllRemovedVersionsByPackage(): array
     {
         return $this->removedVersionsByPackage;
     }
 
-    public function isSecurityRemovedPackageVersion(string $packageName, ?ConstraintInterface $constraint): bool
+    /**
+     * Versions of a package that dependency policies removed from the pool, with the reason for each
+     *
+     * @return array<string, PolicyRemovalReason> normalized version => reason, in ascending version order
+     */
+    public function getPolicyRemovedVersions(string $packageName, ?ConstraintInterface $constraint = null): array
     {
-        foreach ($this->securityRemovedVersions[$packageName] ?? [] as $version => $packageWithSecurityAdvisories) {
-            if ($constraint !== null && $constraint->matches(new Constraint('==', $version))) {
-                return true;
+        $result = [];
+        foreach ($this->policyRemovedVersions[$packageName] ?? [] as $version => $reason) {
+            if ($constraint === null || $constraint->matches(new Constraint('==', $version))) {
+                $result[$version] = $reason;
             }
         }
+        uksort($result, static function (string $a, string $b): int {
+            return version_compare($a, $b);
+        });
 
-        return false;
+        return $result;
+    }
+
+    public function getPolicyRemovalReason(string $packageName, string $version): ?PolicyRemovalReason
+    {
+        return $this->policyRemovedVersions[$packageName][$version] ?? null;
     }
 
     /**
-     * @return string[]
+     * Records a removal under every name of the package, but a replacer never hides the removal of the package itself
+     *
+     * @internal
+     * @param array<string, array<string, PolicyRemovalReason>> $policyRemovedVersions
      */
-    public function getSecurityAdvisoryIdentifiersForPackageVersion(string $packageName, ?ConstraintInterface $constraint): array
+    public static function recordPolicyRemoval(array &$policyRemovedVersions, BasePackage $package, PolicyRemovalReason $reason): void
     {
-        foreach ($this->securityRemovedVersions[$packageName] ?? [] as $version => $packageWithSecurityAdvisories) {
-            if ($constraint !== null && $constraint->matches(new Constraint('==', $version))) {
-                return array_map(static function ($advisory) {
-                    return $advisory->advisoryId;
-                }, $packageWithSecurityAdvisories);
+        foreach ($package->getNames(false) as $name) {
+            $existing = $policyRemovedVersions[$name][$package->getVersion()] ?? null;
+            if ($existing === null || ($existing->getPackageName() !== $name && $package->getName() === $name)) {
+                $policyRemovedVersions[$name][$package->getVersion()] = $reason;
             }
         }
-
-        return [];
-    }
-
-    public function isAbandonedRemovedPackageVersion(string $packageName, ?ConstraintInterface $constraint): bool
-    {
-        foreach ($this->abandonedRemovedVersions[$packageName] ?? [] as $version => $prettyVersion) {
-            if ($constraint !== null && $constraint->matches(new Constraint('==', $version))) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**
-     * @return array<string, array<string, array<SecurityAdvisory|PartialSecurityAdvisory>>>
+     * @return array<string, array<string, PolicyRemovalReason>>
      */
-    public function getAllSecurityRemovedPackageVersions(): array
+    public function getAllPolicyRemovedVersions(): array
     {
-        return $this->securityRemovedVersions;
-    }
-
-    /**
-     * @return array<string, array<string, string>>
-     */
-    public function getAllAbandonedRemovedPackageVersions(): array
-    {
-        return $this->abandonedRemovedVersions;
+        return $this->policyRemovedVersions;
     }
 
     /**

@@ -52,6 +52,8 @@ use ZipArchive;
  */
 class Factory
 {
+    private const AUTH_CONFIG_KEYS = ['bitbucket-oauth', 'github-oauth', 'gitlab-oauth', 'gitlab-token', 'http-basic', 'bearer', 'custom-headers', 'client-certificate', 'forgejo-token', 'github-domains', 'gitlab-domains', 'forgejo-domains'];
+
     /**
      * @throws \RuntimeException
      */
@@ -325,6 +327,11 @@ class Factory
         // Load config and override with local config/auth config
         $config = static::createConfig($io, $cwd);
         $isGlobal = $localConfigSource !== Config::SOURCE_UNKNOWN && realpath($config->get('home')) === realpath(dirname($localConfigSource));
+        if (isset($localConfig['config']['home'])) {
+            // the home dir decides which global plugins get loaded, so it must not come from the project
+            $io->writeError('<warning>Ignoring the "home" config set in '.($localConfigSource === Config::SOURCE_UNKNOWN ? 'the root package' : $localConfigSource).', use the COMPOSER_HOME env var to change it.</warning>');
+            unset($localConfig['config']['home']);
+        }
         $config->merge($localConfig, $localConfigSource);
 
         if (isset($composerFile)) {
@@ -335,7 +342,7 @@ class Factory
             if ($localAuthFile->exists()) {
                 $io->writeError('Loading config file ' . $localAuthFile->getPath(), true, IOInterface::DEBUG);
                 self::validateJsonSchema($io, $localAuthFile, JsonFile::AUTH_SCHEMA);
-                $config->merge(['config' => $localAuthFile->read()], $localAuthFile->getPath());
+                $config->merge(['config' => self::filterAuthConfig($localAuthFile->read(), $localAuthFile->getPath(), $io)], $localAuthFile->getPath());
                 $config->setLocalAuthConfigSource(new JsonConfigSource($localAuthFile, true));
             }
         }
@@ -426,9 +433,11 @@ class Factory
             }
 
             $locker = new Package\Locker($io, new JsonFile($config->get('lock') ? $lockFile : Platform::getDevNull(), null, $io), $im, file_get_contents($composerFile), $process);
+            $locker->setRepositoryManager($rm);
             $composer->setLocker($locker);
         } elseif ($composer instanceof Composer) {
             $locker = new Package\Locker($io, new JsonFile(Platform::getDevNull(), null, $io), $im, JsonFile::encode($localConfig), $process);
+            $locker->setRepositoryManager($rm);
             $composer->setLocker($locker);
         }
 
@@ -478,7 +487,9 @@ class Factory
             $fs = new Filesystem($process);
         }
 
-        $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed.json', null, $io), true, $rootPackage, $fs));
+        $localRepo = new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed.json', null, $io), true, $rootPackage, $fs);
+        $localRepo->setRepositoryManager($rm);
+        $rm->setLocalRepository($localRepo);
     }
 
     /**
@@ -694,8 +705,28 @@ class Factory
         self::validateJsonSchema($io, $authData, JsonFile::AUTH_SCHEMA, 'COMPOSER_AUTH');
         $authData = json_decode($composerAuthEnv, true);
         if (null !== $authData) {
-            $config->merge(['config' => $authData], 'COMPOSER_AUTH');
+            $config->merge(['config' => self::filterAuthConfig($authData, 'COMPOSER_AUTH', $io)], 'COMPOSER_AUTH');
         }
+    }
+
+    /**
+     * Drops any non-auth settings, as auth sources are often not reviewed like composer.json is
+     *
+     * @param array<string, mixed> $authData
+     * @return array<string, mixed>
+     */
+    private static function filterAuthConfig(array $authData, string $source, ?IOInterface $io): array
+    {
+        foreach ($authData as $key => $value) {
+            if (!in_array($key, self::AUTH_CONFIG_KEYS, true)) {
+                if ($io instanceof IOInterface) {
+                    $io->writeError('<warning>Ignoring the "'.$key.'" config set in '.$source.', only authentication settings can be set there.</warning>');
+                }
+                unset($authData[$key]);
+            }
+        }
+
+        return $authData;
     }
 
     private static function useXdg(): bool

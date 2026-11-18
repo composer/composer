@@ -37,7 +37,7 @@ class ClearCacheCommand extends BaseCommand
 The <info>clear-cache</info> deletes all cached packages from composer's
 cache directory.
 
-Read more at https://getcomposer.org/doc/03-cli.md#clear-cache-clearcache-cc
+Read more at https://getcomposer.org/doc/03-cli.md#clear-cache--clearcache--cc
 EOT
             )
         ;
@@ -64,6 +64,13 @@ EOT
         foreach ($cachePaths as $key => $cachePath) {
             // only individual dirs get garbage collected
             if ($key === 'cache-dir' && $input->getOption('gc')) {
+                continue;
+            }
+
+            // check before realpath() as e.g. "nul" does not resolve on Windows
+            if (!Cache::isUsable($cachePath)) {
+                $io->writeError("<info>Cache is not enabled ($key): $cachePath</info>");
+
                 continue;
             }
 

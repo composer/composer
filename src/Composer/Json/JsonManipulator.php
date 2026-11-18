@@ -77,15 +77,15 @@ class JsonManipulator
 
         $links = $matches['value'];
 
-        // try to find existing link
+        // try to find existing link, whatever its value (a null one must be replaced, not duplicated)
         $packageRegex = str_replace('/', '\\\\?/', preg_quote($package));
-        $regex = '{'.self::DEFINES.'"(?P<package>'.$packageRegex.')"(\s*:\s*)(?&string)}ix';
+        $regex = '{'.self::DEFINES.'"(?P<package>'.$packageRegex.')"(\s*:\s*)(?&json)}ix';
         if (Preg::isMatch($regex, $links, $packageMatches)) {
             assert(is_string($packageMatches['package']));
             // update existing link
             $existingPackage = $packageMatches['package'];
             $packageRegex = str_replace('/', '\\\\?/', preg_quote($existingPackage));
-            $links = Preg::replaceCallback('{'.self::DEFINES.'"'.$packageRegex.'"(?P<separator>\s*:\s*)(?&string)}ix', static function ($m) use ($existingPackage, $constraint): string {
+            $links = Preg::replaceCallback('{'.self::DEFINES.'"'.$packageRegex.'"(?P<separator>\s*:\s*)(?&json)}ix', static function ($m) use ($existingPackage, $constraint): string {
                 return JsonFile::encode(str_replace('\\/', '/', $existingPackage)) . $m['separator'] . '"' . $constraint . '"';
             }, $links);
         } else {
@@ -117,9 +117,19 @@ class JsonManipulator
     }
 
     /**
+     * Removes a link, and the link type key if this removal emptied it (an already empty key is kept)
+     */
+    public function removeLink(string $type, string $package): bool
+    {
+        $contents = $this->contents;
+
+        return $this->removeSubNode($type, $package) && ($contents === $this->contents || $this->removeMainKeyIfEmpty($type));
+    }
+
+    /**
      * Sorts packages by importance (platform packages first, then PHP dependencies) and alphabetically.
      *
-     * @link https://getcomposer.org/doc/02-libraries.md#platform-packages
+     * @link https://getcomposer.org/doc/01-basic-usage.md#platform-packages
      *
      * @param array<string> $packages
      */
@@ -316,7 +326,10 @@ class JsonManipulator
 
     public function removeRepository(string $name): bool
     {
-        return $this->doRemoveRepository($name) && $this->removeMainKeyIfEmpty('repositories');
+        $contents = $this->contents;
+
+        // only drop the key if this removal emptied it
+        return $this->doRemoveRepository($name) && ($contents === $this->contents || $this->removeMainKeyIfEmpty('repositories'));
     }
 
     private function doRemoveRepository(string $name): bool
@@ -376,12 +389,65 @@ class JsonManipulator
      */
     public function addConfigSetting(string $name, $value): bool
     {
+        // policy config has one more nesting level than the rest of the config e.g. policy.list-name.key
+        // Rewrite as a policy.<list> update with the merged list block so addSubNode can do a
+        // surgical edit at the list level rather than falling back to a whole-file rewrite.
+        if (strpos($name, 'policy.') === 0 && substr_count($name, '.') >= 2) {
+            [$listName, $fieldName] = explode('.', substr($name, 7), 2);
+            if (str_contains($fieldName, '.')) {
+                return false;
+            }
+            $listBlock = $this->getCurrentPolicyListBlock($listName);
+            $listBlock[$fieldName] = $value;
+
+            return $this->addSubNode('config', 'policy.'.$listName, $listBlock);
+        }
+
         return $this->addSubNode('config', $name, $value);
     }
 
     public function removeConfigSetting(string $name): bool
     {
+        // policy.<list>.<field>: drop the field from the list block, then either rewrite the
+        // block (surgical) or defer to the whole-file fallback when the block ends up empty so
+        // the cascade-cleanup of empty ancestors can run.
+        if (strpos($name, 'policy.') === 0 && substr_count($name, '.') >= 2) {
+            [$listName, $fieldName] = explode('.', substr($name, 7), 2);
+            if (str_contains($fieldName, '.')) {
+                return false;
+            }
+
+            $listBlock = $this->getCurrentPolicyListBlock($listName);
+            if (!array_key_exists($fieldName, $listBlock)) {
+                return true;
+            }
+            unset($listBlock[$fieldName]);
+            if (count($listBlock) === 0) {
+                return $this->removeConfigSetting('policy.'.$listName);
+            }
+
+            return $this->addSubNode('config', 'policy.'.$listName, $listBlock);
+        }
+
         return $this->removeSubNode('config', $name);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function getCurrentPolicyListBlock(string $listName): array
+    {
+        $decoded = JsonFile::parseJson($this->contents);
+        if (!is_array($decoded)) {
+            return [];
+        }
+        $policySection = $decoded['config']['policy'] ?? null;
+        if (!is_array($policySection)) {
+            return [];
+        }
+        $listBlock = $policySection[$listName] ?? [];
+
+        return is_array($listBlock) ? $listBlock : [];
     }
 
     /**
@@ -478,20 +544,31 @@ class JsonManipulator
         }
 
         // child exists
-        $childRegex = '{'.self::DEFINES.'(?P<start>"'.preg_quote($name).'"\s*:\s*)(?P<content>(?&json))(?P<end>,?)}x';
-        if (Preg::isMatch($childRegex, $children, $matches)) {
-            $children = Preg::replaceCallback($childRegex, function ($matches) use ($subName, $value): string {
-                if ($subName !== null && is_string($matches['content'])) {
-                    $curVal = json_decode($matches['content'], true);
+        if (is_array($decoded[$mainNode]) && array_key_exists($name, $decoded[$mainNode])) {
+            $matches = $this->matchChild($name, $children);
+            if ($matches === null) {
+                return false;
+            }
+            assert(is_string($matches[0]));
+            assert(is_string($matches['start']));
+            assert(is_string($matches['content']));
+            assert(is_string($matches['end']));
+
+            if ($subName !== null) {
+                // decoded without assoc so objects stay objects and lists stay lists when formatted back
+                $curVal = json_decode($matches['content']);
+                if ($curVal instanceof \stdClass) {
+                    $curVal->{$subName} = $value;
+                } else {
                     if (!is_array($curVal)) {
                         $curVal = [];
                     }
                     $curVal[$subName] = $value;
-                    $value = $curVal;
                 }
+                $value = $curVal;
+            }
 
-                return $matches['start'] . $this->format($value, 1) . $matches['end'];
-            }, $children);
+            $children = $matches['start'] . $this->format($value, 1) . $matches['end'] . substr($children, strlen($matches[0]));
         } elseif (Preg::isMatch('#^\{(?P<leadingspace>\s*?)(?P<content>\S+.*?)?(?P<trailingspace>\s*)\}$#s', $children, $match)) {
             $whitespace = $match['trailingspace'];
             if (null !== $match['content']) {
@@ -572,37 +649,25 @@ class JsonManipulator
             [$name, $subName] = explode('.', $name, 2);
         }
 
-        // no node to remove
-        if (!isset($decoded[$mainNode][$name]) || ($subName && !isset($decoded[$mainNode][$name][$subName]))) {
+        // no node to remove, a key set to null is still there
+        if (!is_array($decoded[$mainNode]) || !array_key_exists($name, $decoded[$mainNode]) || ($subName !== null && (!is_array($decoded[$mainNode][$name]) || !array_key_exists($subName, $decoded[$mainNode][$name])))) {
             return true;
         }
 
-        // try and find a match for the subkey
-        $keyRegex = str_replace('/', '\\\\?/', preg_quote($name));
-        if (Preg::isMatch('{"'.$keyRegex.'"\s*:}i', $children)) {
-            // find best match for the value of "name"
-            if (Preg::isMatchAll('{'.self::DEFINES.'"'.$keyRegex.'"\s*:\s*(?:(?&json))}x', $children, $matches)) {
-                $bestMatch = '';
-                foreach ($matches[0] as $match) {
-                    assert(is_string($match));
-                    if (strlen($bestMatch) < strlen($match)) {
-                        $bestMatch = $match;
-                    }
-                }
-                $childrenClean = Preg::replace('{,\s*'.preg_quote($bestMatch).'}i', '', $children, -1, $count);
-                if (1 !== $count) {
-                    $childrenClean = Preg::replace('{'.preg_quote($bestMatch).'\s*,?\s*}i', '', $childrenClean, -1, $count);
-                    if (1 !== $count) {
-                        return false;
-                    }
-                }
-            }
-        } else {
-            $childrenClean = $children;
+        $matches = $this->matchChild($name, $children);
+        if ($matches === null) {
+            return false;
         }
+        assert(is_string($matches[0]));
+        assert(is_string($matches['prefix']));
+        assert(is_string($matches['end']));
 
-        if (!isset($childrenClean)) {
-            throw new \InvalidArgumentException("JsonManipulator: \$childrenClean is not defined. Please report at https://github.com/composer/composer/issues/new.");
+        // drop the pair along with the comma before it, or after it if it is the first pair
+        $rest = substr($children, strlen($matches[0]) - strlen($matches['end']));
+        if (Preg::isMatch('{,\s*$}', $matches['prefix'])) {
+            $childrenClean = Preg::replace('{,\s*$}', '', $matches['prefix']) . $rest;
+        } else {
+            $childrenClean = $matches['prefix'] . Preg::replace('{^\s*,?\s*}', '', $rest);
         }
 
         // no child data left, $name was the only key in
@@ -618,12 +683,9 @@ class JsonManipulator
 
                 // we have a subname, so we restore the rest of $name
                 if ($subName !== null) {
-                    $curVal = json_decode($children, true);
-                    unset($curVal[$name][$subName]);
-                    if ($curVal[$name] === []) {
-                        $curVal[$name] = new \ArrayObject();
-                    }
-                    $this->addSubNode($mainNode, $name, $curVal[$name]);
+                    $curVal = json_decode($children);
+                    assert($curVal instanceof \stdClass);
+                    $this->addSubNode($mainNode, $name, self::removeKey($curVal->{$name}, $subName));
                 }
 
                 return true;
@@ -633,12 +695,10 @@ class JsonManipulator
         $this->contents = Preg::replaceCallback($nodeRegex, function ($matches) use ($name, $subName, $childrenClean): string {
             assert(is_string($matches['content']));
             if ($subName !== null) {
-                $curVal = json_decode($matches['content'], true);
-                unset($curVal[$name][$subName]);
-                if ($curVal[$name] === []) {
-                    $curVal[$name] = new \ArrayObject();
-                }
-                $childrenClean = $this->format($curVal, 0, true);
+                $curVal = json_decode($matches['content']);
+                assert($curVal instanceof \stdClass);
+                $curVal->{$name} = self::removeKey($curVal->{$name}, $subName);
+                $childrenClean = $this->format($curVal);
             }
 
             return $matches['start'] . $childrenClean . $matches['end'];
@@ -835,7 +895,7 @@ class JsonManipulator
         }
 
         // no node to remove
-        if (!isset($decoded[$mainNode][$nodeIndex])) {
+        if (!is_array($decoded[$mainNode]) || !array_key_exists($nodeIndex, $decoded[$mainNode])) {
             return true;
         }
 
@@ -875,10 +935,10 @@ class JsonManipulator
         $decoded = JsonFile::parseJson($this->contents);
         $content = $this->format($content);
 
-        // key exists already
+        // key exists already, possibly set to null
         $regex = '{'.self::DEFINES.'^(?P<start>\s*\{\s*(?:(?&string)\s*:\s*(?&json)\s*,\s*)*?)'.
             '(?P<key>'.preg_quote(JsonFile::encode($key)).'\s*:\s*(?&json))(?P<end>.*)}sx';
-        if (isset($decoded[$key]) && Preg::isMatch($regex, $this->contents, $matches)) {
+        if (array_key_exists($key, $decoded) && Preg::isMatch($regex, $this->contents, $matches)) {
             // invalid match due to un-regexable content, abort
             if (!@json_decode('{'.$matches['key'].'}')) {
                 return false;
@@ -990,6 +1050,51 @@ class JsonManipulator
     }
 
     /**
+     * Matches the top-level pair for $name in an object, skipping nested keys with the same name
+     *
+     * @return array<int|string, string|null>|null null if the pair could not be matched
+     */
+    private function matchChild(string $name, string $children): ?array
+    {
+        // spaces are escaped for the x modifier, slashes may have been written escaped
+        $key = str_replace([' ', '/'], ['\\ ', '\\\\?/'], preg_quote(JsonFile::encode($name)));
+
+        // possessive loop over the other pairs, a lazy one backtracks exponentially when the key is missing
+        $childRegex = '{'.self::DEFINES.'^(?P<start>(?P<prefix>\{ \s* (?: (?!'.$key.'\s*:) (?&string) \s* : (?&json) \s* , \s* )*+) '.$key.'\s*:\s*)(?P<content>(?&json))(?P<end>,?)}x';
+
+        try {
+            if (!Preg::isMatch($childRegex, $children, $matches)) {
+                return null;
+            }
+        } catch (\RuntimeException $e) {
+            if (in_array($e->getCode(), [PREG_BACKTRACK_LIMIT_ERROR, PREG_JIT_STACKLIMIT_ERROR], true)) {
+                return null;
+            }
+            throw $e;
+        }
+
+        return $matches;
+    }
+
+    /**
+     * @param \stdClass|array<mixed> $node
+     * @return \stdClass|array<mixed>
+     */
+    private static function removeKey($node, string $key)
+    {
+        if ($node instanceof \stdClass) {
+            unset($node->{$key});
+
+            return $node;
+        }
+
+        // reindex so a list stays a list
+        unset($node[$key]);
+
+        return array_values($node);
+    }
+
+    /**
      * @param mixed $data
      */
     public function format($data, int $depth = 0, bool $wasObject = false): string
@@ -1004,7 +1109,7 @@ class JsonManipulator
                 return $wasObject ? '{' . $this->newline . str_repeat($this->indent, $depth + 1) . '}' : '[]';
             }
 
-            if (array_is_list($data)) {
+            if (!$wasObject && array_is_list($data)) {
                 foreach ($data as $key => $val) {
                     $data[$key] = $this->format($val, $depth + 1);
                 }

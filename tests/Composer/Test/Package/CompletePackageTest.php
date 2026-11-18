@@ -95,4 +95,53 @@ class CompletePackageTest extends TestCase
         $package->setTargetDir('/foo/..//bar');
         self::assertEquals('foo/bar', $package->getTargetDir());
     }
+
+    /**
+     * @dataProvider provideTargetDirectories
+     */
+    public function testTargetDirectoryPreservesSeparators(?string $target, ?string $expected): void
+    {
+        $package = new Package('a', '1.0.0.0', '1.0');
+        $package->setTargetDir($target);
+
+        self::assertSame($expected, $package->getTargetDir());
+    }
+
+    public static function provideTargetDirectories(): array
+    {
+        return [
+            [null, null],
+            ['', ''],
+            ['src', 'src'],
+            ['//vendor/pkg', 'vendor/pkg'],
+            ['vendor/pkg/', 'vendor/pkg/'],
+            ['\Foo\Bar', '\Foo\Bar'],
+            ['a.b/c', 'a.b/c'],
+            ['foo/../bar', 'foo/bar'],
+        ];
+    }
+
+    public function testLastDateSetterWins(): void
+    {
+        $package = new Package('foo', '1.0.0.0', '1.0');
+
+        $package->setReleaseDateString('2025-01-15T10:00:00+00:00');
+        $package->setReleaseDate(new \DateTime('2020-01-01T00:00:00+00:00'));
+        self::assertNotNull($date = $package->getReleaseDate());
+        self::assertSame('2020-01-01', $date->format('Y-m-d'));
+
+        $package->setReleaseDate(new \DateTime('2020-01-01T00:00:00+00:00'));
+        $package->setReleaseDateString('2025-01-15T10:00:00+00:00');
+        self::assertNotNull($date = $package->getReleaseDate());
+        self::assertSame('2025-01-15', $date->format('Y-m-d'));
+
+        $package->setPublishedDateString('2025-01-15T10:00:00+00:00');
+        $package->setPublishedDate(null);
+        self::assertNull($package->getPublishedDate());
+
+        $package->setPublishedDate(new \DateTimeImmutable('2020-01-01T00:00:00+00:00'));
+        $package->setPublishedDateString('1747685025');
+        self::assertNotNull($publishedDate = $package->getPublishedDate());
+        self::assertSame(1747685025, $publishedDate->getTimestamp());
+    }
 }

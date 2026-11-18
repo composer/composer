@@ -17,6 +17,7 @@ use Composer\Util\Platform;
 use Symfony\Component\Process\ExecutableFinder;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Repository\VcsRepository;
+use Composer\Repository\Vcs\SvnDriver;
 use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
 use Composer\IO\NullIO;
@@ -100,6 +101,8 @@ class VcsRepositoryTest extends TestCase
         // add version to composer.json
         $exec('git checkout master');
         $composer['version'] = '1.0.0';
+        // must be ignored, only Composer repositories can provide it
+        $composer['published-time'] = '2020-01-01T00:00:00+00:00';
         file_put_contents('composer.json', json_encode($composer));
         $exec('git add composer.json');
         $exec('git commit -m addversion');
@@ -162,6 +165,172 @@ class VcsRepositoryTest extends TestCase
             '9999999-dev' => true, // alias of dev-master
         ];
 
+        foreach ($this->assertLoadedVersions([], $expected) as $package) {
+            self::assertNull($package->getPublishedDate(), 'published-time from composer.json must not be trusted for '.$package->getPrettyVersion());
+        }
+    }
+
+    /**
+     * @dataProvider provideOnlyBranchesFilters
+     * @param list<string> $onlyBranches
+     * @param array<string, true> $expected
+     */
+    public function testLoadVersionsWithOnlyBranchesFilter(array $onlyBranches, array $expected): void
+    {
+        $this->assertLoadedVersions(['only-branches' => $onlyBranches], $expected);
+    }
+
+    public static function provideOnlyBranchesFilters(): array
+    {
+        return [
+            'patterns' => [
+                ['1.1.x', 'feature/*'],
+                [
+                    '0.6.0' => true,
+                    '1.0.0' => true,
+                    '1.1.x-dev' => true,
+                    'dev-feature/a-1.0-B' => true,
+                    'dev-master' => true,
+                    '9999999-dev' => true, // alias of dev-master
+                ],
+            ],
+            'empty list keeps only the default branch' => [
+                [],
+                [
+                    '0.6.0' => true,
+                    '1.0.0' => true,
+                    'dev-master' => true,
+                    '9999999-dev' => true, // alias of dev-master
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider provideExcludeBranchesFilters
+     * @param array{only-branches?: list<string>, exclude-branches?: list<string>} $filters
+     * @param array<string, true> $expected
+     */
+    public function testLoadVersionsWithExcludeBranchesFilter(array $filters, array $expected): void
+    {
+        $this->assertLoadedVersions($filters, $expected);
+    }
+
+    public static function provideExcludeBranchesFilters(): array
+    {
+        return [
+            'patterns' => [
+                ['exclude-branches' => ['1.*', 'feature/*']],
+                [
+                    '0.6.0' => true,
+                    '1.0.0' => true,
+                    'dev-feature-b' => true,
+                    'dev-foo+bar' => true,
+                    'dev-master' => true,
+                    '9999999-dev' => true, // alias of dev-master
+                ],
+            ],
+            'empty list loads all branches' => [
+                ['exclude-branches' => []],
+                [
+                    '0.6.0' => true,
+                    '1.0.0' => true,
+                    '1.0.x-dev' => true,
+                    '1.1.x-dev' => true,
+                    'dev-feature-b' => true,
+                    'dev-feature/a-1.0-B' => true,
+                    'dev-foo+bar' => true,
+                    'dev-master' => true,
+                    '9999999-dev' => true, // alias of dev-master
+                ],
+            ],
+            'default branch is always kept' => [
+                ['exclude-branches' => ['*']],
+                [
+                    '0.6.0' => true,
+                    '1.0.0' => true,
+                    'dev-master' => true,
+                    '9999999-dev' => true, // alias of dev-master
+                ],
+            ],
+            'combined with only-branches' => [
+                ['only-branches' => ['1.*', 'feature*'], 'exclude-branches' => ['1.1.x', 'feature-*']],
+                [
+                    '0.6.0' => true,
+                    '1.0.0' => true,
+                    '1.0.x-dev' => true,
+                    'dev-feature/a-1.0-B' => true,
+                    'dev-master' => true,
+                    '9999999-dev' => true, // alias of dev-master
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider provideSvnBranchFilters
+     * @param array{only-branches?: list<string>, exclude-branches?: list<string>} $filters
+     */
+    public function testBranchFiltersKeepSvnTrunk(array $filters): void
+    {
+        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
+        $repo = new VcsRepository(
+            ['url' => 'svn://example.org/repo', 'type' => 'svn'] + $filters,
+            new NullIO,
+            new Config(),
+            $httpDownloader,
+            null,
+            null,
+            ['svn' => FakeSvnDriver::class]
+        );
+
+        $versions = array_map(static function ($package): string {
+            return $package->getPrettyVersion();
+        }, $repo->getPackages());
+        sort($versions);
+
+        self::assertSame(['1.0.x-dev', 'dev-trunk'], $versions);
+    }
+
+    public static function provideSvnBranchFilters(): array
+    {
+        return [
+            'only-branches' => [['only-branches' => ['1.*']]],
+            'exclude-branches' => [['exclude-branches' => ['trunk', '2.*']]],
+        ];
+    }
+
+    /**
+     * @dataProvider provideInvalidBranchFilters
+     * @param array{only-branches?: mixed, exclude-branches?: mixed} $filters
+     */
+    public function testInvalidBranchFilterThrows(string $key, array $filters): void
+    {
+        self::expectException('InvalidArgumentException');
+        self::expectExceptionMessage('"'.$key.'" key for repository '.self::$gitRepo.' should be an array of strings');
+
+        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
+        new VcsRepository(['url' => self::$gitRepo, 'type' => 'vcs'] + $filters, new NullIO, new Config(), $httpDownloader);
+    }
+
+    public static function provideInvalidBranchFilters(): array
+    {
+        $cases = [];
+        foreach (['only-branches', 'exclude-branches'] as $key) {
+            $cases[$key.' string'] = [$key, [$key => '7.4']];
+            $cases[$key.' non-string item'] = [$key, [$key => ['7.4', ['8.*']]]];
+        }
+
+        return $cases;
+    }
+
+    /**
+     * @param array{only-branches?: list<string>, exclude-branches?: list<string>} $repoConfig
+     * @param array<string, true> $expected
+     * @return array<\Composer\Package\PackageInterface>
+     */
+    private function assertLoadedVersions(array $repoConfig, array $expected): array
+    {
         $config = new Config();
         $config->merge([
             'config' => [
@@ -169,7 +338,7 @@ class VcsRepositoryTest extends TestCase
             ],
         ]);
         $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
-        $repo = new VcsRepository(['url' => self::$gitRepo, 'type' => 'vcs'], new NullIO, $config, $httpDownloader);
+        $repo = new VcsRepository(['url' => self::$gitRepo, 'type' => 'vcs'] + $repoConfig, new NullIO, $config, $httpDownloader);
         $packages = $repo->getPackages();
         $dumper = new ArrayDumper();
 
@@ -182,5 +351,26 @@ class VcsRepositoryTest extends TestCase
         }
 
         self::assertEmpty($expected, 'Missing versions: '.implode(', ', array_keys($expected)));
+
+        return $packages;
+    }
+}
+
+/**
+ * Mimics the branch layout of SvnDriver without running svn
+ */
+class FakeSvnDriver extends SvnDriver
+{
+    public function initialize(): void
+    {
+        $this->baseUrl = $this->url;
+        $this->rootIdentifier = '/trunk/@3';
+        $this->branches = ['trunk' => '/trunk/@3', '1.0' => '/branches/1.0/@2', '2.0' => '/branches/2.0/@1'];
+        $this->tags = [];
+    }
+
+    public function getComposerInformation(string $identifier): ?array
+    {
+        return ['name' => 'foo/bar'];
     }
 }

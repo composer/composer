@@ -14,6 +14,7 @@ namespace Composer\Downloader;
 
 use React\Promise\PromiseInterface;
 use Composer\Package\PackageInterface;
+use Composer\Util\Platform;
 
 /**
  * Downloader for phar files
@@ -24,9 +25,14 @@ class PharDownloader extends ArchiveDownloader
 {
     /**
      * @inheritDoc
+     *
+     * @throws \RuntimeException
      */
     protected function extract(PackageInterface $package, string $file, string $path): PromiseInterface
     {
+        // Guard against unsafe Phar/PharData metadata handling on PHP < 8.0
+        Platform::assertPharMetadataSafe();
+
         // Can throw an UnexpectedValueException
         $archive = new \Phar($file);
         $archive->extractTo($path, null, true);

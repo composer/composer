@@ -28,7 +28,7 @@ For private package hosting take a look at [Private Packagist](https://packagist
 Community
 ---------
 
-Follow [@packagist](https://twitter.com/packagist) or [@seldaek](https://twitter.com/seldaek) on Twitter for announcements, or check the [#composerphp](https://twitter.com/search?q=%23composerphp&src=typed_query&f=live) hashtag.
+Follow [@packagist](https://X.com/packagist) or [@seldaek](https://X.com/seldaek) on X for announcements, or check the [#composerphp](https://X.com/search?q=%23composerphp&src=typed_query&f=live) hashtag.
 
 For support, Stack Overflow offers a good collection of
 [Composer related questions](https://stackoverflow.com/questions/tagged/composer-php), or you can use the [GitHub discussions](https://github.com/composer/composer/discussions).
@@ -71,8 +71,8 @@ is needed, but this is not recommended.
 Authors
 -------
 
-- Nils Adermann  | [GitHub](https://github.com/naderman)  | [Twitter](https://twitter.com/naderman) | <naderman@naderman.de> | [naderman.de](https://naderman.de)
-- Jordi Boggiano | [GitHub](https://github.com/Seldaek) | [Twitter](https://twitter.com/seldaek) | <j.boggiano@seld.be> | [seld.be](https://seld.be)
+- Nils Adermann  | [GitHub](https://github.com/naderman)  | [X](https://X.com/naderman) | <naderman@naderman.de> | [naderman.de](https://naderman.de)
+- Jordi Boggiano | [GitHub](https://github.com/Seldaek) | [X](https://X.com/seldaek) | <j.boggiano@seld.be> | [seld.be](https://seld.be)
 
 See also the list of [contributors](https://github.com/composer/composer/contributors) who participated in this project.
 
@@ -80,6 +80,35 @@ Security Reports
 ----------------
 
 Please send any sensitive issue to [security@packagist.org](mailto:security@packagist.org). Thanks!
+
+Sponsors
+--------
+
+Thank you to our sponsors for supporting the ongoing development and maintenance of Composer and Packagist.org! See [getcomposer.org/sponsor](https://getcomposer.org/sponsor/) for more information on becoming a sponsor.
+
+<p>
+    <a href="https://packagist.com/?utm_source=composer"><img src="https://packagist.org/img/sponsors/private-packagist-dark.svg" alt="Private Packagist" height="60" hspace="15"></a>
+    <a href="https://www.aikido.dev/?utm_source=composer"><img src="https://packagist.org/img/sponsors/aikido-dark.svg" alt="Aikido" height="60" hspace="15"></a>
+    <a href="https://www.sovereign.tech/?utm_source=composer"><img src="https://packagist.org/img/sponsors/sovereign-tech-agency-dark.svg" alt="Sovereign Tech Fund" height="60" hspace="15"></a>
+</p>
+
+<p>
+    <a href="https://aws.amazon.com/?utm_source=composer"><img src="https://packagist.org/img/sponsors/aws-dark.svg" alt="AWS" height="60" hspace="15"></a>
+    <a href="https://socket.dev/?utm_source=composer"><img src="https://packagist.org/img/sponsors/socket-dark.svg" alt="Socket" height="60" hspace="15"></a>
+    <a href="https://upsun.com/?utm_source=composer"><img src="https://packagist.org/img/sponsors/upsun-dark.svg" alt="Upsun" height="60" hspace="15"></a>
+</p>
+
+<p>
+    <a href="https://www.sonatype.com/?utm_source=composer"><img src="https://packagist.org/img/sponsors/sonatype-dark.svg" alt="Sonatype" height="60" hspace="15"></a>
+    <a href="https://bunny.net/?utm_source=composer"><img src="https://packagist.org/img/sponsors/bunny-net-dark.svg" alt="Bunny.net" height="60" hspace="15"></a>
+    <a href="https://tideways.com/?utm_source=composer"><img src="https://packagist.org/img/sponsors/tideways-dark.svg" alt="Tideways" height="60" hspace="15"></a>
+</p>
+
+<p>
+    <a href="https://datadog.com/?utm_source=composer"><img src="https://packagist.org/img/sponsors/datadog-dark.svg" alt="Datadog" height="60" hspace="15"></a>
+    <a href="https://www.algolia.com/?utm_source=composer"><img src="https://packagist.org/img/sponsors/algolia-dark.svg" alt="Algolia" height="60" hspace="15"></a>
+    <a href="https://sentry.io/?utm_source=composer"><img src="https://packagist.org/img/sponsors/sentry-dark.svg" alt="Sentry" height="60" hspace="15"></a>
+</p>
 
 License
 -------

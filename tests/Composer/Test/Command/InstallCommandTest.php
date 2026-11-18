@@ -12,11 +12,25 @@
 
 namespace Composer\Test\Command;
 
+use Composer\Installer;
 use Composer\Test\TestCase;
 use Generator;
 
 class InstallCommandTest extends TestCase
 {
+    public function testInstallRejectsConflictedLockFile(): void
+    {
+        $dir = $this->initTempComposer(['name' => 'vendor/test']);
+        copy(__DIR__.'/../Json/Fixtures/composer-lock-merge-conflict-simple.txt', $dir.'/composer.lock');
+
+        $appTester = $this->getApplicationTester();
+        $exitCode = $appTester->run(['command' => 'install']);
+
+        self::assertSame(Installer::ERROR_LOCK_FILE_INVALID, $exitCode);
+        self::assertStringContainsString('VCS merge conflict detected. Please run `composer update --lock`.', $appTester->getDisplay(true));
+        self::assertDirectoryDoesNotExist($dir.'/vendor');
+    }
+
     /**
      * @dataProvider errorCaseProvider
      * @param array<mixed> $composerJson

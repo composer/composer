@@ -194,4 +194,41 @@ class DumpAutoloadCommandTest extends TestCase
 
         self::assertStringContainsString('ComposerAutoloaderInit2d4a6be9a93712c5d6a119b26734a047', (string) file_get_contents($dir . '/vendor/autoload.php'));
     }
+
+    public function testWithConflictedComposerLockWithoutAutoloaderSuffix(): void
+    {
+        $dir = $this->initTempComposer(
+            [
+                'name' => 'foo/bar',
+            ],
+            [],
+            [
+                "_readme" => [
+                    "This file locks the dependencies of your project to a known state",
+                    "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+                    "This file is @generated automatically",
+                ],
+                // what JsonFile::parseJson() puts in place of a conflicted content-hash
+                "content-hash" => "VCS merge conflict detected. Please run `composer update --lock`.",
+                "packages" => [],
+                "packages-dev" => [],
+                "aliases" => [],
+                "minimum-stability" => "stable",
+                "stability-flags" => [],
+                "prefer-stable" => false,
+                "prefer-lowest" => false,
+                "platform" => [],
+                "platform-dev" => [],
+                "plugin-api-version" => "2.6.0",
+            ]
+        );
+
+        $appTester = $this->getApplicationTester();
+        self::assertSame(0, $appTester->run(['command' => 'dump-autoload']));
+
+        $autoload = (string) file_get_contents($dir . '/vendor/autoload.php');
+
+        self::assertStringNotContainsString('merge conflict detected', $autoload);
+        self::assertMatchesRegularExpression('{ComposerAutoloaderInit[a-f0-9]{32}::getLoader\(\);}', $autoload);
+    }
 }

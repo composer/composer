@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Command;
 
+use Composer\Exception\SecurityException;
 use Composer\Test\TestCase;
 use Generator;
 
@@ -54,6 +55,25 @@ class ReinstallCommandTest extends TestCase
         ], $options));
 
         self::assertSame($expected, trim($appTester->getDisplay(true)));
+    }
+
+    public function testReinstallAbortsOnInvalidInstalledPackageName(): void
+    {
+        $this->initTempComposer();
+
+        $package = self::getPackage('root/../../evil');
+        $package->setType('metapackage');
+        $this->createInstalledJson([$package]);
+
+        self::expectException(SecurityException::class);
+        self::expectExceptionMessage('root/../../evil is invalid');
+
+        $this->getApplicationTester()->run([
+            'command' => 'reinstall',
+            '--no-progress' => true,
+            '--no-plugins' => true,
+            'packages' => ['root/*'],
+        ]);
     }
 
     public function caseProvider(): Generator

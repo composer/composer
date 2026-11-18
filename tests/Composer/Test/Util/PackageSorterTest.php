@@ -20,6 +20,27 @@ use Composer\Semver\Constraint\MatchAllConstraint;
 
 class PackageSorterTest extends TestCase
 {
+    public function testMostCurrentVersionWithStringKeys(): void
+    {
+        $first = new Package('foo/bar', '1.0.0.0', '1.0.0');
+        $latest = new Package('foo/bar', '2.0.0.0', '2.0.0');
+        $packages = ['first' => $first, 'latest' => $latest];
+        end($packages);
+
+        self::assertSame($latest, PackageSorter::getMostCurrentVersion($packages));
+
+        $first->setIsDefaultBranch(true);
+        self::assertSame($first, PackageSorter::getMostCurrentVersion($packages));
+
+        $latest->setIsDefaultBranch(true);
+        self::assertSame($first, PackageSorter::getMostCurrentVersion($packages));
+    }
+
+    public function testMostCurrentVersionWithNoPackages(): void
+    {
+        self::assertNull(PackageSorter::getMostCurrentVersion([]));
+    }
+
     public function testSortingDoesNothingWithNoDependencies(): void
     {
         $packages[] = self::createPackage('foo/bar1', []);

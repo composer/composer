@@ -123,6 +123,8 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         $package = JsonFile::parseJson($json, $file->getPathname().'#composer.json');
+        // only a Composer repository can vouch for a publication date, the package's own composer.json cannot
+        unset($package['published-time']);
         $package['dist'] = [
             'type' => $fileType,
             'url' => strtr($file->getPathname(), '\\', '/'),

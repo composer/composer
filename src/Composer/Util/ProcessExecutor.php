@@ -12,6 +12,8 @@
 
 namespace Composer\Util;
 
+use Composer\Console\ProgramStatus;
+use Composer\IO\ConsoleIO;
 use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
 use Seld\Signal\SignalHandler;
@@ -175,6 +177,9 @@ class ProcessExecutor
         } catch (ProcessSignaledException $e) {
             if ($signalHandler->isTriggered()) {
                 // exiting as we were signaled and the child process exited too due to the signal
+                if ($this->io instanceof ConsoleIO) {
+                    $this->io->writeProgramStatus(ProgramStatus::idle());
+                }
                 $signalHandler->exitWithLastSignal();
             }
         } finally {
@@ -481,18 +486,19 @@ class ProcessExecutor
             return;
         }
 
-        $commandString = is_string($command) ? $command : implode(' ', array_map(self::class.'::escape', $command));
-        $safeCommand = Preg::replaceCallback('{://(?P<user>[^:/\s]+):(?P<password>[^@\s/]+)@}i', static function ($m): string {
-            // if the username looks like a long (12char+) hex string, or a modern github token (e.g. ghp_xxx, github_pat_xxx) we obfuscate that
-            if (Preg::isMatch(GitHub::GITHUB_TOKEN_REGEX, $m['user'])) {
-                return '://***:***@';
+        if (is_array($command)) {
+            foreach ($command as $index => $arg) {
+                if ($arg === '--password' && isset($command[$index + 1])) {
+                    $command[$index + 1] = '***';
+                } elseif (str_starts_with($arg, '--password=')) {
+                    $command[$index] = '--password=***';
+                }
             }
-            if (Preg::isMatch('{^[a-f0-9]{12,}$}', $m['user'])) {
-                return '://***:***@';
-            }
+        }
 
-            return '://'.$m['user'].':***@';
-        }, $commandString);
+        $commandString = is_string($command) ? $command : implode(' ', array_map(self::class.'::escape', $command));
+        $safeCommand = Url::sanitize($commandString);
+        // array commands are redacted above, this covers string commands e.g. from plugins
         $safeCommand = Preg::replace("{--password (.*[^\\\\]\') }", '--password \'***\' ', $safeCommand);
         $this->io->writeError('Executing'.($async ? ' async' : '').' command ('.($cwd ?: 'CWD').'): '.$safeCommand);
     }

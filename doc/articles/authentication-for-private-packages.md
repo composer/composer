@@ -119,7 +119,7 @@ section or directly in the repository definition.
 
 The final option to supply Composer with credentials is to use the `COMPOSER_AUTH` environment variable.
 These variables can be either passed as command line variables or set in actual environment variables.
-Read more about the usage of this environment variable [here](../03-cli.md#composer-auth).
+Read more about the usage of this environment variable [here](../03-cli.md#composer_auth).
 
 # Authentication methods
 
@@ -348,6 +348,22 @@ php composer.phar config [--global] --editor --auth
 }
 ```
 
+### GitLab CI job tokens
+
+Inside a GitLab CI job you can authenticate with the ephemeral `CI_JOB_TOKEN` instead of a personal
+access token, by storing it with `gitlab-ci-token` as the username:
+
+```shell
+php composer.phar config [--global] -- gitlab-token.gitlab.example.org gitlab-ci-token "${CI_JOB_TOKEN}"
+```
+
+Composer then sends the job token as a `JOB-TOKEN` header (downloading dist archives from `vcs`
+repositories that way requires GitLab 19.3 or newer), except for GitLab's Composer package registry,
+which only accepts job tokens via HTTP basic auth with the `gitlab-ci-token` username, so Composer
+uses that there. Note that the job token must be
+[allowed to access](https://docs.gitlab.com/ci/jobs/ci_job_token/#control-job-token-access-to-your-project)
+the projects it fetches packages from.
+
 ## github-oauth
 
 GitHub currently offers two types of access tokens:
@@ -404,11 +420,13 @@ php composer.phar config [--global] --editor --auth
 
 ## bitbucket-oauth
 
-The BitBucket driver uses OAuth to access your private repositories via the BitBucket REST APIs, and you will need to
+The Bitbucket driver uses OAuth to access your private repositories via the Bitbucket REST APIs, and you will need to
 create an OAuth consumer to use the driver, please refer
 to [Atlassian's Documentation](https://support.atlassian.com/bitbucket-cloud/docs/use-oauth-on-bitbucket-cloud/). You
-will need to fill the callback URL with something to satisfy BitBucket, but the address does not need to go anywhere and
+will need to fill the callback URL with something to satisfy Bitbucket, but the address does not need to go anywhere and
 is not used by Composer.
+
+The created consumer needs to have at least the "Repository > Read" permissions. 
 
 ### Command line bitbucket-oauth
 
@@ -434,6 +452,35 @@ php composer.phar config [--global] --editor --auth
         "bitbucket.org": {
             "consumer-key": "key",
             "consumer-secret": "secret"
+        }
+    }
+}
+```
+
+### Bitbucket API tokens
+
+As an alternative to OAuth consumers, you can use Atlassian API tokens. Create a token with
+the `read:repository:bitbucket` scope in [your Atlassian account](https://id.atlassian.com/manage-profile/security/api-tokens).
+
+Once you have a token, configure it using HTTP Basic authentication with your Atlassian account
+email as the username and the token as the password:
+
+```shell
+php composer.phar config [--global] http-basic.bitbucket.org your@email.com api-token
+```
+
+Or manually in `auth.json`:
+
+```shell
+php composer.phar config [--global] --editor --auth
+```
+
+```json
+{
+    "http-basic": {
+        "bitbucket.org": {
+            "username": "your@email.com",
+            "password": "api-token"
         }
     }
 }

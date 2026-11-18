@@ -1285,6 +1285,23 @@ class JsonManipulatorTest extends TestCase
 }
 ',
             ],
+            [
+                '{
+    "require": {
+        "foo/bar": null
+    }
+}
+',
+                'require',
+                'foo/bar',
+                '^1',
+                '{
+    "require": {
+        "foo/bar": "^1"
+    }
+}
+',
+            ],
         ];
     }
 
@@ -2707,6 +2724,154 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
+    public function testAddConfigSettingDoesNotOverwriteNestedKeyWithSameName(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "config": {
+        "platform": {
+            "php": "8.1"
+        }
+    }
+}');
+
+        self::assertTrue($manipulator->addConfigSetting('php', '8.2'));
+        self::assertEquals('{
+    "config": {
+        "platform": {
+            "php": "8.1"
+        },
+        "php": "8.2"
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddSubNodeOverwritesTopLevelKeyNotNestedKeyWithSameName(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "extra": {
+        "symfony": {
+            "allow-contrib": true
+        },
+        "allow-contrib": true
+    }
+}');
+
+        self::assertTrue($manipulator->addSubNode('extra', 'allow-contrib', false));
+        self::assertEquals('{
+    "extra": {
+        "symfony": {
+            "allow-contrib": true
+        },
+        "allow-contrib": false
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddPropertyDoesNotOverwriteNestedKeyWithSameName(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "extra": {
+        "symfony": {
+            "allow-contrib": true
+        }
+    }
+}');
+
+        self::assertTrue($manipulator->addProperty('extra.allow-contrib', false));
+        self::assertEquals('{
+    "extra": {
+        "symfony": {
+            "allow-contrib": true
+        },
+        "allow-contrib": false
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddSubNodeAppendsToLargeNode(): void
+    {
+        $scripts = [];
+        for ($i = 0; $i < 30; $i++) {
+            $scripts['script'.$i] = 'echo '.$i;
+        }
+        $manipulator = new JsonManipulator(JsonFile::encode(['scripts' => $scripts]));
+
+        self::assertTrue($manipulator->addSubNode('scripts', 'new', 'echo new'));
+        self::assertSame($scripts + ['new' => 'echo new'], json_decode($manipulator->getContents(), true)['scripts']);
+    }
+
+    public function testAddSubNodeUpdatesLastKeyOfLargeNode(): void
+    {
+        $extra = [];
+        for ($i = 0; $i < 3000; $i++) {
+            $extra['key'.$i] = ['foo' => 'bar'];
+        }
+        $manipulator = new JsonManipulator(JsonFile::encode(['extra' => $extra]));
+
+        self::assertTrue($manipulator->addSubNode('extra', 'key2999', 'baz'));
+        $extra['key2999'] = 'baz';
+        self::assertSame($extra, json_decode($manipulator->getContents(), true)['extra']);
+    }
+
+    public function testAddSubNodeOverwritesKeyContainingSpace(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "scripts": {
+        "my script": "foo"
+    }
+}');
+
+        self::assertTrue($manipulator->addSubNode('scripts', 'my script', 'bar'));
+        self::assertEquals('{
+    "scripts": {
+        "my script": "bar"
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddSubNodeOverwritesKeyWithEscapedSlash(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "extra": {
+        "foo\\/bar": 1
+    }
+}');
+
+        self::assertTrue($manipulator->addSubNode('extra', 'foo/bar', 2));
+        self::assertEquals('{
+    "extra": {
+        "foo\\/bar": 2
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testRemoveSubNodeRemovesTopLevelKeyNotNestedKeyWithSameName(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "extra": {
+        "symfony": {
+            "allow-contrib": false
+        },
+        "allow-contrib": true
+    }
+}');
+
+        self::assertTrue($manipulator->removeSubNode('extra', 'allow-contrib'));
+        self::assertEquals('{
+    "extra": {
+        "symfony": {
+            "allow-contrib": false
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
     public function testAddConfigSettingCanOverwrite(): void
     {
         $manipulator = new JsonManipulator('{
@@ -2865,6 +3030,107 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
+    public function testAddConfigSettingPolicyListFieldDoesSurgicalEdit(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "name": "vendor/pkg",
+    "config": {
+        "vendor-dir": "vendor",
+        "policy": {
+            "advisories": {
+                "audit": "report"
+            },
+            "abandoned": {
+                "block": true
+            }
+        },
+        "sort-packages": true
+    }
+}');
+
+        self::assertTrue($manipulator->addConfigSetting('policy.advisories.block', true));
+        self::assertEquals('{
+    "name": "vendor/pkg",
+    "config": {
+        "vendor-dir": "vendor",
+        "policy": {
+            "advisories": {
+                "audit": "report",
+                "block": true
+            },
+            "abandoned": {
+                "block": true
+            }
+        },
+        "sort-packages": true
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddConfigSettingPolicyListFieldCreatesMissingList(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "config": {
+        "policy": {
+        }
+    }
+}');
+
+        self::assertTrue($manipulator->addConfigSetting('policy.advisories.block', false));
+        self::assertEquals('{
+    "config": {
+        "policy": {
+            "advisories": {
+                "block": false
+            }
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testRemoveConfigSettingPolicyListFieldDoesSurgicalEdit(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "config": {
+        "policy": {
+            "advisories": {
+                "audit": "report",
+                "block": true
+            }
+        }
+    }
+}');
+
+        self::assertTrue($manipulator->removeConfigSetting('policy.advisories.audit'));
+        self::assertEquals('{
+    "config": {
+        "policy": {
+            "advisories": {
+                "block": true
+            }
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testRemoveConfigSettingPolicyListFieldNoOpWhenAbsent(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "config": {
+        "policy": {
+            "advisories": {
+                "audit": "report"
+            }
+        }
+    }
+}');
+
+        self::assertTrue($manipulator->removeConfigSetting('policy.advisories.block'));
+    }
+
     public function testRemoveConfigSettingCanRemoveSubKeyInHash(): void
     {
         $manipulator = new JsonManipulator('{
@@ -2909,6 +3175,186 @@ class JsonManipulatorTest extends TestCase
     }
 }
 ', $manipulator->getContents());
+    }
+
+    public function testRemoveConfigSettingKeepsEmptyObjectsInSiblings(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "config": {
+        "platform": {
+            "php": "8.2.0"
+        },
+        "allow-plugins": {},
+        "preferred-install": {
+            "*": "dist"
+        }
+    }
+}');
+
+        self::assertTrue($manipulator->removeConfigSetting('platform.php'));
+        self::assertEquals('{
+    "config": {
+        "platform": {
+        },
+        "allow-plugins": {
+        },
+        "preferred-install": {
+            "*": "dist"
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testRemovePropertyKeepsNestedObjects(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "extra": {
+        "foo": {
+            "bar": "baz",
+            "map": {"0": "a"},
+            "empty": {}
+        }
+    }
+}');
+
+        self::assertTrue($manipulator->removeProperty('extra.foo.bar'));
+        self::assertEquals('{
+    "extra": {
+        "foo": {
+            "map": {
+                "0": "a"
+            },
+            "empty": {
+            }
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddPropertyKeepsNestedObjects(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "extra": {
+        "foo": {
+            "map": {"0": "a"},
+            "empty": {}
+        }
+    }
+}');
+
+        self::assertTrue($manipulator->addProperty('extra.foo.bar', 'baz'));
+        self::assertEquals('{
+    "extra": {
+        "foo": {
+            "map": {
+                "0": "a"
+            },
+            "empty": {
+            },
+            "bar": "baz"
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
+    /**
+     * @dataProvider provideSubKeyEditsKeepObjectOrListShape
+     */
+    public function testSubKeyEditsKeepObjectOrListShape(string $input, string $property, ?string $value, string $expected): void
+    {
+        $manipulator = new JsonManipulator($input);
+        if ($value === null) {
+            self::assertTrue($manipulator->removeProperty($property));
+        } else {
+            self::assertTrue($manipulator->addProperty($property, $value));
+        }
+        self::assertSame($expected, $manipulator->getContents());
+    }
+
+    /**
+     * @return iterable<string, array{string, string, string|null, string}>
+     */
+    public static function provideSubKeyEditsKeepObjectOrListShape(): iterable
+    {
+        yield 'add to object with numeric keys' => [
+            '{"extra": {"foo": {"0": "a"}}}',
+            'extra.foo.1',
+            'b',
+            '{"extra": {"foo": {
+            "0": "a",
+            "1": "b"
+        }}}
+',
+        ];
+        yield 'add to list' => [
+            '{"extra": {"foo": ["a"]}}',
+            'extra.foo.1',
+            'b',
+            '{"extra": {"foo": ["a", "b"]}}
+',
+        ];
+        yield 'remove from object leaving numeric keys' => [
+            '{"extra": {"foo": {"0": "a", "1": "b", "x": "c"}, "o": 1}}',
+            'extra.foo.x',
+            null,
+            '{"extra": {
+        "foo": {
+            "0": "a",
+            "1": "b"
+        },
+        "o": 1
+    }}
+',
+        ];
+        yield 'remove from only child object leaving numeric keys' => [
+            '{"extra": {"foo": {"0": "a", "1": "b", "x": "c"}}}',
+            'extra.foo.x',
+            null,
+            '{"extra": {
+        "foo": {
+            "0": "a",
+            "1": "b"
+        }
+    }}
+',
+        ];
+        yield 'remove first list item' => [
+            '{"extra": {"foo": ["a", "b"], "o": 1}}',
+            'extra.foo.0',
+            null,
+            '{"extra": {
+        "foo": ["b"],
+        "o": 1
+    }}
+',
+        ];
+        yield 'remove last remaining list item' => [
+            '{"extra": {"foo": ["a"], "o": 1}}',
+            'extra.foo.0',
+            null,
+            '{"extra": {
+        "foo": [],
+        "o": 1
+    }}
+',
+        ];
+        yield 'remove numeric sub-key of a string is a no-op' => [
+            '{"extra": {"foo": "abc", "o": 1}}',
+            'extra.foo.0',
+            null,
+            '{"extra": {"foo": "abc", "o": 1}}
+',
+        ];
+        yield 'remove numeric sub-key of an only child string is a no-op' => [
+            '{"extra": {"foo": "abc"}}',
+            'extra.foo.0',
+            null,
+            '{"extra": {"foo": "abc"}}
+',
+        ];
     }
 
     public function testAddMainKey(): void
@@ -3083,6 +3529,77 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
+    /**
+     * @dataProvider provideRemoveLink
+     */
+    public function testRemoveLink(string $json, string $type, string $package, string $expected): void
+    {
+        $manipulator = new JsonManipulator($json);
+
+        self::assertTrue($manipulator->removeLink($type, $package));
+        self::assertSame($expected, $manipulator->getContents());
+    }
+
+    /**
+     * @return iterable<string, array{string, string, string, string}>
+     */
+    public static function provideRemoveLink(): iterable
+    {
+        yield 'removes the key when emptied' => ['{
+    "require": {
+        "foo/bar": "^1"
+    },
+    "require-dev": {
+        "baz/qux": "^1"
+    }
+}', 'require-dev', 'baz/qux', '{
+    "require": {
+        "foo/bar": "^1"
+    }
+}
+'];
+        yield 'keeps the key when not emptied' => ['{
+    "require-dev": {
+        "baz/qux": "^1",
+        "foo/bar": "^1"
+    }
+}', 'require-dev', 'baz/qux', '{
+    "require-dev": {
+        "foo/bar": "^1"
+    }
+}
+'];
+        yield 'keeps an already empty key' => ['{
+    "require": {
+        "foo/bar": "^1"
+    },
+    "require-dev": {
+    }
+}', 'require-dev', 'baz/qux', '{
+    "require": {
+        "foo/bar": "^1"
+    },
+    "require-dev": {
+    }
+}
+'];
+    }
+
+    public function testRemoveRepositoryKeepsAlreadyEmptyKey(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "repositories": [
+    ]
+}');
+
+        self::assertTrue($manipulator->removeRepository('baz'));
+        self::assertSame('{
+    "repositories": [
+    ]
+}
+', $manipulator->getContents());
+    }
+
     public function testRemoveMainKeyIfEmpty(): void
     {
         $manipulator = new JsonManipulator('{
@@ -3139,6 +3656,67 @@ class JsonManipulatorTest extends TestCase
         ]);
 
         self::assertJsonStringEqualsJsonString($expected, $manipulator->getContents());
+    }
+
+    public function testRemoveSubNodeRemovesKeyWhereValueIsNull(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "extra": {
+        "foo": null,
+        "bar": {
+            "baz": null,
+            "qux": 1
+        }
+    },
+    "config": {
+        "cache-dir": null,
+        "sort-packages": true
+    },
+    "require": {
+        "foo/bar": null
+    }
+}');
+
+        self::assertTrue($manipulator->removeProperty('extra.foo'));
+        self::assertTrue($manipulator->removeProperty('extra.bar.baz'));
+        self::assertTrue($manipulator->removeConfigSetting('cache-dir'));
+        self::assertTrue($manipulator->removeLink('require', 'foo/bar'));
+        self::assertSame('{
+    "extra": {
+        "bar": {
+            "qux": 1
+        }
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testUpdateKeyWhereValueIsNull(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "name": "foo/bar",
+    "homepage": null,
+    "extra": null,
+    "require": null
+}');
+
+        self::assertTrue($manipulator->addMainKey('homepage', 'https://example.org'));
+        self::assertTrue($manipulator->addProperty('extra.foo', 'bar'));
+        self::assertTrue($manipulator->addLink('require', 'foo/baz', '^1'));
+        self::assertSame('{
+    "name": "foo/bar",
+    "homepage": "https://example.org",
+    "extra": {
+        "foo": "bar"
+    },
+    "require": {
+        "foo/baz": "^1"
+    }
+}
+', $manipulator->getContents());
     }
 
     public function testIndentDetection(): void
@@ -3628,6 +4206,22 @@ class JsonManipulatorTest extends TestCase
 ',
             'main',
             2,
+        ];
+        yield 'null item (multi-line) remove first' => [
+            '{
+    "main": [
+        null,
+        2
+    ]
+}',
+            '{
+    "main": [
+        2
+    ]
+}
+',
+            'main',
+            0,
         ];
     }
 

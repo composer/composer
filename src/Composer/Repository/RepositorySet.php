@@ -16,7 +16,9 @@ use Composer\DependencyResolver\PoolOptimizer;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\PoolBuilder;
 use Composer\DependencyResolver\Request;
+use Composer\DependencyResolver\FilterListPoolFilter;
 use Composer\DependencyResolver\SecurityAdvisoryPoolFilter;
+use Composer\DependencyResolver\CooldownPoolFilter;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Advisory\SecurityAdvisory;
 use Composer\Advisory\PartialSecurityAdvisory;
@@ -30,6 +32,7 @@ use Composer\Package\PackageInterface;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Package\Version\StabilityFilter;
+use Composer\Package\Version\VersionParser;
 use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Semver\Constraint\MultiConstraint;
 
@@ -227,8 +230,30 @@ class RepositorySet
     }
 
     /**
+     * Loads packages from all repositories in one batch per repository, to warm up caches before many findPackages() calls
+     *
+     * @param string[] $names
+     */
+    public function preloadPackages(array $names): void
+    {
+        $nameMap = array_fill_keys($names, null);
+        foreach ($this->repositories as $repository) {
+            if ($nameMap === []) {
+                break;
+            }
+
+            $result = $repository->loadPackages($nameMap, $this->acceptableStabilities, $this->stabilityFlags);
+            foreach ($result['namesFound'] as $name) {
+                // like findPackages, do not query lower priority repositories for names already found
+                unset($nameMap[$name]);
+            }
+        }
+    }
+
+    /**
      * @param string[] $packageNames
-     * @return ($allowPartialAdvisories is true ? array{advisories: array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>, unreachableRepos: array<string>} : array{advisories: array<string, array<SecurityAdvisory>>, unreachableRepos: array<string>})
+     * @param bool $allowPartialAdvisories If true, loading full advisories is skipped when partial ones are available. If false, full advisories are loaded where the repository can provide them, but partial ones may still be returned
+     * @return array{advisories: array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>, unreachableRepos: array<string>}
      */
     public function getSecurityAdvisories(array $packageNames, bool $allowPartialAdvisories, bool $ignoreUnreachable = false): array
     {
@@ -245,21 +270,28 @@ class RepositorySet
 
     /**
      * @param PackageInterface[] $packages
-     * @return ($allowPartialAdvisories is true ? array{advisories: array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>, unreachableRepos: array<string>} : array{advisories: array<string, array<SecurityAdvisory>>, unreachableRepos: array<string>})
+     * @param bool $allowPartialAdvisories If true, loading full advisories is skipped when partial ones are available. If false, full advisories are loaded where the repository can provide them, but partial ones may still be returned
+     * @return array{advisories: array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>, unreachableRepos: array<string>}
      */
     public function getMatchingSecurityAdvisories(array $packages, bool $allowPartialAdvisories = false, bool $ignoreUnreachable = false): array
     {
-        $map = [];
+        $constraintsByName = [];
         foreach ($packages as $package) {
             // ignore root alias versions as they are not actual package versions and should not matter when it comes to vulnerabilities
             if ($package instanceof AliasPackage && $package->isRootPackageAlias()) {
                 continue;
             }
-            if (isset($map[$package->getName()])) {
-                $map[$package->getName()] = new MultiConstraint([new Constraint('=', $package->getVersion()), $map[$package->getName()]], false);
-            } else {
-                $map[$package->getName()] = new Constraint('=', $package->getVersion());
+            if (self::isUnversionedBranch($package)) {
+                continue;
             }
+            // key by version so duplicate versions collapse and the resulting OR constraint stays flat
+            // (nesting one MultiConstraint per version produces trees deep enough to blow the stack, see composer/semver#177)
+            $constraintsByName[$package->getName()][$package->getVersion()] = new Constraint('=', $package->getVersion());
+        }
+
+        $map = [];
+        foreach ($constraintsByName as $name => $constraints) {
+            $map[$name] = MultiConstraint::create(array_values($constraints), false);
         }
 
         $unreachableRepos = [];
@@ -271,7 +303,7 @@ class RepositorySet
     /**
      * @param array<string, ConstraintInterface> $packageConstraintMap
      * @param array<string> &$unreachableRepos Array to store messages about unreachable repositories
-     * @return ($allowPartialAdvisories is true ? array<string, array<PartialSecurityAdvisory|SecurityAdvisory>> : array<string, array<SecurityAdvisory>>)
+     * @return array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>
      */
     private function getSecurityAdvisoriesForConstraints(array $packageConstraintMap, bool $allowPartialAdvisories, bool $ignoreUnreachable = false, array &$unreachableRepos = []): array
     {
@@ -330,9 +362,9 @@ class RepositorySet
      * @param list<string>      $ignoredTypes Packages of those types are ignored
      * @param list<string>|null $allowedTypes Only packages of those types are allowed if set to non-null
      */
-    public function createPool(Request $request, IOInterface $io, ?EventDispatcher $eventDispatcher = null, ?PoolOptimizer $poolOptimizer = null, array $ignoredTypes = [], ?array $allowedTypes = null, ?SecurityAdvisoryPoolFilter $securityAdvisoryPoolFilter = null): Pool
+    public function createPool(Request $request, IOInterface $io, ?EventDispatcher $eventDispatcher = null, ?PoolOptimizer $poolOptimizer = null, array $ignoredTypes = [], ?array $allowedTypes = null, ?SecurityAdvisoryPoolFilter $securityAdvisoryPoolFilter = null, ?FilterListPoolFilter $filterListPoolFilter = null, ?CooldownPoolFilter $cooldownPoolFilter = null): Pool
     {
-        $poolBuilder = new PoolBuilder($this->acceptableStabilities, $this->stabilityFlags, $this->rootAliases, $this->rootReferences, $io, $eventDispatcher, $poolOptimizer, $this->temporaryConstraints, $securityAdvisoryPoolFilter);
+        $poolBuilder = new PoolBuilder($this->acceptableStabilities, $this->stabilityFlags, $this->rootAliases, $this->rootReferences, $io, $eventDispatcher, $poolOptimizer, $this->temporaryConstraints, $securityAdvisoryPoolFilter, $filterListPoolFilter, $cooldownPoolFilter);
         $poolBuilder->setIgnoredTypes($ignoredTypes);
         $poolBuilder->setAllowedTypes($allowedTypes);
 
@@ -432,5 +464,15 @@ class RepositorySet
         }
 
         return $normalizedAliases;
+    }
+
+    /**
+     * dev-* branches and the default branch alias have no version ordering, so advisory ranges cannot meaningfully match them, unlike numeric branches such as 3.3.x-dev
+     *
+     * @internal
+     */
+    public static function isUnversionedBranch(PackageInterface $package): bool
+    {
+        return str_starts_with($package->getVersion(), 'dev-') || $package->getVersion() === VersionParser::DEFAULT_BRANCH_ALIAS;
     }
 }

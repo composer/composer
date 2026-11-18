@@ -1,0 +1,33 @@
+--TEST--
+Cooldown policy aborts before resolving when a Composer repository provides no published-time for a version it considers and is not exempted via require-published-time (the RuntimeException is rendered by the console application, hence exit code 1).
+--COMPOSER--
+{
+    "name": "acme/project",
+    "version": "1.0.0",
+    "require": {
+        "acme/library": "1.1.0"
+    },
+    "config": {
+        "policy": {
+            "cooldown": {
+                "period": "1 week"
+            }
+        }
+    },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "file://update-policy-cooldown-composer-repo"
+        }
+    ]
+}
+--RUN--
+update
+
+--EXPECT-EXIT-CODE--
+1
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+
+--EXPECT--

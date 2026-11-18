@@ -19,6 +19,7 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Pcre\Preg;
 use Composer\Util\HttpDownloader;
 use Composer\Util\ProcessExecutor;
+use Composer\Util\Url;
 use Composer\Json\JsonFile;
 
 /**
@@ -31,7 +32,7 @@ class RepositoryFactory
      */
     public static function configFromString(IOInterface $io, Config $config, string $repository, bool $allowFilesystem = false)
     {
-        if (0 === strpos($repository, 'http')) {
+        if (0 === stripos($repository, 'http')) {
             $repoConfig = ['type' => 'composer', 'url' => $repository];
         } elseif ("json" === pathinfo($repository, PATHINFO_EXTENSION)) {
             $json = new JsonFile($repository, Factory::createHttpDownloader($io, $config));
@@ -47,7 +48,7 @@ class RepositoryFactory
             // assume it is a json object that makes a repo config
             $repoConfig = JsonFile::parseJson($repository);
         } else {
-            throw new \InvalidArgumentException("Invalid repository url ($repository) given. Has to be a .json file, an http url or a JSON object.");
+            throw new \InvalidArgumentException("Invalid repository url (".Url::sanitize($repository).") given. Has to be a .json file, an http url or a JSON object.");
         }
 
         return $repoConfig;

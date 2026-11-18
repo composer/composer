@@ -1,22 +1,27 @@
 # See the Conductor setup guide at https://packagist.com/docs/conductor/getting-started
+name: Private Packagist Conductor
 
 on:
     repository_dispatch:
         types:
             - dependency_update
 
-name: Private Packagist Conductor
+concurrency:
+    group: ${{ github.workflow }}
 
-permissions:
-    contents: write
+permissions: {}
 
 jobs:
     conductor:
         name: Private Packagist Conductor
         runs-on: "ubuntu-latest"
+        permissions:
+            contents: write # for conductor-github-action to push dependency update branches
 
         steps:
-            - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: true
 
             # Install PHP. You can also replace this step by
             # reusing an existing workflow that sets up PHP.
@@ -24,11 +29,12 @@ jobs:
             # install/update, such as Node.js or a database,
             # must be set up here too.
             - name: Install PHP
-              uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1 # 2.36.0
+              uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
               with:
                   php-version: "latest"
                   coverage: "none"
+                  tools: "composer:snapshot"
 
             # See the Conductor GitHub Action at https://github.com/packagist/conductor-github-action
             - name: "Running Conductor"
-              uses: packagist/conductor-github-action@v1
+              uses: packagist/conductor-github-action@a20e46b1c1449a070539670a20087629b8eb0fd9 # 1.7.0

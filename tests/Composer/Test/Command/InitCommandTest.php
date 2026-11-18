@@ -506,6 +506,49 @@ class InitCommandTest extends TestCase
         $command->addVendorIgnore($ignoreFile);
         self::assertTrue($command->hasVendorIgnore($ignoreFile));
     }
+
+    public function testAddVendorIgnoreKeepsTrailingNewline(): void
+    {
+        $command = new DummyInitCommand;
+        $ignoreFile = self::getUniqueTmpDirectory().'/ignore';
+        file_put_contents($ignoreFile, "foo\n");
+        $command->addVendorIgnore($ignoreFile);
+        self::assertSame("foo\n/vendor/\n", file_get_contents($ignoreFile));
+    }
+
+    /**
+     * @dataProvider provideExportIgnoreForLockfile
+     */
+    public function testExportIgnoreForLockfile(?string $initial, bool $detected, string $expected): void
+    {
+        $command = new DummyInitCommand;
+        $attributesFile = self::getUniqueTmpDirectory().'/.gitattributes';
+        if (null !== $initial) {
+            file_put_contents($attributesFile, $initial);
+        }
+
+        self::assertSame($detected, $command->hasExportIgnoreForLockfile($attributesFile));
+        if (!$detected) {
+            $command->addExportIgnoreForLockfile($attributesFile);
+            self::assertTrue($command->hasExportIgnoreForLockfile($attributesFile));
+        }
+        self::assertSame($expected, file_get_contents($attributesFile));
+    }
+
+    /**
+     * @return iterable<string, array{string|null, bool, string}>
+     */
+    public static function provideExportIgnoreForLockfile(): iterable
+    {
+        yield 'missing file' => [null, false, "composer.lock export-ignore\n"];
+        yield 'empty file' => ['', false, "composer.lock export-ignore\n"];
+        yield 'no trailing newline' => ['*.php diff=php', false, "*.php diff=php\ncomposer.lock export-ignore\n"];
+        yield 'already present' => ["/composer.lock export-ignore\n", true, "/composer.lock export-ignore\n"];
+        yield 'present with crlf and trailing space' => ["composer.lock -diff export-ignore \r\n", true, "composer.lock -diff export-ignore \r\n"];
+        yield 'bare lockfile line is left alone' => ["composer.lock\n", false, "composer.lock\ncomposer.lock export-ignore\n"];
+        yield 'unset export-ignore is overridden' => ["composer.lock -export-ignore\n", false, "composer.lock -export-ignore\ncomposer.lock export-ignore\n"];
+        yield 'similar paths are left alone' => ["composer.lock.dist text\n", false, "composer.lock.dist text\ncomposer.lock export-ignore\n"];
+    }
 }
 
 class DummyInitCommand extends InitCommand
@@ -528,5 +571,15 @@ class DummyInitCommand extends InitCommand
     public function hasVendorIgnore(string $ignoreFile, string $vendor = 'vendor'): bool
     {
         return parent::hasVendorIgnore($ignoreFile, $vendor);
+    }
+
+    public function addExportIgnoreForLockfile(string $gitAttributesFile, string $lockfile = 'composer.lock'): void
+    {
+        parent::addExportIgnoreForLockfile($gitAttributesFile, $lockfile);
+    }
+
+    public function hasExportIgnoreForLockfile(string $gitAttributesFile, string $lockfile = 'composer.lock'): bool
+    {
+        return parent::hasExportIgnoreForLockfile($gitAttributesFile, $lockfile);
     }
 }

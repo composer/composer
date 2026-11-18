@@ -51,17 +51,18 @@ class ReinstallCommand extends BaseCommand
                 new InputOption('apcu-autoloader-prefix', null, InputOption::VALUE_REQUIRED, 'Use a custom prefix for the APCu autoloader cache. Implicitly enables --apcu-autoloader'),
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
-                new InputOption('type', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Filter packages to reinstall by type(s)', null, $this->suggestInstalledPackageTypes(false)),
+                new InputOption('type', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Filter packages to reinstall by exact type(s)', null, $this->suggestInstalledPackageTypes(false)),
                 new InputArgument('packages', InputArgument::IS_ARRAY, 'List of package names to reinstall, can include a wildcard (*) to match any substring.', null, $this->suggestInstalledPackage(false)),
             ])
             ->setHelp(
                 <<<EOT
-The <info>reinstall</info> command looks up installed packages by name,
-uninstalls them and reinstalls them. This lets you do a clean install
+The <info>reinstall</info> command looks up installed packages by name
+(or by type with --type), uninstalls them and reinstalls them. This lets you do a clean install
 of a package if you messed with its files, or if you wish to change
 the installation type using --prefer-install.
 
 <info>php composer.phar reinstall acme/foo "acme/bar-*"</info>
+<info>php composer.phar reinstall --type=composer-plugin</info>
 
 Read more at https://getcomposer.org/doc/03-cli.md#reinstall
 EOT

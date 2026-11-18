@@ -14,6 +14,7 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
+use Composer\Pcre\Preg;
 use Composer\Repository\LockArrayRepository;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\MatchAllConstraint;
@@ -44,14 +45,16 @@ class Request
     protected $lockedRepository;
     /** @var array<string, ConstraintInterface> */
     protected $requires = [];
-    /** @var array<string, BasePackage> */
+    /** @var array<int, BasePackage> */
     protected $fixedPackages = [];
-    /** @var array<string, BasePackage> */
+    /** @var array<int, BasePackage> */
     protected $lockedPackages = [];
-    /** @var array<string, BasePackage> */
+    /** @var array<int, BasePackage> */
     protected $fixedLockedPackages = [];
     /** @var array<string> */
     protected $updateAllowList = [];
+    /** @var non-empty-string|null */
+    private $updateAllowListRegex = null;
     /** @var false|self::UPDATE_* */
     protected $updateAllowTransitiveDependencies = false;
     /** @var non-empty-list<string>|null */
@@ -83,7 +86,7 @@ class Request
      */
     public function fixPackage(BasePackage $package): void
     {
-        $this->fixedPackages[spl_object_hash($package)] = $package;
+        $this->fixedPackages[spl_object_id($package)] = $package;
     }
 
     /**
@@ -98,7 +101,7 @@ class Request
      */
     public function lockPackage(BasePackage $package): void
     {
-        $this->lockedPackages[spl_object_hash($package)] = $package;
+        $this->lockedPackages[spl_object_id($package)] = $package;
     }
 
     /**
@@ -110,13 +113,13 @@ class Request
      */
     public function fixLockedPackage(BasePackage $package): void
     {
-        $this->fixedPackages[spl_object_hash($package)] = $package;
-        $this->fixedLockedPackages[spl_object_hash($package)] = $package;
+        $this->fixedPackages[spl_object_id($package)] = $package;
+        $this->fixedLockedPackages[spl_object_id($package)] = $package;
     }
 
     public function unlockPackage(BasePackage $package): void
     {
-        unset($this->lockedPackages[spl_object_hash($package)]);
+        unset($this->lockedPackages[spl_object_id($package)]);
     }
 
     /**
@@ -126,7 +129,16 @@ class Request
     public function setUpdateAllowList(array $updateAllowList, $updateAllowTransitiveDependencies): void
     {
         $this->updateAllowList = $updateAllowList;
+        $this->updateAllowListRegex = \count($updateAllowList) > 0 ? BasePackage::packageNamesToRegexp($updateAllowList) : null;
         $this->updateAllowTransitiveDependencies = $updateAllowTransitiveDependencies;
+    }
+
+    /**
+     * Whether the package name matches one of the update allow list patterns (not including transitive dependencies)
+     */
+    public function isInUpdateAllowList(string $packageName): bool
+    {
+        return $this->updateAllowListRegex !== null && Preg::isMatch($this->updateAllowListRegex, $packageName);
     }
 
     /**
@@ -156,7 +168,7 @@ class Request
     }
 
     /**
-     * @return array<string, BasePackage>
+     * @return array<int, BasePackage>
      */
     public function getFixedPackages(): array
     {
@@ -165,24 +177,24 @@ class Request
 
     public function isFixedPackage(BasePackage $package): bool
     {
-        return isset($this->fixedPackages[spl_object_hash($package)]);
+        return isset($this->fixedPackages[spl_object_id($package)]);
     }
 
     /**
-     * @return array<string, BasePackage>
+     * @return array<int, BasePackage>
      */
     public function getLockedPackages(): array
     {
-        return $this->lockedPackages;
+        return array_merge($this->lockedPackages, $this->fixedLockedPackages);
     }
 
     public function isLockedPackage(PackageInterface $package): bool
     {
-        return isset($this->lockedPackages[spl_object_hash($package)]) || isset($this->fixedLockedPackages[spl_object_hash($package)]);
+        return isset($this->lockedPackages[spl_object_id($package)]) || isset($this->fixedLockedPackages[spl_object_id($package)]);
     }
 
     /**
-     * @return array<string, BasePackage>
+     * @return array<int, BasePackage>
      */
     public function getFixedOrLockedPackages(): array
     {
@@ -190,7 +202,7 @@ class Request
     }
 
     /**
-     * @return ($packageIds is true ? array<int, BasePackage> : array<string, BasePackage>)
+     * @return array<int, BasePackage>
      *
      * @TODO look into removing the packageIds option, the only place true is used
      *       is for the installed map in the solver problems.
@@ -203,12 +215,12 @@ class Request
 
         if ($this->lockedRepository !== null) {
             foreach ($this->lockedRepository->getPackages() as $package) {
-                $presentMap[$packageIds ? $package->getId() : spl_object_hash($package)] = $package;
+                $presentMap[$packageIds ? $package->getId() : spl_object_id($package)] = $package;
             }
         }
 
         foreach ($this->fixedPackages as $package) {
-            $presentMap[$packageIds ? $package->getId() : spl_object_hash($package)] = $package;
+            $presentMap[$packageIds ? $package->getId() : spl_object_id($package)] = $package;
         }
 
         return $presentMap;

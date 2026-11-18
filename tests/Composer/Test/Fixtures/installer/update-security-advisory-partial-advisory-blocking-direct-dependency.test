@@ -1,0 +1,45 @@
+--TEST--
+A partial security advisory (metadata only, no api-url) blocking a direct dependency is explained, not fatal.
+--COMPOSER--
+{
+    "name": "acme/project",
+    "version": "1.0.0",
+    "require": {
+        "acme/library": "1.0.0"
+    },
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "acme/library",
+                    "version": "1.0.0",
+                    "source": { "reference": "some.branch", "type": "git", "url": "" }
+                }
+            ],
+            "security-advisories": {
+                "acme/library": [
+                    {
+                        "advisoryId": "ACME-2024-001",
+                        "affectedVersions": ">=1.0.0,<1.1.0"
+                    }
+                ]
+            }
+        }
+    ]
+}
+--RUN--
+update -v
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires acme/library 1.0.0 (exact version match: 1.0.0 or 1.0.0.0), found acme/library[1.0.0] but these were not loaded, because they are affected by security advisories ("ACME-2024-001"). Review the advisory details above for more information. To ignore the advisories, add their IDs to the "policy.advisories.ignore-id" config or add the package to "policy.advisories.ignore". To turn the feature off entirely, you can set "policy.advisories.block" to false.
+
+--EXPECT--

@@ -12,8 +12,11 @@
 
 namespace Composer\Command;
 
-use Composer\Advisory\Auditor;
 use Composer\Pcre\Preg;
+use Composer\Policy\CooldownPolicyConfig;
+use Composer\Policy\IgnoreUnreachable;
+use Composer\Policy\ListPolicyConfig;
+use Composer\Policy\PolicyConfig;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use Composer\Util\Silencer;
@@ -79,8 +82,8 @@ class ConfigCommand extends BaseConfigCommand
                 new InputOption('list', 'l', InputOption::VALUE_NONE, 'List configuration settings'),
                 new InputOption('file', 'f', InputOption::VALUE_REQUIRED, 'If you want to choose a different composer.json or config.json'),
                 new InputOption('absolute', null, InputOption::VALUE_NONE, 'Returns absolute paths when fetching *-dir config values instead of relative'),
-                new InputOption('json', 'j', InputOption::VALUE_NONE, 'JSON decode the setting value, to be used with extra.* keys'),
-                new InputOption('merge', 'm', InputOption::VALUE_NONE, 'Merge the setting value with the current value, to be used with extra.* or audit.ignore[-abandoned] keys in combination with --json'),
+                new InputOption('json', 'j', InputOption::VALUE_NONE, 'JSON decode the setting value, only supported for extra.*, policy.*.ignore, policy.advisories.ignore-id, policy.ignore-unreachable and audit.ignore[-abandoned] keys'),
+                new InputOption('merge', 'm', InputOption::VALUE_NONE, 'Merge the setting value with the current value, only supported for extra.* keys in combination with --json, and for policy.*.ignore, policy.advisories.ignore-id and audit.ignore[-abandoned] keys'),
                 new InputOption('append', null, InputOption::VALUE_NONE, 'When adding a repository, append it (lowest priority) to the existing ones instead of prepending it (highest priority)'),
                 new InputOption('source', null, InputOption::VALUE_NONE, 'Display where the config value is loaded from'),
                 new InputArgument('setting-key', null, 'Setting key', null, $this->suggestSettingKeys()),
@@ -194,11 +197,11 @@ EOT
                     }
                 }
             } else {
-                $editor = escapeshellcmd($editor);
+                $editor = escapeshellarg($editor);
             }
 
             $file = $input->getOption('auth') ? $this->authConfigFile->getPath() : $this->configFile->getPath();
-            system($editor . ' ' . $file . (Platform::isWindows() ? '' : ' > `tty`'));
+            system($editor . ' ' . escapeshellarg($file) . (Platform::isWindows() ? '' : ' > `tty`'));
 
             return 0;
         }
@@ -322,6 +325,15 @@ EOT
         $booleanNormalizer = static function ($val): bool {
             return $val !== 'false' && (bool) $val;
         };
+        $auditValidator = static function ($val): bool {
+            return in_array($val, [ListPolicyConfig::AUDIT_IGNORE, ListPolicyConfig::AUDIT_REPORT, ListPolicyConfig::AUDIT_FAIL], true);
+        };
+        $blockScopeValidator = static function ($val): bool {
+            return in_array($val, ListPolicyConfig::AVAILABLE_BLOCK_SCOPES, true);
+        };
+        $keepAsIsNormalizer = static function ($val) {
+            return $val;
+        };
 
         // handle config values
         $uniqueConfigValues = [
@@ -419,12 +431,14 @@ EOT
             }],
             'sort-packages' => [$booleanValidator, $booleanNormalizer],
             'optimize-autoloader' => [$booleanValidator, $booleanNormalizer],
+            'strict-psr-autoloader' => [$booleanValidator, $booleanNormalizer],
             'classmap-authoritative' => [$booleanValidator, $booleanNormalizer],
             'apcu-autoloader' => [$booleanValidator, $booleanNormalizer],
             'prepend-autoloader' => [$booleanValidator, $booleanNormalizer],
             'update-with-minimal-changes' => [$booleanValidator, $booleanNormalizer],
             'disable-tls' => [$booleanValidator, $booleanNormalizer],
             'secure-http' => [$booleanValidator, $booleanNormalizer],
+            'source-fallback' => [$booleanValidator, $booleanNormalizer],
             'bump-after-update' => [
                 static function ($val): bool {
                     return in_array($val, ['dev', 'no-dev', 'true', 'false', '1', '0'], true);
@@ -481,17 +495,41 @@ EOT
                     return $val !== 'false' && (bool) $val;
                 },
             ],
-            'audit.abandoned' => [
-                static function ($val): bool {
-                    return in_array($val, [Auditor::ABANDONED_IGNORE, Auditor::ABANDONED_REPORT, Auditor::ABANDONED_FAIL], true);
-                },
-                static function ($val) {
-                    return $val;
-                },
-            ],
+            'audit.abandoned' => [$auditValidator, $keepAsIsNormalizer],
             'audit.ignore-unreachable' => [$booleanValidator, $booleanNormalizer],
             'audit.block-insecure' => [$booleanValidator, $booleanNormalizer],
             'audit.block-abandoned' => [$booleanValidator, $booleanNormalizer],
+            'policy.advisories.block' => [$booleanValidator, $booleanNormalizer],
+            'policy.advisories.audit' => [$auditValidator, $keepAsIsNormalizer],
+            'policy.malware.block' => [$booleanValidator, $booleanNormalizer],
+            'policy.malware.block-scope' => [$blockScopeValidator, $keepAsIsNormalizer],
+            'policy.malware.audit' => [$auditValidator, $keepAsIsNormalizer],
+            'policy.abandoned.block' => [$booleanValidator, $booleanNormalizer],
+            'policy.abandoned.audit' => [$auditValidator, $keepAsIsNormalizer],
+            'policy.cooldown.block' => [$booleanValidator, $booleanNormalizer],
+            'policy.cooldown.audit' => [$auditValidator, $keepAsIsNormalizer],
+            'policy.cooldown.period' => [
+                static function ($val): bool {
+                    if ($val === 'null' || $val === '') {
+                        return true;
+                    }
+                    try {
+                        CooldownPolicyConfig::parseDuration($val);
+
+                        return true;
+                    } catch (\RuntimeException $e) {
+                        return false;
+                    }
+                },
+                static function ($val) {
+                    if ($val === 'null' || $val === '') {
+                        return null;
+                    }
+
+                    return is_numeric($val) ? (int) $val : $val;
+                },
+            ],
+            'policy.ignore-unreachable' => [$booleanValidator, $booleanNormalizer],
         ];
         $multiConfigValues = [
             'github-protocols' => [
@@ -536,7 +574,7 @@ EOT
                     return $vals;
                 },
             ],
-            'audit.ignore-severity' => [
+            'audit.ignore-severity' => $ignoreSeverityValidatorAndNormalizer = [
                 static function ($vals) {
                     if (!is_array($vals)) {
                         return 'array expected';
@@ -554,13 +592,176 @@ EOT
                     return $vals;
                 },
             ],
+            'policy.advisories.ignore-severity' => $ignoreSeverityValidatorAndNormalizer,
+            'policy.malware.ignore-source' => [
+                static function ($vals) {
+                    if (!is_array($vals)) {
+                        return 'array expected';
+                    }
+
+                    foreach ($vals as $val) {
+                        if (!is_string($val)) {
+                            return 'string values expected';
+                        }
+                    }
+
+                    return true;
+                },
+                $keepAsIsNormalizer,
+            ],
         ];
 
-        // allow unsetting audit config entirely
-        if ($input->getOption('unset') && $settingKey === 'audit') {
+        // unsetting any audit/policy.* key resolves to the same removeConfigSetting call
+        // (JsonConfigSource handles the cascade-cleanup of empty ancestors for policy.*),
+        // so handle them all in one place rather than repeating the check in each branch below.
+        if ($input->getOption('unset') && ($settingKey === 'audit' || $settingKey === 'policy' || strpos($settingKey, 'policy.') === 0)) {
             $this->configSource->removeConfigSetting($settingKey);
 
             return 0;
+        }
+
+        // handle policy.*.ignore / policy.advisories.ignore-id with --json + --merge support (mirrors audit.ignore)
+        $policyJsonMergeKeys = ['policy.advisories.ignore-id'];
+        foreach (PolicyConfig::BUILTIN_LIST_NAMES as $listName) {
+            $policyJsonMergeKeys[] = 'policy.'.$listName.'.ignore';
+        }
+        $nonCustomPolicyKeys = array_merge(PolicyConfig::BUILTIN_LIST_NAMES, PolicyConfig::NON_LIST_KEYS);
+        $nonCustomAlternation = implode('|', array_map(static function (string $name): string {
+            return preg_quote($name, '/');
+        }, $nonCustomPolicyKeys));
+        $isCustomPolicyIgnore = Preg::isMatch('/^policy\.(?!(?:'.$nonCustomAlternation.')$)([^.]+)\.ignore$/', $settingKey, $customIgnoreMatches);
+        if (in_array($settingKey, $policyJsonMergeKeys, true) || $isCustomPolicyIgnore) {
+            if ($isCustomPolicyIgnore) {
+                $reservedError = PolicyConfig::getFutureReservedListNameError((string) $customIgnoreMatches[1]);
+                if ($reservedError !== null) {
+                    throw new \RuntimeException('Invalid dependency policy name: '.$reservedError);
+                }
+            }
+
+            $value = $values;
+            if ($input->getOption('json')) {
+                $value = JsonFile::parseJson($values[0]);
+                if (!is_array($value)) {
+                    throw new \RuntimeException('Expected an array or object for '.$settingKey);
+                }
+            }
+
+            if ($input->getOption('merge')) {
+                $currentConfig = $this->configFile->read();
+                $currentValue = $currentConfig['config'] ?? null;
+                foreach (explode('.', $settingKey) as $bit) {
+                    if (!is_array($currentValue) || !isset($currentValue[$bit])) {
+                        $currentValue = null;
+                        break;
+                    }
+                    $currentValue = $currentValue[$bit];
+                }
+
+                if ($currentValue !== null && is_array($currentValue) && is_array($value)) {
+                    if (array_is_list($currentValue) && array_is_list($value)) {
+                        $value = array_merge($currentValue, $value);
+                    } elseif (!array_is_list($currentValue) && !array_is_list($value)) {
+                        $value = $value + $currentValue;
+                    } else {
+                        throw new \RuntimeException('Cannot merge array and object for '.$settingKey);
+                    }
+                }
+            }
+
+            $this->configSource->addConfigSetting($settingKey, $value);
+
+            return 0;
+        }
+
+        // handle policy.ignore-unreachable array form. Accepts:
+        //   --json '["update","install"]'           (canonical JSON)
+        //   policy.ignore-unreachable update install (positional enum values)
+        // The boolean form (true/false) falls through to $uniqueConfigValues.
+        if ($settingKey === 'policy.ignore-unreachable') {
+            if ($input->getOption('json')) {
+                $value = JsonFile::parseJson($values[0]);
+                if (!is_array($value)) {
+                    throw new \RuntimeException('Expected a boolean or array for '.$settingKey);
+                }
+                foreach ($value as $v) {
+                    if (!in_array($v, IgnoreUnreachable::SCOPES, true)) {
+                        throw new \RuntimeException('valid values for '.$settingKey.' include: '.implode(', ', IgnoreUnreachable::SCOPES));
+                    }
+                }
+
+                $this->configSource->addConfigSetting($settingKey, $value);
+
+                return 0;
+            }
+
+            // Positional enum values: accept e.g. `composer config policy.ignore-unreachable update install`.
+            // Triggers only when the first value is one of the allowed scope strings, so `true`/`false` still
+            // fall through to the boolean validator below.
+            if (count($values) > 0 && in_array($values[0], IgnoreUnreachable::SCOPES, true)) {
+                foreach ($values as $v) {
+                    if (!in_array($v, IgnoreUnreachable::SCOPES, true)) {
+                        throw new \RuntimeException('valid values for '.$settingKey.' include: '.implode(', ', IgnoreUnreachable::SCOPES));
+                    }
+                }
+
+                $this->configSource->addConfigSetting($settingKey, $values);
+
+                return 0;
+            }
+        }
+
+        // handle policy.<list> = true|false (enable/disable an entire list) for built-in and custom lists;
+        // policy.ignore-unreachable is excluded because it already has its own scalar/array handling via $uniqueConfigValues
+        if (Preg::isMatch('/^policy\.([^.]+)$/', $settingKey, $matches)
+            && !in_array($matches[1], PolicyConfig::NON_LIST_KEYS, true)
+        ) {
+            $reservedError = PolicyConfig::getFutureReservedListNameError($matches[1]);
+            if ($reservedError !== null) {
+                throw new \RuntimeException('Invalid dependency policy name: '.$reservedError);
+            }
+            if (!$booleanValidator($values[0])) {
+                throw new \RuntimeException(sprintf('"%s" is an invalid value for %s, expected a boolean', $values[0], $settingKey));
+            }
+            $this->configSource->addConfigSetting($settingKey, $booleanNormalizer($values[0]));
+
+            return 0;
+        }
+
+        // handle custom policy lists: policy.<name>.block / policy.<name>.block-scope / policy.<name>.audit
+        if (Preg::isMatch('/^policy\.([^.]+)\.(block|block-scope|audit)$/', $settingKey, $matches)
+            && !in_array($matches[1], $nonCustomPolicyKeys, true)
+        ) {
+            $reservedError = PolicyConfig::getFutureReservedListNameError($matches[1]);
+            if ($reservedError !== null) {
+                throw new \RuntimeException('Invalid dependency policy name: '.$reservedError);
+            }
+            if ($matches[2] === 'block') {
+                if (!$booleanValidator($values[0])) {
+                    throw new \RuntimeException(sprintf('"%s" is an invalid value for %s, expected a boolean', $values[0], $settingKey));
+                }
+                $this->configSource->addConfigSetting($settingKey, $booleanNormalizer($values[0]));
+            } elseif ($matches[2] === 'block-scope') {
+                if (!$blockScopeValidator($values[0])) {
+                    throw new \RuntimeException(sprintf('"%s" is an invalid value for %s, must be one of: all, update, install', $values[0], $settingKey));
+                }
+                $this->configSource->addConfigSetting($settingKey, $values[0]);
+            } else {
+                if (!$auditValidator($values[0])) {
+                    throw new \RuntimeException(sprintf('"%s" is an invalid value for %s, must be one of: ignore, report, fail', $values[0], $settingKey));
+                }
+                $this->configSource->addConfigSetting($settingKey, $values[0]);
+            }
+
+            return 0;
+        }
+
+        // policy.<list>.sources is managed via the dedicated `composer policy` command rather than
+        // `composer config`, since sources have structured shape (type/url) and validation rules.
+        if (Preg::isMatch('/^policy\.([^.]+)\.sources$/', $settingKey, $matches)) {
+            throw new \RuntimeException(sprintf(
+                'Setting dependency policy sources is not supported by `composer config`. Use `composer policy add-source %s url <https-url>` instead.',
+                $matches[1]
+            ));
         }
 
         if ($input->getOption('unset') && (isset($uniqueConfigValues[$settingKey]) || isset($multiConfigValues[$settingKey]))) {

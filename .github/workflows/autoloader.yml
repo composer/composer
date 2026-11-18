@@ -8,6 +8,10 @@ on:
     paths-ignore:
       - 'doc/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -18,7 +22,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: "Install Composer dependencies"
         run: "composer config platform --unset && composer install"
@@ -27,12 +33,13 @@ jobs:
         run: "./bin/composer install -d tests/Composer/Test/Autoload/MinimumVersionSupport"
 
       - name: "Install oldest supported PHP version for autoloader"
-        uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1 # 2.36.0
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           coverage: "none"
           extensions: "intl, zip"
           ini-values: "memory_limit=-1"
           php-version: "5.6"
+          tools: "composer:snapshot"
 
       - name: "Check the autoloader can be executed"
         run: "php main.php"

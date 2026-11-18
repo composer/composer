@@ -17,8 +17,10 @@ use Composer\Downloader\ZipDownloader;
 use Composer\Package\PackageInterface;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
+use Composer\Util\Http\Response;
 use Composer\Util\HttpDownloader;
 use Composer\Util\Loop;
+use Composer\Util\Platform;
 
 class ZipDownloaderTest extends TestCase
 {
@@ -105,8 +107,172 @@ class ZipDownloaderTest extends TestCase
 
             $this->fail('Download of invalid zip files should throw an exception');
         } catch (\Exception $e) {
-            self::assertStringContainsString('is not a zip archive', $e->getMessage());
+            self::assertStringContainsString('is truncated or corrupt, zip end of central directory not found', $e->getMessage());
         }
+    }
+
+    public function testExtractWithZipArchiveDoesNotWriteThroughPreexistingSymlinks(): void
+    {
+        if (!class_exists('ZipArchive')) {
+            $this->markTestSkipped('zip extension missing');
+        }
+        if (Platform::isWindows()) {
+            $this->markTestSkipped('symlink creation requires privileges on Windows');
+        }
+
+        $fs = new Filesystem;
+        $extractDir = $this->testDir.'/extract';
+        $fs->ensureDirectoryExists($extractDir);
+
+        // a file outside the extraction directory that must stay untouched
+        $outside = $this->testDir.'/outside.txt';
+        file_put_contents($outside, 'original');
+
+        // mimic what the unzip command does with a symlink entry: a real symlink inside the
+        // extraction directory pointing at the outside file, left behind before the fallback runs
+        if (false === @symlink('../outside.txt', $extractDir.'/payload.txt')) {
+            $this->markTestSkipped('could not create symlink');
+        }
+
+        // a real archive whose regular entry has the same name as the planted symlink
+        $zipFile = $this->testDir.'/evil.zip';
+        $zip = new \ZipArchive;
+        $zip->open($zipFile, \ZipArchive::CREATE);
+        $zip->addFromString('payload.txt', 'OVERWRITTEN');
+        $zip->close();
+
+        $downloader = new ZipDownloader($this->io, $this->config, $this->httpDownloader);
+
+        $method = new \ReflectionMethod($downloader, 'extractWithZipArchive');
+        (\PHP_VERSION_ID < 80100) and $method->setAccessible(true);
+        $promise = $method->invoke($downloader, $this->package, $zipFile, $extractDir);
+        $loop = new Loop($this->httpDownloader);
+        $loop->wait([$promise]);
+
+        self::assertSame('original', file_get_contents($outside), 'the file outside the extraction directory must not be written through the symlink');
+        self::assertFalse(is_link($extractDir.'/payload.txt'), 'the pre-existing symlink must be removed before extraction');
+        self::assertSame('OVERWRITTEN', file_get_contents($extractDir.'/payload.txt'));
+    }
+
+    public function testExtractWithZipArchiveDoesNotWriteThroughPreexistingDirectorySymlink(): void
+    {
+        if (!class_exists('ZipArchive')) {
+            $this->markTestSkipped('zip extension missing');
+        }
+        if (Platform::isWindows()) {
+            $this->markTestSkipped('symlink creation requires privileges on Windows');
+        }
+
+        $fs = new Filesystem;
+        $extractDir = $this->testDir.'/extract';
+        $fs->ensureDirectoryExists($extractDir);
+
+        // a directory outside the extraction directory that must stay empty
+        $outsideDir = $this->testDir.'/outside';
+        $fs->ensureDirectoryExists($outsideDir);
+
+        // mimic a symlink entry pointing at an outside directory, left behind before the fallback runs
+        if (false === @symlink('../outside', $extractDir.'/sub')) {
+            $this->markTestSkipped('could not create symlink');
+        }
+
+        // a real archive whose entry would be written into the planted directory symlink
+        $zipFile = $this->testDir.'/evil.zip';
+        $zip = new \ZipArchive;
+        $zip->open($zipFile, \ZipArchive::CREATE);
+        $zip->addFromString('sub/evil.txt', 'OWNED');
+        $zip->close();
+
+        $downloader = new ZipDownloader($this->io, $this->config, $this->httpDownloader);
+
+        $method = new \ReflectionMethod($downloader, 'extractWithZipArchive');
+        (\PHP_VERSION_ID < 80100) and $method->setAccessible(true);
+        $promise = $method->invoke($downloader, $this->package, $zipFile, $extractDir);
+        $loop = new Loop($this->httpDownloader);
+        $loop->wait([$promise]);
+
+        self::assertFalse(file_exists($outsideDir.'/evil.txt'), 'nothing must be written through the directory symlink to outside the extraction directory');
+        self::assertFalse(is_link($extractDir.'/sub'), 'the pre-existing directory symlink must be removed before extraction');
+        self::assertSame('OWNED', file_get_contents($extractDir.'/sub/evil.txt'));
+    }
+
+    public function testTruncatedDownloadIsRetried(): void
+    {
+        $validZip = (string) file_get_contents(__DIR__.'/../Util/Fixtures/Zip/multiple.zip');
+        $io = $this->getIOMock();
+        $io->expects([
+            ['text' => '{Downloading test/pkg}', 'regex' => true],
+            ['text' => '{The downloaded archive for test/pkg is truncated or corrupt, .*, retrying}', 'regex' => true],
+            ['text' => '{Downloading test/pkg}', 'regex' => true],
+        ], true);
+
+        // only the valid archive from the retry must end up in the cache
+        $cache = $this->getMockBuilder('Composer\Cache')->disableOriginalConstructor()->getMock();
+        $cache->method('copyTo')->willReturn(false);
+        $cache->expects($this->once())
+            ->method('copyFrom')
+            ->willReturnCallback(static function ($key, $source) use ($validZip): bool {
+                self::assertSame($validZip, file_get_contents($source));
+
+                return true;
+            });
+
+        $attempts = 0;
+        $downloader = $this->getDownloaderWithFakeDownloads(static function () use ($validZip, &$attempts): string {
+            return ++$attempts === 1 ? substr($validZip, 0, 400) : $validZip;
+        }, $io, $cache);
+
+        $loop = new Loop($this->httpDownloader);
+        $loop->wait([$downloader->download($this->getZipPackage(), $this->testDir.'/pkg')]);
+
+        self::assertSame(2, $attempts);
+    }
+
+    public function testTruncatedDownloadFailsAfterRetries(): void
+    {
+        $validZip = (string) file_get_contents(__DIR__.'/../Util/Fixtures/Zip/multiple.zip');
+        $attempts = 0;
+        $downloader = $this->getDownloaderWithFakeDownloads(static function () use ($validZip, &$attempts): string {
+            $attempts++;
+
+            return substr($validZip, 0, 400);
+        });
+
+        try {
+            $loop = new Loop($this->httpDownloader);
+            $loop->wait([$downloader->download($this->getZipPackage(), $this->testDir.'/pkg')]);
+            $this->fail('Download of truncated zip files should throw an exception');
+        } catch (\Composer\Downloader\TransportException $e) {
+            self::assertStringContainsString('The downloaded archive for test/pkg is truncated or corrupt', $e->getMessage());
+        }
+
+        self::assertSame(4, $attempts);
+    }
+
+    private function getZipPackage(): \Composer\Package\Package
+    {
+        $package = self::getPackage('test/pkg', '1.0.0');
+        $package->setDistType('zip');
+        $package->setDistUrl('https://example.org/test-pkg.zip');
+
+        return $package;
+    }
+
+    /**
+     * @param callable(): string $contents returns the file content for each download attempt
+     */
+    private function getDownloaderWithFakeDownloads(callable $contents, ?\Composer\IO\IOInterface $io = null, ?\Composer\Cache $cache = null): ZipDownloader
+    {
+        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
+        $httpDownloader->expects($this->any())
+            ->method('addCopy')
+            ->willReturnCallback(static function ($url, $to) use ($contents) {
+                file_put_contents($to, $contents());
+
+                return \React\Promise\resolve(new Response(['url' => $url], 200, [], ''));
+            });
+
+        return new ZipDownloader($io ?? $this->io, $this->getConfig(['vendor-dir' => $this->testDir.'/vendor']), $httpDownloader, null, $cache);
     }
 
     public function testZipArchiveOnlyFailed(): void

@@ -80,7 +80,7 @@ class NoProxyPattern
         $port = parse_url($url, PHP_URL_PORT);
 
         if (empty($port)) {
-            switch (parse_url($url, PHP_URL_SCHEME)) {
+            switch (strtolower((string) parse_url($url, PHP_URL_SCHEME))) {
                 case 'http':
                     $port = 80;
                     break;

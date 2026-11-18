@@ -52,7 +52,8 @@ class RepositoryCommand extends BaseConfigCommand
                 new InputArgument('arg1', InputArgument::OPTIONAL, 'Type for add, or new URL for set-url, or JSON config for add', null, $this->suggestTypeForAdd()),
                 new InputArgument('arg2', InputArgument::OPTIONAL, 'URL for add (if not using JSON)'),
             ])
-            ->setHelp(<<<EOT
+            ->setHelp(
+                <<<EOT
 This command lets you manage repositories in your composer.json.
 
 Examples:

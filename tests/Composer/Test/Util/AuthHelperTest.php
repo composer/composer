@@ -79,6 +79,10 @@ class AuthHelperTest extends TestCase
 
         $this->expectsAuthentication($origin, $auth);
 
+        $this->io->expects($this->once())
+            ->method('writeError')
+            ->with('Using Bearer token authentication', true, IOInterface::DEBUG);
+
         $expectedHeaders = array_merge($headers, ['Authorization: Bearer ' . $auth['username']]);
 
         $options = $this->authHelper->addAuthenticationOptions($options, $origin, $url);
@@ -112,37 +116,6 @@ class AuthHelperTest extends TestCase
         self::assertSame($expectedHeaders, $options['http']['header']);
     }
 
-    public function testAddAuthenticationHeaderWithGitlabOathToken(): void
-    {
-        $headers = [
-            'Accept-Encoding: gzip',
-            'Connection: close',
-        ];
-        $options = ['http' => ['header' => $headers]];
-        $origin = 'gitlab.com';
-        $url = 'https://api.gitlab.com/';
-        $auth = [
-            'username' => 'my_username',
-            'password' => 'oauth2',
-        ];
-
-        $this->expectsAuthentication($origin, $auth);
-
-        $this->config->expects($this->once())
-            ->method('get')
-            ->with('gitlab-domains')
-            ->willReturn([$origin]);
-
-        $this->io->expects($this->once())
-            ->method('writeError')
-            ->with('Using GitLab OAuth token authentication', true, IOInterface::DEBUG);
-
-        $expectedHeaders = array_merge($headers, ['Authorization: Bearer ' . $auth['username']]);
-        $options = $this->authHelper->addAuthenticationOptions($options, $origin, $url);
-
-        self::assertSame($expectedHeaders, $options['http']['header']);
-    }
-
     public function testAddAuthenticationOptionsForClientCertificate(): void
     {
         $options = [];
@@ -163,18 +136,38 @@ class AuthHelperTest extends TestCase
         self::assertSame($certificateConfiguration, $options['ssl']);
     }
 
-    public static function gitlabPrivateTokenProvider(): array
+    /**
+     * @return array<string, array{array{username: string, password: string}, string, string, string}>
+     */
+    public static function gitlabAuthenticationProvider(): array
     {
         return [
-          ['private-token'],
-          ['gitlab-ci-token'],
+            'oauth token' => [['username' => 'my_token', 'password' => 'oauth2'], 'Using GitLab OAuth token authentication', 'Authorization: Bearer my_token', 'https://gitlab.com/api/v4/projects/foo%2Fbar/repository/archive.zip?sha=abc'],
+            'private token' => [['username' => 'my_token', 'password' => 'private-token'], 'Using GitLab private token authentication', 'PRIVATE-TOKEN: my_token', 'https://gitlab.com/api/v4/projects/foo%2Fbar/repository/archive.zip?sha=abc'],
+            // GitLab's Composer package registry only accepts job tokens via basic auth
+            'CI job token, registry' => [['username' => 'gitlab-ci-token', 'password' => 'my_token'], 'Using HTTP basic authentication with username "gitlab-ci-token"', 'Authorization: Basic Z2l0bGFiLWNpLXRva2VuOm15X3Rva2Vu', 'https://gitlab.com/api/v4/group/123/-/packages/composer/packages.json'],
+            // GitLab::authorizeOAuth swaps the slots, so both orderings must work
+            'CI job token, slots swapped, registry' => [['username' => 'my_token', 'password' => 'gitlab-ci-token'], 'Using HTTP basic authentication with username "gitlab-ci-token"', 'Authorization: Basic Z2l0bGFiLWNpLXRva2VuOm15X3Rva2Vu', 'https://gitlab.com/api/v4/projects/123/packages/composer/archives/foo/bar.zip?sha=abc'],
+            'CI job token, registry on sub-path install' => [['username' => 'gitlab-ci-token', 'password' => 'my_token'], 'Using HTTP basic authentication with username "gitlab-ci-token"', 'Authorization: Basic Z2l0bGFiLWNpLXRva2VuOm15X3Rva2Vu', 'https://gitlab.com/gitlab/api/v4/group/123/-/packages/composer/p2/foo/bar.json'],
+            'CI job token, project registry root' => [['username' => 'gitlab-ci-token', 'password' => 'my_token'], 'Using HTTP basic authentication with username "gitlab-ci-token"', 'Authorization: Basic Z2l0bGFiLWNpLXRva2VuOm15X3Rva2Vu', 'https://gitlab.com/api/v4/projects/123/packages/composer'],
+            // everywhere else GitLab accepts job tokens via the JOB-TOKEN header
+            'CI job token, repository API' => [['username' => 'gitlab-ci-token', 'password' => 'my_token'], 'Using GitLab CI job token authentication', 'JOB-TOKEN: my_token', 'https://gitlab.com/api/v4/projects/foo%2Fbar/repository/archive.zip?sha=abc'],
+            'CI job token, slots swapped, repository API' => [['username' => 'my_token', 'password' => 'gitlab-ci-token'], 'Using GitLab CI job token authentication', 'JOB-TOKEN: my_token', 'https://gitlab.com/api/v4/projects/foo%2Fbar/repository/files/composer%2Ejson/raw?ref=abc'],
+            'CI job token, repository API on sub-path install' => [['username' => 'gitlab-ci-token', 'password' => 'my_token'], 'Using GitLab CI job token authentication', 'JOB-TOKEN: my_token', 'https://gitlab.com/gitlab/api/v4/projects/123/repository/tags?per_page=100'],
+            'CI job token, job artifacts' => [['username' => 'gitlab-ci-token', 'password' => 'my_token'], 'Using GitLab CI job token authentication', 'JOB-TOKEN: my_token', 'https://gitlab.com/api/v4/projects/123/jobs/artifacts/main/download?job=build'],
+            'CI job token, registry-like query string' => [['username' => 'gitlab-ci-token', 'password' => 'my_token'], 'Using GitLab CI job token authentication', 'JOB-TOKEN: my_token', 'https://gitlab.com/api/v4/projects/123/repository/files/foo/raw?ref=/api/v4/projects/x/packages/composer/'],
+            'CI job token, project root' => [['username' => 'gitlab-ci-token', 'password' => 'my_token'], 'Using GitLab CI job token authentication', 'JOB-TOKEN: my_token', 'https://gitlab.com/api/v4/projects/foo%2Fbar'],
         ];
     }
 
     /**
-     * @dataProvider gitlabPrivateTokenProvider
+     * @dataProvider gitlabAuthenticationProvider
+     *
+     * @param array<string, string> $auth
+     *
+     * @phpstan-param array{username: string, password: string} $auth
      */
-    public function testAddAuthenticationHeaderWithGitlabPrivateToken(string $password): void
+    public function testAddAuthenticationHeaderWithGitlabToken(array $auth, string $expectedMessage, string $expectedHeader, string $url): void
     {
         $headers = [
             'Accept-Encoding: gzip',
@@ -182,11 +175,6 @@ class AuthHelperTest extends TestCase
         ];
         $options = ['http' => ['header' => $headers]];
         $origin = 'gitlab.com';
-        $url = 'https://api.gitlab.com/';
-        $auth = [
-            'username' => 'my_username',
-            'password' => $password,
-        ];
 
         $this->expectsAuthentication($origin, $auth);
 
@@ -197,9 +185,9 @@ class AuthHelperTest extends TestCase
 
         $this->io->expects($this->once())
             ->method('writeError')
-            ->with('Using GitLab private token authentication', true, IOInterface::DEBUG);
+            ->with($expectedMessage, true, IOInterface::DEBUG);
 
-        $expectedHeaders = array_merge($headers, ['PRIVATE-TOKEN: ' . $auth['username']]);
+        $expectedHeaders = array_merge($headers, [$expectedHeader]);
         $options = $this->authHelper->addAuthenticationOptions($options, $origin, $url);
 
         self::assertSame($expectedHeaders, $options['http']['header']);
@@ -326,6 +314,37 @@ class AuthHelperTest extends TestCase
         self::assertSame($expectedHeaders, $options['http']['header']);
     }
 
+    public function testAddAuthenticationHeaderWithBasicHttpAuthenticationMasksTokenUsername(): void
+    {
+        $origin = 'some-api.url.com';
+        $auth = [
+            'username' => 'ghp_1234567890abcdefghijklmnopqrstuvwxyzAB',
+            'password' => 'x-oauth-basic',
+        ];
+
+        $options = ['http' => ['header' => []]];
+
+        $this->expectsAuthentication($origin, $auth);
+
+        // the displayed username must be obfuscated so a token in the user slot does not leak to verbose logs
+        // (only the first 3 chars are kept, enough to tell which kind of token is in use)
+        $this->io->expects($this->once())
+            ->method('writeError')
+            ->with(
+                'Using HTTP basic authentication with username "ghp***"',
+                true,
+                IOInterface::DEBUG
+            );
+
+        $options = $this->authHelper->addAuthenticationOptions($options, $origin, 'https://some-api.url.com');
+
+        // the actual auth header must still contain the real, un-obfuscated credentials
+        self::assertSame(
+            ['Authorization: Basic ' . base64_encode($auth['username'] . ':' . $auth['password'])],
+            $options['http']['header']
+        );
+    }
+
     /**
      * Tests that custom HTTP headers are correctly added to the request when using
      * the 'custom-headers' authentication type.
@@ -361,6 +380,28 @@ class AuthHelperTest extends TestCase
             $expectedHeaders,
             $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
         );
+    }
+
+    public function testAddAuthenticationOptionsWarnsAndIgnoresNonStringCustomHeaders(): void
+    {
+        $origin = 'example.org';
+        $this->io->expects($this->exactly(2))
+            ->method('hasAuthentication')
+            ->with($origin)
+            ->willReturn(true);
+        $this->io->expects($this->exactly(2))
+            ->method('getAuthentication')
+            ->with($origin)
+            ->willReturn(['username' => '{"X-Foo": 1, "X-Bar": ["a"]}', 'password' => 'custom-headers']);
+
+        $this->io->expects($this->once())
+            ->method('writeError')
+            ->with('<warning>Ignoring custom-headers authentication for example.org as it is not a list of header strings</warning>');
+
+        $options = $this->authHelper->addAuthenticationOptions([], $origin, 'https://example.org/packages.json');
+        $this->authHelper->addAuthenticationOptions([], $origin, 'https://example.org/p2/foo/bar.json');
+
+        self::assertSame([], $options['http']['header']);
     }
 
     /**
@@ -575,6 +616,42 @@ class AuthHelperTest extends TestCase
         $this->authHelper->promptAuthIfNeeded('https://gitlab.com/acme/archive.zip', $origin, 404, 'GitLab requires authentication and it was not provided');
     }
 
+    public function testPromptAuthIfNeededGitLabCiJobTokenAbortsImmediately(): void
+    {
+        self::expectException('Composer\Downloader\TransportException');
+        self::expectExceptionMessage("Invalid credentials for 'https://gitlab.com/acme/archive.zip', aborting.");
+
+        $origin = 'gitlab.com';
+
+        $this->io
+            ->method('hasAuthentication')
+            ->with($origin)
+            ->willReturn(true);
+
+        $this->io
+            ->method('getAuthentication')
+            ->with($origin)
+            ->willReturn([
+                'username' => 'gitlab-ci-token',
+                'password' => 'expired-job-token',
+            ]);
+
+        // a job token cannot be renewed, so we must abort before GitLab::authorizeOAuth swaps the slots
+        $this->io
+            ->expects($this->never())
+            ->method('setAuthentication');
+
+        $this->config
+            ->method('get')
+            ->willReturnMap([
+                ['github-domains', 0, []],
+                ['gitlab-domains', 0, ['gitlab.com']],
+                ['gitlab-token', 0, ['gitlab.com' => ['username' => 'gitlab-ci-token', 'token' => 'expired-job-token']]],
+            ]);
+
+        $this->authHelper->promptAuthIfNeeded('https://gitlab.com/acme/archive.zip', $origin, 404, 'GitLab requires authentication and it was not provided');
+    }
+
     public function testPromptAuthIfNeededMultipleBitbucketDownloads(): void
     {
         $origin = 'bitbucket.org';
@@ -709,5 +786,111 @@ class AuthHelperTest extends TestCase
             ->method('getAuthentication')
             ->with($origin)
             ->willReturn($auth);
+    }
+
+    /**
+     * @dataProvider findAuthOriginProvider
+     */
+    public function testFindAuthOrigin(string $origin, bool $originResult, string $originToPass, bool $originToPassResult, ?string $expectedResult = null): void
+    {
+        $this->io->method('hasAuthentication')
+            ->willReturnCallback(function ($originInTheCall) use ($origin, $originResult, $originToPass, $originToPassResult) {
+               if ($origin === $originInTheCall) {
+                   return $originResult;
+               }
+               if ($originToPass === $originInTheCall) {
+                   return $originToPassResult;
+               }
+               return false;
+            });
+        $authOrigin = AuthHelper::findAuthOrigin($this->io, $originToPass);
+        self::assertSame($expectedResult, $authOrigin);
+    }
+
+    public function testPromptAuthIfNeededMultipleGithubDownloads(): void
+    {
+        $origin = 'github.com';
+
+        $this->config->method('get')->willReturnMap([
+            ['github-domains', 0, ['github.com']],
+            ['gitlab-domains', 0, []],
+        ]);
+
+        // a parallel request already obtained and stored the token
+        $this->io->method('hasAuthentication')->with($origin)->willReturn(true);
+        // therefore no interactive prompt must happen
+        $this->io->expects($this->never())->method('ask');
+        $this->io->expects($this->never())->method('askAndHideAnswer');
+        $this->io->expects($this->never())->method('setAuthentication');
+
+        $result = $this->authHelper->promptAuthIfNeeded(
+            'https://api.github.com/repos/symfony/process/zipball/abc',
+            $origin,
+            403,
+            'HTTP/2 403 ',
+            [],
+            0 // retryCount === 0 → sibling should silently retry
+        );
+
+        self::assertSame(['retry' => true, 'storeAuth' => false], $result);
+    }
+
+    public static function findAuthOriginProvider() : array
+    {
+        return [
+            [
+                'github.com',
+                true,
+                'github.com',
+                true,
+                'github.com',
+            ],
+            [
+                'github.com',
+                true,
+                'api.github.com',
+                false,
+                'github.com'
+            ],
+            [
+                'bitbucket.org',
+                true,
+                'bitbucket.org',
+                false,
+                'bitbucket.org'
+            ],
+            [
+                'bitbucket.org',
+                true,
+                'api.bitbucket.org',
+                false,
+                'bitbucket.org',
+            ],
+            [
+                'bitbucket.org',
+                false,
+                'bitbucket.org',
+                false,
+                null,
+            ],
+            [
+                'gitlab.com',
+                true,
+                'api.gitlab.com',
+                false,
+                null,
+            ]
+        ];
+    }
+
+    public function testStripCredentialHeadersOnRedirect(): void
+    {
+        $options = ['http' => ['header' => ['Authorization: Bearer abc', 'Proxy-Authorization: Basic xyz', 'Cookie: a=b', 'Accept: */*']]];
+
+        self::assertSame($options, AuthHelper::stripCredentialHeadersOnRedirect($options, 'https://example.org/a', 'https://EXAMPLE.org:443/b'));
+        self::assertSame(['Proxy-Authorization: Basic xyz', 'Accept: */*'], AuthHelper::stripCredentialHeadersOnRedirect($options, 'https://example.org/a', 'https://example.net/b')['http']['header']);
+
+        $stringHeaders = ['http' => ['header' => "Accept: */*\nAuthorization: Bearer abc"]];
+        self::assertSame(['Accept: */*'], AuthHelper::stripCredentialHeadersOnRedirect($stringHeaders, 'https://example.org/a', 'http://example.org/b')['http']['header']);
     }
 }

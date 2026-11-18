@@ -223,7 +223,7 @@ Authentication can be handled in [several different ways](authentication-for-pri
 
 ### Downloads
 
-When GitHub, GitLab or BitBucket repositories are mirrored on your local satis, the
+When GitHub, GitLab or Bitbucket repositories are mirrored on your local satis, the
 build process will include the location of the downloads these platforms make
 available. This means that the repository and your setup depend on the
 availability of these services.
@@ -264,7 +264,7 @@ and Subversion) your packages, add the following to your `satis.json`:
  * `checksum`: optional, `true` by default, when disabled (`false`) satis will
    not provide the sha1 checksum for the dist files
 
-Once enabled, all downloads (include those from GitHub and BitBucket) will be
+Once enabled, all downloads (include those from GitHub and Bitbucket) will be
 replaced with a _local_ version.
 
 #### prefix-url

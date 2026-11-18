@@ -42,6 +42,8 @@ class FilesystemRepository extends WritableArrayRepository
     private $filesystem;
     /** @var bool|null */
     private $devMode = null;
+    /** @var ?RepositoryManager */
+    private $repositoryManager = null;
 
     /**
      * Initializes filesystem repository.
@@ -59,6 +61,16 @@ class FilesystemRepository extends WritableArrayRepository
         if ($dumpVersions && !$rootPackage) {
             throw new \InvalidArgumentException('Expected a root package instance if $dumpVersions is true');
         }
+    }
+
+    /**
+     * Enables keeping http headers out of the repository file, they are restored from the repository config when loading it
+     *
+     * @internal
+     */
+    public function setRepositoryManager(RepositoryManager $repositoryManager): void
+    {
+        $this->repositoryManager = $repositoryManager;
     }
 
     /**
@@ -105,6 +117,9 @@ class FilesystemRepository extends WritableArrayRepository
         $loader = new ArrayLoader(null, true);
         foreach ($packages as $packageData) {
             $package = $loader->load($packageData);
+            if ($this->repositoryManager !== null) {
+                $this->repositoryManager->restoreHttpHeaders($package);
+            }
             $this->addPackage($package);
         }
     }
@@ -134,6 +149,9 @@ class FilesystemRepository extends WritableArrayRepository
 
         foreach ($this->getCanonicalPackages() as $package) {
             $pkgArray = $dumper->dump($package);
+            if ($this->repositoryManager !== null) {
+                $pkgArray = $this->repositoryManager->removeRestorableHttpHeaders($package, $pkgArray);
+            }
             $path = $installationManager->getInstallPath($package);
             $installPath = null;
             if ('' !== $path && null !== $path) {
@@ -226,7 +244,18 @@ REGEX;
      */
     private function dumpToPhpCode(array $array = [], int $level = 0): string
     {
-        $lines = "array(\n";
+        $lines = '';
+        $this->appendPhpCode($array, $level, $lines);
+
+        return $lines;
+    }
+
+    /**
+     * @param array<mixed> $array
+     */
+    private function appendPhpCode(array $array, int $level, string &$lines): void
+    {
+        $lines .= "array(\n";
         $level++;
 
         foreach ($array as $key => $value) {
@@ -235,7 +264,7 @@ REGEX;
 
             if (is_array($value)) {
                 if (!empty($value)) {
-                    $lines .= $this->dumpToPhpCode($value, $level);
+                    $this->appendPhpCode($value, $level, $lines);
                 } else {
                     $lines .= "array(),\n";
                 }
@@ -257,8 +286,6 @@ REGEX;
         }
 
         $lines .= str_repeat('    ', $level - 1) . ')' . ($level - 1 === 0 ? '' : ",\n");
-
-        return $lines;
     }
 
     /**

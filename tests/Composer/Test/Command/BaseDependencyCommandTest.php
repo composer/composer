@@ -14,7 +14,6 @@ namespace Composer\Test\Command;
 
 use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Semver\Constraint\MultiConstraint;
-use Symfony\Component\Console\Command\Command;
 use UnexpectedValueException;
 use InvalidArgumentException;
 use Composer\Test\TestCase;
@@ -44,7 +43,7 @@ class BaseDependencyCommandTest extends TestCase
         $this->expectExceptionMessage($expectedExceptionMessage);
 
         $appTester = $this->getApplicationTester();
-        self::assertEquals(Command::FAILURE, $appTester->run(['command' => $command] + $parameters));
+        $appTester->run(['command' => $command] + $parameters);
     }
 
     /**
@@ -96,12 +95,7 @@ class BaseDependencyCommandTest extends TestCase
         $this->expectExceptionMessage('A valid composer.lock file is required to run this command with --locked');
 
         $appTester = $this->getApplicationTester();
-        self::assertEquals(
-            Command::FAILURE,
-            $appTester->run(
-                ['command' => $command] + $parameters + ['--locked' => true]
-            )
-        );
+        $appTester->run(['command' => $command] + $parameters + ['--locked' => true]);
     }
 
     /**
@@ -125,10 +119,7 @@ class BaseDependencyCommandTest extends TestCase
         $this->expectExceptionMessage(sprintf('Could not find package "%s" in your project', $packageToBeInspected));
 
         $appTester = $this->getApplicationTester();
-        self::assertEquals(
-            Command::FAILURE,
-            $appTester->run(['command' => $command] + $parameters)
-        );
+        $appTester->run(['command' => $command] + $parameters);
     }
 
     /**
@@ -164,7 +155,7 @@ class BaseDependencyCommandTest extends TestCase
 
         $appTester = $this->getApplicationTester();
 
-        self::assertEquals(Command::FAILURE, $appTester->run(['command' => $command] + $parameters));
+        $appTester->run(['command' => $command] + $parameters);
     }
 
     /**

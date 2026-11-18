@@ -12,13 +12,19 @@
 
 namespace Composer\Advisory;
 
+use Composer\FilterList\FilterListAuditor;
+use Composer\FilterList\FilterListEntry;
+use Composer\FilterList\FilterListProvider\FilterListProviderSet;
 use Composer\IO\ConsoleIO;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
+use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\PackageInterface;
 use Composer\Pcre\Preg;
+use Composer\Policy\ListPolicyConfig;
+use Composer\Policy\PolicyConfig;
 use Composer\Repository\RepositorySet;
 use Composer\Util\PackageInfo;
 use InvalidArgumentException;
@@ -44,44 +50,47 @@ class Auditor
         self::FORMAT_SUMMARY,
     ];
 
-    public const ABANDONED_IGNORE = 'ignore';
-    public const ABANDONED_REPORT = 'report';
-    public const ABANDONED_FAIL = 'fail';
-
-    /** @internal */
-    public const ABANDONEDS = [
-        self::ABANDONED_IGNORE,
-        self::ABANDONED_REPORT,
-        self::ABANDONED_FAIL,
-    ];
+    /** @deprecated Use ListPolicyConfig::AUDIT_IGNORE instead */
+    public const ABANDONED_IGNORE = ListPolicyConfig::AUDIT_IGNORE;
+    /** @deprecated Use ListPolicyConfig::AUDIT_REPORT instead */
+    public const ABANDONED_REPORT = ListPolicyConfig::AUDIT_REPORT;
+    /** @deprecated Use ListPolicyConfig::AUDIT_FAIL instead */
+    public const ABANDONED_FAIL = ListPolicyConfig::AUDIT_FAIL;
 
     /** Values to determine the audit result. */
     public const STATUS_OK = 0;
-    public const STATUS_VULNERABLE = 1;
-    public const STATUS_ABANDONED = 2;
+    public const STATUS_FAILED = 1;
+
+    /** @var CooldownAuditor */
+    private $cooldownAuditor;
+
+    public function __construct(?CooldownAuditor $cooldownAuditor = null)
+    {
+        $this->cooldownAuditor = $cooldownAuditor ?? new CooldownAuditor();
+    }
 
     /**
+     * @param PolicyConfig $policyConfig Source of truth for ignore lists, severity filters, and per-list audit settings.
      * @param PackageInterface[] $packages
      * @param self::FORMAT_* $format The format that will be used to output audit results.
      * @param bool $warningOnly If true, outputs a warning. If false, outputs an error.
-     * @param array<string, string|null> $ignoreList List of advisory IDs, remote IDs, CVE IDs or package names that reported but not listed as vulnerabilities.
-     * @param self::ABANDONED_* $abandoned
-     * @param array<string, string|null> $ignoredSeverities List of ignored severity levels
-     * @param array<string, string|null> $ignoreAbandoned List of abandoned package name that reported but not listed as vulnerabilities.
      *
-     * @return int-mask<self::STATUS_*> A bitmask of STATUS_* constants or 0 on success
+     * @return 0|1 Where 0 on success means no issues found, and 1 means there were issues found
      * @throws InvalidArgumentException If no packages are passed in
      */
-    public function audit(IOInterface $io, RepositorySet $repoSet, array $packages, string $format, bool $warningOnly = true, array $ignoreList = [], string $abandoned = self::ABANDONED_FAIL, array $ignoredSeverities = [], bool $ignoreUnreachable = false, array $ignoreAbandoned = []): int
+    public function audit(IOInterface $io, RepositorySet $repoSet, PolicyConfig $policyConfig, array $packages, string $format, bool $warningOnly = true, ?FilterListProviderSet $filterListProviderSet = null): int
     {
-        $result = $repoSet->getMatchingSecurityAdvisories($packages, $format === self::FORMAT_SUMMARY, $ignoreUnreachable);
+        $ignoreList = $policyConfig->advisories->getIgnoreListForOperation('audit');
+        $ignoredSeverities = $policyConfig->advisories->getIgnoreSeverityForOperation('audit');
+
+        $result = $repoSet->getMatchingSecurityAdvisories($packages, $format === self::FORMAT_SUMMARY, $policyConfig->ignoreUnreachable->audit);
         $allAdvisories = $result['advisories'];
         $unreachableRepos = $result['unreachableRepos'];
 
         // we need the CVE & remote IDs set to filter ignores correctly so if we have any matches using the optimized codepath above
         // and ignores are set then we need to query again the full data to make sure it can be filtered
         if ($format === self::FORMAT_SUMMARY && $this->needsCompleteAdvisoryLoad($allAdvisories, $ignoreList)) {
-            $result = $repoSet->getMatchingSecurityAdvisories($packages, false, $ignoreUnreachable);
+            $result = $repoSet->getMatchingSecurityAdvisories($packages, false, $policyConfig->ignoreUnreachable->audit);
             $allAdvisories = $result['advisories'];
             $unreachableRepos = array_merge($unreachableRepos, $result['unreachableRepos']);
         }
@@ -89,16 +98,59 @@ class Auditor
 
         $abandonedCount = 0;
         $affectedPackagesCount = count($advisories);
-        if ($abandoned === self::ABANDONED_IGNORE) {
+        if ($policyConfig->abandoned->audit === ListPolicyConfig::AUDIT_IGNORE) {
             $abandonedPackages = [];
         } else {
-            $abandonedPackages = $this->filterAbandonedPackages($packages, $ignoreAbandoned);
-            if ($abandoned === self::ABANDONED_FAIL) {
+            // abandonment is per package, so aliases would only report it twice
+            $canonicalPackages = array_filter($packages, static function (PackageInterface $package): bool {
+                return !$package instanceof AliasPackage;
+            });
+            $abandonedPackages = $this->filterAbandonedPackages($canonicalPackages, $policyConfig->abandoned->getFlatIgnoreForOperation('audit'));
+            if ($policyConfig->abandoned->audit === ListPolicyConfig::AUDIT_FAIL) {
                 $abandonedCount = count($abandonedPackages);
             }
         }
 
-        $auditBitmask = $this->calculateBitmask(0 < $affectedPackagesCount, 0 < $abandonedCount);
+        $filterAuditor = new FilterListAuditor();
+        $filteredPackages = [];
+        $filteredCount = 0;
+        $activeAuditFilterLists = $policyConfig->getActiveAuditFilterLists();
+        if ($filterListProviderSet !== null && count($activeAuditFilterLists) > 0) {
+            $failingListNames = [];
+            foreach ($activeAuditFilterLists as $name => $list) {
+                if ($list->audit === ListPolicyConfig::AUDIT_FAIL) {
+                    $failingListNames[$name] = true;
+                }
+            }
+
+            $filterResult = $filterAuditor->collectFilterLists($packages, $filterListProviderSet, array_keys($activeAuditFilterLists), $policyConfig->ignoreUnreachable->audit);
+            $unreachableRepos = array_merge($unreachableRepos, $filterResult['unreachableRepos']);
+            foreach ($packages as $package) {
+                $matchingEntries = $filterAuditor->getMatchingAuditEntries($package, $filterResult['filter'], $policyConfig);
+                foreach ($matchingEntries as $entry) {
+                    // an alias can match the same entry as the package it aliases
+                    if (in_array($entry, $filteredPackages[$package->getName()] ?? [], true)) {
+                        continue;
+                    }
+                    $filteredPackages[$package->getName()][] = $entry;
+
+                    if (isset($failingListNames[$entry->listName])) {
+                        $filteredCount++;
+                    }
+                }
+            }
+        }
+
+        $cooldownPackages = [];
+        $cooldownCount = 0;
+        if ($policyConfig->cooldown->audit !== ListPolicyConfig::AUDIT_IGNORE) {
+            $cooldownPackages = $this->cooldownAuditor->collect($packages, $policyConfig->cooldown);
+            if ($policyConfig->cooldown->audit === ListPolicyConfig::AUDIT_FAIL) {
+                $cooldownCount = count($cooldownPackages);
+            }
+        }
+
+        $auditResult = (0 < $affectedPackagesCount || 0 < $abandonedCount || 0 < $filteredCount || 0 < $cooldownCount) ? self::STATUS_FAILED : self::STATUS_OK;
 
         if (self::FORMAT_JSON === $format) {
             $json = ['advisories' => $advisories];
@@ -113,10 +165,19 @@ class Auditor
 
                 return $carry;
             }, []);
+            $json['filter'] = array_map(static function (array $entries) {
+                return array_map(static function (FilterListEntry $entry) {
+                    $data = (array) $entry;
+                    $data['constraint'] = $entry->constraint->getPrettyString();
+
+                    return $data;
+                }, $entries);
+            }, $filteredPackages);
+            $json['cooldown'] = $cooldownPackages;
 
             $io->write(JsonFile::encode($json));
 
-            return $auditBitmask;
+            return $auditResult;
         }
 
         $errorOrWarn = $warningOnly ? 'warning' : 'error';
@@ -131,16 +192,16 @@ class Auditor
                     $plurality = $totalAdvisoryCount === 1 ? 'y' : 'ies';
                     $pkgPlurality = $pkgCount === 1 ? '' : 's';
                     $punctuation = $format === 'summary' ? '.' : ':';
-                    $io->writeError(sprintf($message, $totalAdvisoryCount, $plurality, $pkgCount, $pkgPlurality, $punctuation));
+                    $io->write(sprintf($message, $totalAdvisoryCount, $plurality, $pkgCount, $pkgPlurality, $punctuation));
                     $this->outputAdvisories($io, $advisoriesToOutput, $format);
                 }
             }
 
             if ($format === self::FORMAT_SUMMARY) {
-                $io->writeError('Run "composer audit" for a full list of advisories.');
+                $io->write('Run "composer audit" for a full list of advisories.');
             }
         } else {
-            $io->writeError('<info>No security vulnerability advisories found.</info>');
+            $io->write('<info>No security vulnerability advisories found.</info>');
         }
 
         if (count($unreachableRepos) > 0) {
@@ -154,13 +215,53 @@ class Auditor
             $this->outputAbandonedPackages($io, $abandonedPackages, $format);
         }
 
-        return $auditBitmask;
+        if (count($filteredPackages) > 0) {
+            $plurality = count($filteredPackages) === 1 ? '' : 's';
+            $punctuation = $format === self::FORMAT_SUMMARY ? '.' : ':';
+            $style = $filteredCount > 0 ? 'error' : 'warning';
+
+            $io->write(sprintf('<%s>Found %d package%s matching filters%s</%s>', $style, count($filteredPackages), $plurality, $punctuation, $style));
+            if ($format !== self::FORMAT_SUMMARY) {
+                $this->outputFilteredPackages($io, $filteredPackages, $format);
+            }
+        }
+
+        if (count($cooldownPackages) > 0) {
+            $plurality = count($cooldownPackages) === 1 ? '' : 's';
+            $punctuation = $format === self::FORMAT_SUMMARY ? '.' : ':';
+            $style = $cooldownCount > 0 ? 'error' : 'warning';
+
+            $io->write(sprintf('<%s>Found %d package%s still in the cooldown period configured in "policy.cooldown"%s</%s>', $style, count($cooldownPackages), $plurality, $punctuation, $style));
+            if ($format !== self::FORMAT_SUMMARY) {
+                $this->outputCooldownPackages($io, $cooldownPackages);
+            }
+        }
+
+        return $auditResult;
+    }
+
+    /**
+     * @param array<string, array{prettyVersion: string, releaseDate: string, availableIn: string, source: string}> $cooldownPackages
+     */
+    private function outputCooldownPackages(IOInterface $io, array $cooldownPackages): void
+    {
+        foreach ($cooldownPackages as $name => $info) {
+            $io->write(sprintf(
+                '  - %s (%s) published %s, available in %s',
+                $name,
+                $info['prettyVersion'],
+                $info['releaseDate'],
+                $info['availableIn']
+            ));
+            if ($info['source'] === 'time') {
+                $io->write('    The cooldown policy relied on the package-supplied time field because the repository provides no published-time.');
+            }
+        }
     }
 
     /**
      * @param array<string, array<SecurityAdvisory|PartialSecurityAdvisory>> $advisories
      * @param array<string, string|null> $ignoreList
-     * @return bool
      */
     public function needsCompleteAdvisoryLoad(array $advisories, array $ignoreList): bool
     {
@@ -282,7 +383,7 @@ class Auditor
     }
 
     /**
-     * @param array<string, array<SecurityAdvisory>> $advisories
+     * @param array<string, array<PartialSecurityAdvisory>> $advisories
      * @param self::FORMAT_* $format The format that will be used to output audit results.
      */
     private function outputAdvisories(IOInterface $io, array $advisories, string $format): void
@@ -308,40 +409,17 @@ class Auditor
     }
 
     /**
-     * @param array<string, array<SecurityAdvisory>> $advisories
+     * @param array<string, array<PartialSecurityAdvisory>> $advisories
      */
     private function outputAdvisoriesTable(ConsoleIO $io, array $advisories): void
     {
         foreach ($advisories as $packageAdvisories) {
             foreach ($packageAdvisories as $advisory) {
-                $headers = [
-                    'Package',
-                    'Severity',
-                    'Advisory ID',
-                    'CVE',
-                    'Title',
-                    'URL',
-                    'Affected versions',
-                    'Reported at',
-                ];
-                $row = [
-                    $advisory->packageName,
-                    $this->getSeverity($advisory),
-                    $this->getAdvisoryId($advisory),
-                    $this->getCVE($advisory),
-                    $advisory->title,
-                    $this->getURL($advisory),
-                    $advisory->affectedVersions->getPrettyString(),
-                    $advisory->reportedAt->format(DATE_ATOM),
-                ];
-                if ($advisory instanceof IgnoredSecurityAdvisory) {
-                    $headers[] = 'Ignore reason';
-                    $row[] = $advisory->ignoreReason ?? 'None specified';
-                }
+                $fields = $this->getAdvisoryFields($advisory);
                 $io->getTable()
                     ->setHorizontal()
-                    ->setHeaders($headers)
-                    ->addRow(ConsoleIO::sanitize($row))
+                    ->setHeaders(array_keys($fields))
+                    ->addRow(ConsoleIO::sanitize(array_values($fields)))
                     ->setColumnWidth(1, 80)
                     ->setColumnMaxWidth(1, 80)
                     ->render();
@@ -350,7 +428,7 @@ class Auditor
     }
 
     /**
-     * @param array<string, array<SecurityAdvisory>> $advisories
+     * @param array<string, array<PartialSecurityAdvisory>> $advisories
      */
     private function outputAdvisoriesPlain(IOInterface $io, array $advisories): void
     {
@@ -361,21 +439,45 @@ class Auditor
                 if (!$firstAdvisory) {
                     $error[] = '--------';
                 }
-                $error[] = "Package: ".$advisory->packageName;
-                $error[] = "Severity: ".$this->getSeverity($advisory);
-                $error[] = "Advisory ID: ".$this->getAdvisoryId($advisory);
-                $error[] = "CVE: ".$this->getCVE($advisory);
-                $error[] = "Title: ".OutputFormatter::escape($advisory->title);
-                $error[] = "URL: ".$this->getURL($advisory);
-                $error[] = "Affected versions: ".OutputFormatter::escape($advisory->affectedVersions->getPrettyString());
-                $error[] = "Reported at: ".$advisory->reportedAt->format(DATE_ATOM);
-                if ($advisory instanceof IgnoredSecurityAdvisory) {
-                    $error[] = "Ignore reason: ".($advisory->ignoreReason ?? 'None specified');
+                foreach ($this->getAdvisoryFields($advisory) as $label => $value) {
+                    $error[] = $label.': '.(in_array($label, ['Title', 'Affected versions'], true) ? OutputFormatter::escape($value) : $value);
                 }
                 $firstAdvisory = false;
             }
         }
-        $io->writeError($error);
+        $io->write($error);
+    }
+
+    /**
+     * A partial advisory only has the fields its repository provided, so the others are left out
+     *
+     * @return array<string, string>
+     */
+    private function getAdvisoryFields(PartialSecurityAdvisory $advisory): array
+    {
+        if (!$advisory instanceof SecurityAdvisory) {
+            return [
+                'Package' => $advisory->packageName,
+                'Advisory ID' => $this->getAdvisoryId($advisory),
+                'Affected versions' => $advisory->affectedVersions->getPrettyString(),
+            ];
+        }
+
+        $fields = [
+            'Package' => $advisory->packageName,
+            'Severity' => $this->getSeverity($advisory),
+            'Advisory ID' => $this->getAdvisoryId($advisory),
+            'CVE' => $this->getCVE($advisory),
+            'Title' => $advisory->title,
+            'URL' => $this->getURL($advisory),
+            'Affected versions' => $advisory->affectedVersions->getPrettyString(),
+            'Reported at' => $advisory->reportedAt->format(DATE_ATOM),
+        ];
+        if ($advisory instanceof IgnoredSecurityAdvisory) {
+            $fields['Ignore reason'] = $advisory->ignoreReason ?? 'None specified';
+        }
+
+        return $fields;
     }
 
     /**
@@ -384,14 +486,14 @@ class Auditor
      */
     private function outputAbandonedPackages(IOInterface $io, array $packages, string $format): void
     {
-        $io->writeError(sprintf('<error>Found %d abandoned package%s:</error>', count($packages), count($packages) > 1 ? 's' : ''));
+        $io->write(sprintf('<error>Found %d abandoned package%s:</error>', count($packages), count($packages) > 1 ? 's' : ''));
 
         if ($format === self::FORMAT_PLAIN) {
             foreach ($packages as $pkg) {
                 $replacement = $pkg->getReplacementPackage() !== null
                     ? 'Use '.$pkg->getReplacementPackage().' instead'
                     : 'No replacement was suggested';
-                $io->writeError(sprintf(
+                $io->write(sprintf(
                     '%s is abandoned. %s.',
                     $this->getPackageNameWithLink($pkg),
                     $replacement
@@ -434,7 +536,7 @@ class Auditor
         return $advisory->severity;
     }
 
-    private function getAdvisoryId(SecurityAdvisory $advisory): string
+    private function getAdvisoryId(PartialSecurityAdvisory $advisory): string
     {
         if (str_starts_with($advisory->advisoryId, 'PKSA-')) {
             return '<href=https://packagist.org/security-advisories/'.$advisory->advisoryId.'>'.$advisory->advisoryId.'</>';
@@ -449,7 +551,7 @@ class Auditor
             return 'NO CVE';
         }
 
-        return '<href=https://cve.mitre.org/cgi-bin/cvename.cgi?name='.$advisory->cve.'>'.$advisory->cve.'</>';
+        return '<href=https://www.cve.org/CVERecord?id='.$advisory->cve.'>'.$advisory->cve.'</>';
     }
 
     private function getURL(SecurityAdvisory $advisory): string
@@ -462,20 +564,56 @@ class Auditor
     }
 
     /**
-     * @return int-mask<self::STATUS_*>
+     * @param array<string, list<FilterListEntry>> $filteredPackages
+     * @param self::FORMAT_PLAIN|self::FORMAT_TABLE $format
      */
-    private function calculateBitmask(bool $hasVulnerablePackages, bool $hasAbandonedPackages): int
+    private function outputFilteredPackages(IOInterface $io, array $filteredPackages, string $format): void
     {
-        $bitmask = self::STATUS_OK;
+        if ($format === self::FORMAT_PLAIN) {
+            foreach ($filteredPackages as $data) {
+                foreach ($data as $entry) {
+                    $parts = [
+                        $entry->packageName . ' matched dependency policy "' . $entry->listName . '"',
+                    ];
+                    if ($entry->reason !== null) {
+                        $parts[] = 'Reason: ' . $entry->reason;
+                    }
+                    if ($entry->url !== null) {
+                        $parts[] = 'URL: ' . $entry->url;
+                    }
+                    if ($entry->source !== null) {
+                        $parts[] = 'Source: ' . $entry->source;
+                    }
+                    $io->write(implode('. ', $parts) . '.');
+                }
+            }
 
-        if ($hasVulnerablePackages) {
-            $bitmask |= self::STATUS_VULNERABLE;
+            return;
         }
 
-        if ($hasAbandonedPackages) {
-            $bitmask |= self::STATUS_ABANDONED;
+        if (!($io instanceof ConsoleIO)) {
+            throw new InvalidArgumentException('Cannot use table format with ' . get_class($io));
         }
 
-        return $bitmask;
+        $table = $io->getTable()
+            ->setHeaders(['Package', 'Versions', 'List', 'URL', 'Reason', 'ID', 'Source'])
+            ->setColumnMaxWidth(4, 40)
+        ;
+
+        foreach ($filteredPackages as $data) {
+            foreach ($data as $entry) {
+                $table->addRow(ConsoleIO::sanitize([
+                    $entry->packageName,
+                    $entry->constraint->getPrettyString(),
+                    $entry->listName,
+                    $entry->url ?? '',
+                    $entry->reason ?? '',
+                    $entry->id ?? '',
+                    $entry->source ?? '',
+                ]));
+            }
+        }
+
+        $table->render();
     }
 }

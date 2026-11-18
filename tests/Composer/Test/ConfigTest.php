@@ -14,6 +14,7 @@ namespace Composer\Test;
 
 use Composer\Advisory\Auditor;
 use Composer\Config;
+use Composer\Policy\ListPolicyConfig;
 use Composer\Util\Platform;
 
 class ConfigTest extends TestCase
@@ -172,6 +173,18 @@ class ConfigTest extends TestCase
         self::assertEquals(['foo' => 'bar', 'bar' => 'baz'], $config->get('github-oauth'));
     }
 
+    public function testMergeCustomHeaders(): void
+    {
+        $config = new Config(false);
+        $config->merge(['config' => ['custom-headers' => ['foo.example.org' => ['API-TOKEN: foo']]]]);
+        $config->merge(['config' => ['custom-headers' => ['bar.example.org' => ['API-TOKEN: bar']]]]);
+
+        self::assertEquals([
+            'foo.example.org' => ['API-TOKEN: foo'],
+            'bar.example.org' => ['API-TOKEN: bar'],
+        ], $config->get('custom-headers'));
+    }
+
     public function testVarReplacement(): void
     {
         $config = new Config(false);
@@ -277,6 +290,8 @@ class ConfigTest extends TestCase
             'file://example.org/mygit.git',
             'git:Department/Repo.git',
             'ssh://[user@]host.xz[:port]/path/to/repo.git/',
+            'http::https://example.org/repo.git',
+            'https://example.org/re po.git',
         ];
 
         return array_combine($urls, array_map(static function ($e): array {
@@ -299,6 +314,14 @@ class ConfigTest extends TestCase
             'svn://192.168.0.1/trunk',
             'svn://1.2.3.4/trunk',
             'git://5.6.7.8/git.git',
+            'HTTP://example.org/foo.git',
+            'git://example.org/re po.git',
+            'git://example.org/répo.git',
+            'git://exämple.org/repo.git',
+            'http::http://example.org/repo.git',
+            'https::http://example.org/repo.git',
+            'git::git://example.org/repo.git',
+            'http::http::http://example.org/repo.git',
         ];
 
         return array_combine($urls, array_map(static function ($e): array {
@@ -389,15 +412,15 @@ class ConfigTest extends TestCase
         $result = $config->get('audit');
         self::assertArrayHasKey('abandoned', $result);
         self::assertArrayHasKey('ignore', $result);
-        self::assertSame(Auditor::ABANDONED_FAIL, $result['abandoned']);
+        self::assertSame(ListPolicyConfig::AUDIT_FAIL, $result['abandoned']);
         self::assertSame([], $result['ignore']);
 
-        Platform::putEnv('COMPOSER_AUDIT_ABANDONED', Auditor::ABANDONED_IGNORE);
+        Platform::putEnv('COMPOSER_AUDIT_ABANDONED', ListPolicyConfig::AUDIT_IGNORE);
         $result = $config->get('audit');
         Platform::clearEnv('COMPOSER_AUDIT_ABANDONED');
         self::assertArrayHasKey('abandoned', $result);
         self::assertArrayHasKey('ignore', $result);
-        self::assertSame(Auditor::ABANDONED_IGNORE, $result['abandoned']);
+        self::assertSame(ListPolicyConfig::AUDIT_IGNORE, $result['abandoned']);
         self::assertSame([], $result['ignore']);
 
         $config->merge(['config' => ['audit' => ['ignore' => ['A', 'B']]]]);
@@ -418,6 +441,199 @@ class ConfigTest extends TestCase
         Platform::clearEnv('COMPOSER_SECURITY_BLOCKING_ABANDONED');
         self::assertArrayHasKey('block-abandoned', $result);
         self::assertSame(false, $result['block-abandoned']);
+    }
+
+    public function testPolicy(): void
+    {
+        $config = new Config(true);
+        $result = $config->get('policy');
+
+        $this->assertTrue($result);
+
+        $config->merge([
+            'config' => [
+                'policy' => [
+                    'advisories' => [
+                        'ignore' => [
+                            'acme/package',
+                        ]
+                    ],
+                ],
+            ]
+        ]);
+        $config->merge([
+            'config' => [
+                'policy' => [
+                    'advisories' => [
+                        'ignore-severities' => ['low']
+                    ],
+                ],
+            ],
+        ]);
+        $result = $config->get('policy');
+        self::assertIsArray($result);
+        self::assertSame(['ignore' => ['acme/package'], 'ignore-severities' => ['low'], ], $result['advisories'] ?? []);
+
+        // COMPOSER_POLICY=1 is a no-op when policy is already enabled — the existing
+        // array config is preserved, not flattened back to the `true` shorthand.
+        Platform::putEnv('COMPOSER_POLICY', '1');
+        $resultWithEnvOn = $config->get('policy');
+        Platform::clearEnv('COMPOSER_POLICY');
+        self::assertIsArray($resultWithEnvOn);
+        self::assertSame(['ignore' => ['acme/package'], 'ignore-severities' => ['low']], $resultWithEnvOn['advisories'] ?? []);
+
+        $config->merge(['config' => ['policy' => true]]);
+        self::assertIsArray($config->get('policy'));
+
+        $config->merge(['config' => ['policy' => false]]);
+        self::assertFalse($config->get('policy'));
+
+        // COMPOSER_POLICY=1 re-enables policy when the config has it disabled.
+        Platform::putEnv('COMPOSER_POLICY', '1');
+        self::assertTrue($config->get('policy'));
+        Platform::clearEnv('COMPOSER_POLICY');
+
+        // The disable path still wins — env var of 0 forces policy off regardless
+        // of any prior array config.
+        Platform::putEnv('COMPOSER_POLICY', '0');
+        self::assertFalse($config->get('policy'));
+        Platform::clearEnv('COMPOSER_POLICY');
+
+        $config->merge(['config' => ['policy' => true]]);
+        self::assertSame([], $config->get('policy'));
+    }
+
+    public function testPolicyListBoolTrueAndEmptyObjectAreEquivalentInLayering(): void
+    {
+        $configBoolTrue = new Config(false);
+        $configBoolTrue->merge(['config' => ['policy' => ['advisories' => true]]]);
+        $configBoolTrue->merge(['config' => ['policy' => ['advisories' => ['audit' => 'report']]]]);
+
+        $configEmptyObj = new Config(false);
+        $configEmptyObj->merge(['config' => ['policy' => ['advisories' => []]]]);
+        $configEmptyObj->merge(['config' => ['policy' => ['advisories' => ['audit' => 'report']]]]);
+
+        self::assertSame($configBoolTrue->get('policy'), $configEmptyObj->get('policy'));
+    }
+
+    public function testPolicyListFalseOverridesPriorTrueOrEmptyEquallyAcrossLayers(): void
+    {
+        // Layering `false` on top of either `true` or `{}` must disable the
+        // list — users should not see different outcomes depending on which
+        // "default-equivalent" shorthand the previous layer happened to use.
+        $configFromTrue = new Config(false);
+        $configFromTrue->merge(['config' => ['policy' => ['advisories' => true]]]);
+        $configFromTrue->merge(['config' => ['policy' => ['advisories' => false]]]);
+
+        $configFromEmpty = new Config(false);
+        $configFromEmpty->merge(['config' => ['policy' => ['advisories' => []]]]);
+        $configFromEmpty->merge(['config' => ['policy' => ['advisories' => false]]]);
+
+        self::assertSame($configFromTrue->get('policy'), $configFromEmpty->get('policy'));
+        self::assertFalse($configFromTrue->get('policy')['advisories'] ?? null);
+    }
+
+    public function testPolicyMasterTrueAfterDetailedConfigDoesNotEraseDetail(): void
+    {
+        // A later layer that does `policy: true` (i.e. "default enabled") must
+        // not erase a previously-stored detailed policy config — that was the
+        // original intent of the special-case in Config::merge and the
+        // canonicalisation must preserve it.
+        $config = new Config(false);
+        $config->merge(['config' => ['policy' => ['advisories' => ['block' => false]]]]);
+        $config->merge(['config' => ['policy' => true]]);
+
+        $result = $config->get('policy');
+        self::assertIsArray($result);
+        self::assertArrayHasKey('advisories', $result);
+        self::assertSame(['block' => false], $result['advisories']);
+    }
+
+    public function testPolicyDeepMergesIgnoreAcrossSources(): void
+    {
+        $config = new Config(true);
+
+        $config->merge(['config' => ['policy' => [
+            'advisories' => [
+                'ignore' => ['vendor/global-1', 'vendor/global-2'],
+                'ignore-id' => ['CVE-1111'],
+                'ignore-severity' => ['low'],
+                'block' => true,
+            ],
+        ]]]);
+        $config->merge(['config' => ['policy' => [
+            'advisories' => [
+                'ignore' => ['vendor/project-1'],
+                'ignore-id' => ['CVE-2222'],
+                'ignore-severity' => ['medium'],
+                'audit' => 'report',
+            ],
+        ]]]);
+
+        $result = $config->get('policy');
+        self::assertIsArray($result);
+        self::assertArrayHasKey('advisories', $result);
+
+        // Deep-merged inner arrays (mirrors audit.ignore behaviour)
+        self::assertSame(
+            ['vendor/global-1', 'vendor/global-2', 'vendor/project-1'],
+            $result['advisories']['ignore']
+        );
+        self::assertSame(['CVE-1111', 'CVE-2222'], $result['advisories']['ignore-id']);
+        self::assertSame(['low', 'medium'], $result['advisories']['ignore-severity']);
+
+        // Sibling scalar keys still merge top-level (later wins, but both retained)
+        self::assertTrue($result['advisories']['block']);
+        self::assertSame('report', $result['advisories']['audit']);
+    }
+
+    public function testPolicyDeepMergesIgnoreForMalwareAndAbandonedAndCustomList(): void
+    {
+        $config = new Config(true);
+
+        $config->merge(['config' => ['policy' => [
+            'malware' => [
+                'ignore' => ['vendor/global-malware'],
+                'ignore-source' => ['source-global'],
+            ],
+            'abandoned' => [
+                'ignore' => ['vendor/global-abandoned'],
+            ],
+            'custom-list' => [
+                'ignore' => ['vendor/global-custom'],
+            ],
+        ]]]);
+        $config->merge(['config' => ['policy' => [
+            'malware' => [
+                'ignore' => ['vendor/project-malware'],
+                'ignore-source' => ['source-project'],
+            ],
+            'abandoned' => [
+                'ignore' => ['vendor/project-abandoned'],
+            ],
+            'custom-list' => [
+                'ignore' => ['vendor/project-custom'],
+            ],
+        ]]]);
+
+        $result = $config->get('policy');
+        self::assertIsArray($result);
+        self::assertSame(
+            ['vendor/global-malware', 'vendor/project-malware'],
+            $result['malware']['ignore']
+        );
+        self::assertSame(
+            ['source-global', 'source-project'],
+            $result['malware']['ignore-source']
+        );
+        self::assertSame(
+            ['vendor/global-abandoned', 'vendor/project-abandoned'],
+            $result['abandoned']['ignore']
+        );
+        self::assertSame(
+            ['vendor/global-custom', 'vendor/project-custom'],
+            $result['custom-list']['ignore']
+        );
     }
 
     public function testGetDefaultsToAnEmptyArray(): void
@@ -467,5 +683,28 @@ class ConfigTest extends TestCase
 
         $config->merge(['config' => ['allow-plugins' => true]]);
         self::assertEquals(true, $config->get('allow-plugins'));
+    }
+
+    public function testStrictPsrAutoloaderDefaultsToFalse(): void
+    {
+        $config = new Config(false);
+        self::assertFalse($config->get('strict-psr-autoloader'));
+    }
+
+    public function testStrictPsrAutoloaderCanBeDisabled(): void
+    {
+        $config = new Config(false);
+        $config->merge(['config' => ['strict-psr-autoloader' => false]]);
+        self::assertFalse($config->get('strict-psr-autoloader'));
+    }
+
+    public function testStrictPsrAutoloaderCanBeSetFromString(): void
+    {
+        $config = new Config(false);
+        $config->merge(['config' => ['strict-psr-autoloader' => 'false']]);
+        self::assertFalse($config->get('strict-psr-autoloader'));
+
+        $config->merge(['config' => ['strict-psr-autoloader' => 'true']]);
+        self::assertTrue($config->get('strict-psr-autoloader'));
     }
 }

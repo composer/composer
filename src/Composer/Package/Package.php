@@ -57,6 +57,14 @@ class Package extends BasePackage
     protected $prettyVersion;
     /** @var ?\DateTimeInterface */
     protected $releaseDate;
+    /** @var ?\DateTimeImmutable */
+    protected $publishedDate;
+    /** @var ?string unparsed `time`, parsed on first getReleaseDate() call */
+    private $releaseDateRaw;
+    /** @var ?string unparsed `published-time`, parsed on first getPublishedDate() call */
+    private $publishedDateRaw;
+    /** @var ?\DateTimeZone */
+    private static $utc;
     /** @var mixed[] */
     protected $extra = [];
     /** @var string[] */
@@ -164,6 +172,10 @@ class Package extends BasePackage
     {
         if (null === $this->targetDir) {
             return null;
+        }
+
+        if (!str_contains($this->targetDir, '.')) {
+            return ltrim($this->targetDir, '/');
         }
 
         return ltrim(Preg::replace('{ (?:^|[\\\\/]+) \.\.? (?:[\\\\/]+|$) (?:\.\.? (?:[\\\\/]+|$) )*}x', '/', $this->targetDir), '/');
@@ -385,6 +397,18 @@ class Package extends BasePackage
     public function setReleaseDate(?\DateTimeInterface $releaseDate): void
     {
         $this->releaseDate = $releaseDate;
+        $this->releaseDateRaw = null;
+    }
+
+    /**
+     * Sets the release date from a raw string, parsed lazily as most loaded packages never need it
+     *
+     * @internal
+     */
+    public function setReleaseDateString(string $releaseDate): void
+    {
+        $this->releaseDate = null;
+        $this->releaseDateRaw = $releaseDate;
     }
 
     /**
@@ -392,7 +416,58 @@ class Package extends BasePackage
      */
     public function getReleaseDate(): ?\DateTimeInterface
     {
+        if (null !== $this->releaseDateRaw) {
+            try {
+                $this->releaseDate = new \DateTime(self::prepareDateString($this->releaseDateRaw), self::getUtc());
+            } catch (\Exception $e) {
+            }
+            $this->releaseDateRaw = null;
+        }
+
         return $this->releaseDate;
+    }
+
+    public function setPublishedDate(?\DateTimeImmutable $publishedDate): void
+    {
+        $this->publishedDate = $publishedDate;
+        $this->publishedDateRaw = null;
+    }
+
+    /**
+     * Sets the published date from a raw string, parsed lazily as most loaded packages never need it
+     *
+     * @internal
+     */
+    public function setPublishedDateString(string $publishedDate): void
+    {
+        $this->publishedDate = null;
+        $this->publishedDateRaw = $publishedDate;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getPublishedDate(): ?\DateTimeImmutable
+    {
+        if (null !== $this->publishedDateRaw) {
+            try {
+                $this->publishedDate = new \DateTimeImmutable(self::prepareDateString($this->publishedDateRaw), self::getUtc());
+            } catch (\Exception $e) {
+            }
+            $this->publishedDateRaw = null;
+        }
+
+        return $this->publishedDate;
+    }
+
+    private static function prepareDateString(string $date): string
+    {
+        return ctype_digit($date) ? '@'.$date : $date;
+    }
+
+    private static function getUtc(): \DateTimeZone
+    {
+        return self::$utc ?? self::$utc = new \DateTimeZone('UTC');
     }
 
     /**
@@ -639,14 +714,14 @@ class Package extends BasePackage
     {
         $this->setSourceReference($reference);
 
-        // only bitbucket, github and gitlab have auto generated dist URLs that easily allow replacing the reference in the dist URL
+        // only bitbucket, codeberg, github and gitlab have auto generated dist URLs that easily allow replacing the reference in the dist URL
         // TODO generalize this a bit for self-managed/on-prem versions? Some kind of replace token in dist urls which allow this?
         if (
             $this->getDistUrl() !== null
-            && Preg::isMatch('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com|(?:www\.)?gitlab\.com)/}i', $this->getDistUrl())
+            && Preg::isMatch('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com|(?:www\.)?gitlab\.com|codeberg\.org)/}i', $this->getDistUrl())
         ) {
             $this->setDistReference($reference);
-            $this->setDistUrl(Preg::replace('{(?<=/|sha=)[a-f0-9]{40}(?=/|$)}i', $reference, $this->getDistUrl()));
+            $this->setDistUrl(Preg::replace('{(?<=/|sha=)[a-f0-9]{40}(?=/|(?:\.zip)?(?:$|\?))}i', $reference, $this->getDistUrl()));
         } elseif ($this->getDistReference()) { // update the dist reference if there was one, but if none was provided ignore it
             $this->setDistReference($reference);
         }

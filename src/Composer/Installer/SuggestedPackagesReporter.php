@@ -183,10 +183,10 @@ class SuggestedPackagesReporter
         $installedNames = [];
         if (null !== $installedRepo && !empty($suggestedPackages)) {
             foreach ($installedRepo->getPackages() as $package) {
-                $installedNames = array_merge(
-                    $installedNames,
-                    $package->getNames()
-                );
+                $packageName = $package->getName();
+                foreach ($package->getNames() as $name) {
+                    $installedNames[$name][] = $packageName;
+                }
             }
         }
 
@@ -200,7 +200,18 @@ class SuggestedPackagesReporter
 
         $suggestions = [];
         foreach ($suggestedPackages as $suggestion) {
-            if (in_array($suggestion['target'], $installedNames) || (\count($sourceFilter) > 0 && !in_array($suggestion['source'], $sourceFilter))) {
+            // Only treat a suggestion as fulfilled when a package other than the
+            // one making it provides the target, so a package that both provides
+            // and suggests a name (e.g. an extension polyfill) does not hide its
+            // own suggestion.
+            $providedByOthers = isset($installedNames[$suggestion['target']]) && array_any(
+                $installedNames[$suggestion['target']],
+                static function (string $providerName) use ($suggestion): bool {
+                    return $providerName !== strtolower($suggestion['source']);
+                }
+            );
+
+            if ($providedByOthers || (\count($sourceFilter) > 0 && !in_array($suggestion['source'], $sourceFilter))) {
                 continue;
             }
 

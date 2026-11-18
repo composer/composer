@@ -88,7 +88,7 @@ class VersionBumper
                 \^v?'.$major.'(?:\.\d+)* # e.g. ^2.anything
                 | ~v?'.$major.'(?:\.\d+){1,3} # e.g. ~2.2 or ~2.2.2 or ~2.2.2.2
                 | v?'.$major.'(?:\.[*x])+ # e.g. 2.* or 2.*.* or 2.x.x.x etc
-                | >=v?\d(?:\.\d+)* # e.g. >=2 or >=1.2 etc
+                | >=v?\d+(?:\.\d+)* # e.g. >=2 or >=1.2 etc
                 | \* # full wildcard
             )
             (?=,|$|\ |\||@) # trailing separator
@@ -97,6 +97,17 @@ class VersionBumper
             $modified = $prettyConstraint;
             foreach (array_reverse($matches['constraint']) as $match) {
                 assert(is_string($match[0]));
+                // only bump a lower bound whose own AND part contains the installed version, as other ranges of the constraint would be corrupted
+                if (str_starts_with($match[0], '>=')) {
+                    $partStart = strrpos(substr($prettyConstraint, 0, $match[1]), '|');
+                    $partStart = $partStart === false ? 0 : $partStart + 1;
+                    $partEnd = strpos($prettyConstraint, '|', $match[1]);
+                    $partEnd = $partEnd === false ? Platform::strlen($prettyConstraint) : $partEnd;
+                    $part = trim(substr($prettyConstraint, $partStart, $partEnd - $partStart));
+                    if (!$parser->parseConstraints($part)->matches(new Constraint('==', $version))) {
+                        continue;
+                    }
+                }
                 $suffix = '';
                 if (substr_count($match[0], '.') === 2 && substr_count($versionWithoutSuffix, '.') === 1) {
                     $suffix = '.0';

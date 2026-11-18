@@ -29,6 +29,15 @@ use Composer\Pcre\Preg;
  */
 class ArrayLoader implements LoaderInterface
 {
+    /** config key => [Link::TYPE_*, setter], matching BasePackage::$supportedLinkTypes */
+    private const LINK_TYPES = [
+        'require' => [Link::TYPE_REQUIRE, 'setRequires'],
+        'conflict' => [Link::TYPE_CONFLICT, 'setConflicts'],
+        'provide' => [Link::TYPE_PROVIDE, 'setProvides'],
+        'replace' => [Link::TYPE_REPLACE, 'setReplaces'],
+        'require-dev' => [Link::TYPE_DEV_REQUIRE, 'setDevRequires'],
+    ];
+
     /** @var VersionParser */
     protected $versionParser;
     /** @var bool */
@@ -54,16 +63,15 @@ class ArrayLoader implements LoaderInterface
 
         $package = $this->createObject($config, $class);
 
-        foreach (BasePackage::$supportedLinkTypes as $type => $opts) {
+        foreach (self::LINK_TYPES as $type => [$linkType, $method]) {
             if (!isset($config[$type]) || !is_array($config[$type])) {
                 continue;
             }
-            $method = 'set'.ucfirst($opts['method']);
             $package->{$method}(
                 $this->parseLinks(
                     $package->getName(),
                     $package->getPrettyVersion(),
-                    $opts['method'],
+                    $linkType,
                     $config[$type]
                 )
             );
@@ -127,7 +135,15 @@ class ArrayLoader implements LoaderInterface
                 $version = $this->versionParser->normalize($config['version']);
             }
         } else {
-            $version = $this->versionParser->normalize($config['version']);
+            try {
+                $version = $this->versionParser->normalize($config['version']);
+            } catch (\UnexpectedValueException $e) {
+                throw new \UnexpectedValueException(
+                    'Failed to normalize version for package "'.$config['name'].'": '.$e->getMessage(),
+                    $e->getCode(),
+                    $e
+                );
+            }
         }
 
         return new $class($config['name'], $version, $config['version']);
@@ -232,14 +248,16 @@ class ArrayLoader implements LoaderInterface
             $package->setPhpExt($config['php-ext']);
         }
 
-        if (!empty($config['time'])) {
-            $time = Preg::isMatch('/^\d++$/D', $config['time']) ? '@'.$config['time'] : $config['time'];
+        // repositories may send timestamps as JSON numbers, which must not crash the loader
+        if (!empty($config['time']) && (is_int($config['time']) || is_string($config['time']))) {
+            $package->setReleaseDateString((string) $config['time']);
+        }
 
-            try {
-                $date = new \DateTime($time, new \DateTimeZone('UTC'));
-                $package->setReleaseDate($date);
-            } catch (\Exception $e) {
-            }
+        // Server-set publication timestamp, owned by the repository and not
+        // overridable by the package author (unlike `time`). Preferred by the
+        // cooldown policy when present
+        if (isset($config['published-time']) && (is_int($config['published-time']) || (is_string($config['published-time']) && '' !== $config['published-time']))) {
+            $package->setPublishedDateString((string) $config['published-time']);
         }
 
         if (!empty($config['notification-url'])) {
@@ -299,8 +317,12 @@ class ArrayLoader implements LoaderInterface
             }
         }
 
-        if ($this->loadOptions && isset($config['transport-options'])) {
-            $package->setTransportOptions($config['transport-options']);
+        if ($this->loadOptions && isset($config['transport-options']) && is_array($config['transport-options'])) {
+            $transportOptions = $config['transport-options'];
+            // these options are invoked as callables while downloading, so they must never be
+            // taken from externally provided package data such as the lock or installed.json
+            unset($transportOptions['prevent_url_access_callable'], $transportOptions['prevent_ip_access_callable']);
+            $package->setTransportOptions($transportOptions);
         }
 
         if ($aliasNormalized = $this->getBranchAlias($config)) {
@@ -317,7 +339,7 @@ class ArrayLoader implements LoaderInterface
     }
 
     /**
-     * @param array<string, array<string, array<int|string, array<int|string, array{string, Link}>>>> $linkCache
+     * @param array<string, array<string, array<int|string, array<int|string, Link>>>> $linkCache
      * @param mixed[]                                                                             $config
      */
     private function configureCachedLinks(array &$linkCache, PackageInterface $package, array $config): void
@@ -325,10 +347,8 @@ class ArrayLoader implements LoaderInterface
         $name = $package->getName();
         $prettyVersion = $package->getPrettyVersion();
 
-        foreach (BasePackage::$supportedLinkTypes as $type => $opts) {
+        foreach (self::LINK_TYPES as $type => [$linkType, $method]) {
             if (isset($config[$type])) {
-                $method = 'set'.ucfirst($opts['method']);
-
                 $links = [];
                 foreach ($config[$type] as $prettyTarget => $constraint) {
                     $target = strtolower($prettyTarget);
@@ -339,14 +359,10 @@ class ArrayLoader implements LoaderInterface
                     }
 
                     if ($constraint === 'self.version') {
-                        $links[$target] = $this->createLink($name, $prettyVersion, $opts['method'], $target, $constraint);
+                        $links[$target] = $this->createLink($name, $prettyVersion, $linkType, $target, $constraint);
                     } else {
-                        if (!isset($linkCache[$name][$type][$target][$constraint])) {
-                            $linkCache[$name][$type][$target][$constraint] = [$target, $this->createLink($name, $prettyVersion, $opts['method'], $target, $constraint)];
-                        }
-
-                        [$target, $link] = $linkCache[$name][$type][$target][$constraint];
-                        $links[$target] = $link;
+                        $links[$target] = $linkCache[$name][$type][$target][$constraint]
+                            ?? ($linkCache[$name][$type][$target][$constraint] = $this->createLink($name, $prettyVersion, $linkType, $target, $constraint));
                     }
                 }
 
@@ -391,10 +407,21 @@ class ArrayLoader implements LoaderInterface
         if (!\is_string($prettyConstraint)) {
             throw new \UnexpectedValueException('Link constraint in '.$source.' '.$description.' > '.$target.' should be a string, got '.\get_debug_type($prettyConstraint) . ' (' . var_export($prettyConstraint, true) . ')');
         }
+
         if ('self.version' === $prettyConstraint) {
-            $parsedConstraint = $this->versionParser->parseConstraints($sourceVersion);
+            $constraint = $sourceVersion;
         } else {
-            $parsedConstraint = $this->versionParser->parseConstraints($prettyConstraint);
+            $constraint = $prettyConstraint;
+        }
+
+        try {
+            $parsedConstraint = $this->versionParser->parseConstraints($constraint);
+        } catch (\UnexpectedValueException $e) {
+            throw new \UnexpectedValueException(
+                'Link constraint in '.$source.' '.$description.' > '.$target.' should be a valid version constraint, got "'.$constraint.'"',
+                $e->getCode(),
+                $e
+            );
         }
 
         return new Link($source, $target, $parsedConstraint, $description, $prettyConstraint);

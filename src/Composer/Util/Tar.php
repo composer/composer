@@ -19,6 +19,9 @@ class Tar
 {
     public static function getComposerJson(string $pathToArchive): ?string
     {
+        // Guard against unsafe Phar/PharData metadata handling on PHP < 8.0
+        Platform::assertPharMetadataSafe();
+
         $phar = new \PharData($pathToArchive);
 
         if (!$phar->valid()) {
@@ -40,6 +43,10 @@ class Tar
         $topLevelPaths = [];
         foreach ($phar as $folderFile) {
             $name = $folderFile->getBasename();
+
+            if (Platform::isMetadataPath($name)) {
+                continue;
+            }
 
             if ($folderFile->isDir()) {
                 $topLevelPaths[$name] = true;

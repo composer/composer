@@ -170,7 +170,7 @@ class ComposerSchemaTest extends TestCase
         self::assertTrue($this->check($json), 'stable');
     }
 
-    public function assertAmbiguousRepositoryNotPossible(): void
+    public function testAmbiguousRepositoryNotPossible(): void
     {
         $json = '{
     "repositories": {
@@ -181,7 +181,7 @@ class ComposerSchemaTest extends TestCase
         }
     }
 }';
-        self::assertFalse($this->check($json));
+        self::assertNotTrue($this->check($json), 'a named repository under the object form is ambiguous');
 
         $json = '{
     "repositories": {
@@ -213,6 +213,68 @@ class ComposerSchemaTest extends TestCase
     ]
 }';
         self::assertTrue($this->check($json));
+    }
+
+    /**
+     * @return iterable<string, array{0: string}>
+     */
+    public function reservedPolicyListNameProvider(): iterable
+    {
+        yield 'ignore- prefix' => ['ignore-foo'];
+        yield 'ignore prefix without dash' => ['ignoremalware'];
+        yield 'package' => ['package'];
+        yield 'license' => ['license'];
+        yield 'security' => ['security'];
+        yield 'minimum-release-age' => ['minimum-release-age'];
+    }
+
+    /**
+     * @dataProvider reservedPolicyListNameProvider
+     */
+    public function testReservedPolicyCustomListNamesAreRejected(string $listName): void
+    {
+        $json = '{"name": "vendor/package", "description": "description", "config": {"policy": {"' . $listName . '": {"block": true}}}}';
+        $result = $this->check($json);
+        self::assertNotTrue($result, sprintf('Expected schema validation to reject reserved policy list name "%s"', $listName));
+        self::assertStringContainsString($listName, (string) json_encode($result, JSON_UNESCAPED_SLASHES));
+    }
+
+    public function testRegularPolicyCustomListNameIsAccepted(): void
+    {
+        $json = '{"name": "vendor/package", "description": "description", "config": {"policy": {"company-policy": {"block": true}}}}';
+        self::assertTrue($this->check($json));
+    }
+
+    public function testIgnoreUnreachablePolicyKeyIsAccepted(): void
+    {
+        $json = '{"name": "vendor/package", "description": "description", "config": {"policy": {"ignore-unreachable": true}}}';
+        self::assertTrue($this->check($json));
+    }
+
+    /**
+     * @return iterable<string, array{string, bool}>
+     */
+    public function cooldownPeriodProvider(): iterable
+    {
+        yield 'unit duration' => ['7 days', true];
+        yield 'plain seconds' => ['3600', true];
+        yield 'empty string' => ['', true];
+        yield 'whitespace only' => ['   ', false];
+        yield 'surrounding whitespace' => [' 7 days ', false];
+        yield 'uppercase unit' => ['7 Days', false];
+    }
+
+    /**
+     * @dataProvider cooldownPeriodProvider
+     */
+    public function testCooldownPeriodPattern(string $period, bool $isValid): void
+    {
+        $json = '{"name": "vendor/package", "description": "description", "config": {"policy": {"cooldown": {"period": "' . $period . '"}}}}';
+        if ($isValid) {
+            self::assertTrue($this->check($json));
+        } else {
+            self::assertNotTrue($this->check($json));
+        }
     }
 
     /**

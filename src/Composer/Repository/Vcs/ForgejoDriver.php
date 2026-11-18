@@ -22,6 +22,7 @@ use Composer\Util\Forgejo;
 use Composer\Util\ForgejoRepositoryData;
 use Composer\Util\ForgejoUrl;
 use Composer\Util\Http\Response;
+use Composer\Util\Url;
 
 class ForgejoDriver extends VcsDriver
 {
@@ -56,6 +57,10 @@ class ForgejoDriver extends VcsDriver
 
         $resource = $this->forgejoUrl->apiUrl.'/contents/' . $file . '?ref='.urlencode($identifier);
         $resource = $this->getContents($resource)->decodeJson();
+
+        if ($resource === []) {
+            return '[]';
+        }
 
         // The Forgejo contents API only returns files up to 1MB as base64 encoded files
         // larger files either need be fetched with a raw accept header or by using the git blob endpoint
@@ -104,6 +109,9 @@ class ForgejoDriver extends VcsDriver
             do {
                 $response = $this->getContents($resource);
                 $branchData = $response->decodeJson();
+                if ($branchData === null) {
+                    break;
+                }
                 foreach ($branchData as $branch) {
                     $branches[$branch['name']] = $branch['commit']['id'];
                 }
@@ -129,6 +137,9 @@ class ForgejoDriver extends VcsDriver
             do {
                 $response = $this->getContents($resource);
                 $tagsData = $response->decodeJson();
+                if ($tagsData === null) {
+                    break;
+                }
                 foreach ($tagsData as $tag) {
                     $tags[$tag['name']] = $tag['commit']['sha'];
                 }
@@ -224,7 +235,7 @@ class ForgejoDriver extends VcsDriver
         }
 
         if (!extension_loaded('openssl')) {
-            $io->writeError('Skipping Forgejo driver for '.$url.' because the OpenSSL PHP extension is missing.', true, IOInterface::VERBOSE);
+            $io->writeError('Skipping Forgejo driver for '.Url::sanitize($url).' because the OpenSSL PHP extension is missing.', true, IOInterface::VERBOSE);
 
             return false;
         }
@@ -293,14 +304,14 @@ class ForgejoDriver extends VcsDriver
                     }
 
                     if (!$this->io->isInteractive()) {
-                        $this->attemptCloneFallback();
+                        $this->attemptCloneFallback($e);
 
                         return new Response(['url' => 'dummy'], 200, [], 'null');
                     }
 
                     if (
                         !$this->io->hasAuthentication($this->originUrl) &&
-                        $forgejo->authorizeOAuthInteractively($this->forgejoUrl->originUrl, $e->getCode() === 429 ? 'API limit exhausted. Enter your Forgejo credentials to get a larger API limit (<info>'.$this->url.'</info>)' : null)
+                        $forgejo->authorizeOAuthInteractively($this->forgejoUrl->originUrl, $e->getCode() === 429 ? 'API limit exhausted. Enter your Forgejo credentials to get a larger API limit (<info>'.Url::sanitize($this->url).'</info>)' : null)
                     ) {
                         return parent::getContents($url);
                     }
@@ -318,8 +329,12 @@ class ForgejoDriver extends VcsDriver
      * @return true
      * @throws \RuntimeException
      */
-    protected function attemptCloneFallback(): bool
+    protected function attemptCloneFallback(?\Throwable $e = null): bool
     {
+        if (isset($this->repoConfig['allow-git-fallback']) && $this->repoConfig['allow-git-fallback'] === false) {
+            throw new \RuntimeException('Fallback to git driver disabled', 0, $e);
+        }
+
         try {
             // If this repository may be private (hard to say for sure,
             // Forgejo returns 404 for private repositories) and we

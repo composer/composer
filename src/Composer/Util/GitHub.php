@@ -23,7 +23,7 @@ use Composer\Pcre\Preg;
  */
 class GitHub
 {
-    public const GITHUB_TOKEN_REGEX = '{^([a-f0-9]{12,}|gh[a-z]_[a-zA-Z0-9_]+|github_pat_[a-zA-Z0-9_]+)$}';
+    public const GITHUB_TOKEN_REGEX = '{^([a-f0-9]{12,}|gh[a-z]_[a-zA-Z0-9_.-]+|github_pat_[a-zA-Z0-9_]+)$}';
 
     /** @var IOInterface */
     protected $io;
@@ -105,7 +105,7 @@ class GitHub
         ]);
 
         $this->io->writeError([
-            '1. When you don\'t use \'vcs\'  type \'repositories\'  in composer.json and do not need to clone source or download dist files',
+            '1. When you don\'t use \'vcs\' type \'repositories\' in composer.json and do not need to clone source or download dist files',
             'from private GitHub repositories over HTTPS, use a fine-grained token with read-only access to public information.',
             'Use the following URL to create such a token:',
             'https://'.$originUrl.'/settings/personal-access-tokens/new?name=' . str_replace('%20', '+', rawurlencode($note)),

@@ -183,6 +183,37 @@ class GitTest extends TestCase
         $this->git->runCommand($commandCallable, $gitUrl, null, true);
     }
 
+    public function testRunCommandPrivateBitbucketRepositoryDoesNotRetrySameSshUrl(): void
+    {
+        self::expectException('RuntimeException');
+
+        $commandCallable = static function ($url): string {
+            self::assertSame('git@ssh.bitbucket.org:acme/repo.git', $url);
+
+            return 'git command failing';
+        };
+
+        $this->config
+            ->method('get')
+            ->willReturnMap([
+                ['gitlab-domains', 0, ['gitlab.com']],
+                ['github-domains', 0, ['github.com']],
+            ]);
+
+        $this->process->expects([
+            ['cmd' => 'git command failing', 'return' => 1],
+            ['cmd' => ['git', 'config', 'bitbucket.accesstoken'], 'return' => 1],
+            ['cmd' => ['git', '--version'], 'return' => 0],
+        ], true);
+
+        $this->io
+            ->method('isInteractive')
+            ->willReturn(false);
+
+        // @phpstan-ignore method.deprecated
+        $this->git->runCommand($commandCallable, 'git@ssh.bitbucket.org:acme/repo.git', null, true);
+    }
+
     /**
      * @dataProvider privateBitbucketWithOauthProvider
      *
@@ -268,6 +299,8 @@ class GitTest extends TestCase
     public static function privateBitbucketWithOauthProvider(): array
     {
         return [
+            ['git@ssh.bitbucket.org:acme/repo.git', 'https://x-token-auth:my-access-token@bitbucket.org/acme/repo.git'],
+            ['ssh://git@ssh.bitbucket.org/acme/repo.git', 'https://x-token-auth:my-access-token@bitbucket.org/acme/repo.git'],
             ['git@bitbucket.org:acme/repo.git', 'https://x-token-auth:my-access-token@bitbucket.org/acme/repo.git'],
             ['https://bitbucket.org/acme/repo.git', 'https://x-token-auth:my-access-token@bitbucket.org/acme/repo.git'],
             ['https://bitbucket.org/acme/repo', 'https://x-token-auth:my-access-token@bitbucket.org/acme/repo.git'],
@@ -278,12 +311,16 @@ class GitTest extends TestCase
     public static function privateBitbucketWithCredentialsProvider(): array
     {
         return [
+            ['git@ssh.bitbucket.org:acme/repo.git', 'MY_BITBUCKET_TOKEN', 'https://token:MY_BITBUCKET_TOKEN@bitbucket.org/acme/repo.git', 1],
             ['git@bitbucket.org:acme/repo.git', 'MY_BITBUCKET_TOKEN', 'https://token:MY_BITBUCKET_TOKEN@bitbucket.org/acme/repo.git', 1],
             ['https://bitbucket.org/acme/repo', 'MY_BITBUCKET_TOKEN', 'https://token:MY_BITBUCKET_TOKEN@bitbucket.org/acme/repo.git', 1],
             ['https://bitbucket.org/acme/repo.git', 'MY_BITBUCKET_TOKEN', 'https://token:MY_BITBUCKET_TOKEN@bitbucket.org/acme/repo.git', 1],
-            ['git@bitbucket.org:acme/repo.git', null, 'git@bitbucket.org:acme/repo.git', 0],
-            ['https://bitbucket.org/acme/repo', null, 'git@bitbucket.org:acme/repo.git', 1, 1],
-            ['https://bitbucket.org/acme/repo.git', null, 'git@bitbucket.org:acme/repo.git', 1, 1],
+            ['git@ssh.bitbucket.org:acme/repo.git', null, 'git@ssh.bitbucket.org:acme/repo.git', 0],
+            ['git@bitbucket.org:acme/repo.git', null, 'git@ssh.bitbucket.org:acme/repo.git', 1, 1],
+            ['https://bitbucket.org/acme/repo', null, 'git@ssh.bitbucket.org:acme/repo.git', 1, 1],
+            ['https://bitbucket.org/acme/repo.git', null, 'git@ssh.bitbucket.org:acme/repo.git', 1, 1],
+            ['ssh://git@bitbucket.org/acme/repo', null, 'git@ssh.bitbucket.org:acme/repo.git', 1, 1],
+            ['ssh://git@ssh.bitbucket.org/acme/repo.git', 'MY_BITBUCKET_TOKEN', 'https://token:MY_BITBUCKET_TOKEN@bitbucket.org/acme/repo.git', 1],
             ['https://bitbucket.org/acme/repo.git', 'ATAT_BITBUCKET_API_TOKEN', 'https://x-bitbucket-api-token-auth:ATAT_BITBUCKET_API_TOKEN@bitbucket.org/acme/repo.git', 1],
         ];
     }
@@ -296,6 +333,63 @@ class GitTest extends TestCase
         ];
     }
 
+    /**
+     * @dataProvider credentialUrlProvider
+     */
+    public function testSyncMirrorSanitizesUrlAfterInitialClone(string $url): void
+    {
+        $nonExistentDir = sys_get_temp_dir() . '/composer-test-nonexistent-' . bin2hex(random_bytes(8));
+
+        $this->mockSyncMirrorConfig();
+
+        $this->process->expects([
+            ['cmd' => ['git', 'clone', '--mirror', '--', $url, $nonExistentDir], 'return' => 0],
+            ['cmd' => ['git', 'remote', '-v'], 'return' => 0],
+            ['cmd' => ['git', 'remote', 'set-url', 'origin', '--', 'https://example.com/repo.git'], 'return' => 0],
+        ], true);
+
+        $this->fs->method('removeDirectory')->willReturn(true);
+
+        $result = $this->git->syncMirror($url, $nonExistentDir);
+
+        self::assertTrue($result);
+    }
+
+    /**
+     * @return array<array{string}>
+     */
+    public static function credentialUrlProvider(): array
+    {
+        return [
+            ['https://user:secret@example.com/repo.git'],
+            // a bare token in the user slot has no colon to key off
+            ['https://ghp_1234567890abcdefghijklmnopqrstuvwxyzAB@example.com/repo.git'],
+            // a password containing @ must not leave its tail behind
+            ['https://user:sec@ret@example.com/repo.git'],
+        ];
+    }
+
+    public function testSyncMirrorSanitizesUrlEvenAfterFailedUpdate(): void
+    {
+        $dir = sys_get_temp_dir();
+
+        $this->mockSyncMirrorConfig();
+
+        $this->process->expects([
+            ['cmd' => ['git', 'rev-parse', '--git-dir'], 'stdout' => ".\n", 'return' => 0],
+            ['cmd' => ['git', 'remote', '-v'], 'return' => 0],
+            ['cmd' => ['git', 'remote', 'set-url', 'origin', '--', 'https://user:secret@example.com/repo.git'], 'return' => 0],
+            ['cmd' => ['git', '-c', 'remote.origin.followRemoteHEAD=always', 'remote', 'update', '--prune', 'origin'], 'return' => 1],
+            ['cmd' => ['git', '--version'], 'return' => 0],
+            ['cmd' => ['git', 'remote', '-v'], 'return' => 0],
+            ['cmd' => ['git', 'remote', 'set-url', 'origin', '--', 'https://example.com/repo.git'], 'return' => 0],
+        ], true);
+
+        $result = $this->git->syncMirror('https://user:secret@example.com/repo.git', $dir);
+
+        self::assertFalse($result);
+    }
+
     private function mockConfig(string $protocol): void
     {
         $this->config
@@ -303,6 +397,17 @@ class GitTest extends TestCase
             ->willReturnMap([
                 ['github-domains', 0, ['github.com']],
                 ['github-protocols', 0, [$protocol]],
+            ]);
+    }
+
+    private function mockSyncMirrorConfig(): void
+    {
+        $this->config
+            ->method('get')
+            ->willReturnMap([
+                ['github-domains', 0, ['github.com']],
+                ['gitlab-domains', 0, ['gitlab.com']],
+                ['github-protocols', 0, ['https']],
             ]);
     }
 }

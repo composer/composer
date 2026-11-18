@@ -1,0 +1,51 @@
+--TEST--
+Cooldown policy withholds a version published inside the cooldown window and resolves to the older release.
+--COMPOSER--
+{
+    "name": "acme/project",
+    "version": "1.0.0",
+    "require": {
+        "acme/library": "^1.0"
+    },
+    "config": {
+        "policy": {
+            "cooldown": {
+                "period": "1 week"
+            }
+        }
+    },
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "acme/library",
+                    "version": "1.0.0",
+                    "published-time": "2020-01-01T00:00:00+00:00",
+                    "source": { "reference": "1.0.0", "type": "git", "url": "" }
+                },
+                {
+                    "name": "acme/library",
+                    "version": "1.1.0",
+                    "published-time": "2999-01-01T00:00:00+00:00",
+                    "source": { "reference": "1.1.0", "type": "git", "url": "" }
+                }
+            ]
+        }
+    ]
+}
+--RUN--
+update
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+<warning>1 package version(s) withheld by the cooldown policy (run with -vv to list them).</warning>
+Updating dependencies
+Lock file operations: 1 install, 0 updates, 0 removals
+  - Locking acme/library (1.0.0)
+Writing lock file
+Installing dependencies from lock file (including require-dev)
+Package operations: 1 install, 0 updates, 0 removals
+Generating autoload files
+--EXPECT--
+Installing acme/library (1.0.0)

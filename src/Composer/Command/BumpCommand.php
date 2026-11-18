@@ -255,7 +255,7 @@ EOT
             }
         }
 
-        if (false === file_put_contents($json->getPath(), $manipulator->getContents())) {
+        if (false === Filesystem::safeFilePutContents($json->getPath(), $manipulator->getContents())) {
             throw new \RuntimeException('Unable to write new '.$json->getPath().' contents.');
         }
 

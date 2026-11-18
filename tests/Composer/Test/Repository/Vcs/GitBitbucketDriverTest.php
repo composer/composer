@@ -234,4 +234,22 @@ class GitBitbucketDriverTest extends TestCase
             GitBitbucketDriver::supports($this->io, $this->config, 'https://github.com/user/repo.git')
         );
     }
+
+    public function testGitFallbackCanBeDisabled(): void
+    {
+        $this->httpDownloader->expects([
+            ['url' => 'https://api.bitbucket.org/2.0/repositories/user/repo?fields=-project%2C-owner', 'status' => 404],
+        ], true);
+
+        $driver = $this->getDriver(['url' => 'https://bitbucket.org/user/repo.git', 'allow-git-fallback' => false]);
+
+        try {
+            $driver->getRootIdentifier();
+            self::fail('Expected the disabled git fallback to throw');
+        } catch (\RuntimeException $e) {
+            self::assertSame('Fallback to git driver disabled', $e->getMessage());
+            self::assertInstanceOf('Composer\Downloader\TransportException', $e->getPrevious());
+            self::assertSame(404, $e->getPrevious()->getCode());
+        }
+    }
 }

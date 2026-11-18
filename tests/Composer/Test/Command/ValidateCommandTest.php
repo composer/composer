@@ -25,6 +25,8 @@ class ValidateCommandTest extends TestCase
     public function testValidate(array $composerJson, array $command, string $expected): void
     {
         $this->initTempComposer($composerJson);
+        // let version guessing run so the root version warning is covered
+        Platform::clearEnv('COMPOSER_ROOT_VERSION');
 
         $appTester = $this->getApplicationTester();
         $appTester->run(array_merge(['command' => 'validate'], $command));
@@ -47,6 +49,7 @@ class ValidateCommandTest extends TestCase
     public function testWithComposerLock(): void
     {
         $this->initTempComposer(self::MINIMAL_VALID_CONFIGURATION);
+        Platform::clearEnv('COMPOSER_ROOT_VERSION');
         $this->createComposerLock();
 
         $appTester = $this->getApplicationTester();
@@ -59,7 +62,7 @@ class ValidateCommandTest extends TestCase
 - Required package "root/req" is not present in the lock file.
 This usually happens when composer files are incorrectly merged or the composer.json file is manually edited.
 Read more about correctly resolving merge conflicts https://getcomposer.org/doc/articles/resolving-merge-conflicts.md
-and prefer using the "require" command over editing the composer.json file directly https://getcomposer.org/doc/03-cli.md#require-r
+and prefer using the "require" command over editing the composer.json file directly https://getcomposer.org/doc/03-cli.md#require--r
 OUTPUT;
 
         self::assertSame(trim($expected), trim($appTester->getDisplay(true)));

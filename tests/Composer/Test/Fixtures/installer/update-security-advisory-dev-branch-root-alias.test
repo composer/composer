@@ -1,0 +1,72 @@
+--TEST--
+Security advisory matching the branch alias of a dev branch does not block requiring the dev branch through a root alias.
+--COMPOSER--
+{
+    "name": "acme/project",
+    "version": "1.0.0",
+    "require": {
+        "acme/library": "dev-main as 3.3.0"
+    },
+    "minimum-stability": "dev",
+    "config": {
+        "policy": {
+            "advisories": {
+                "block": true
+            }
+        }
+    },
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "acme/library",
+                    "version": "dev-main",
+                    "extra": {
+                        "branch-alias": {
+                            "dev-main": "3.3.x-dev"
+                        }
+                    },
+                    "source": {
+                        "reference": "abc123",
+                        "type": "git",
+                        "url": ""
+                    }
+                }
+            ],
+            "security-advisories": {
+                "acme/library": [
+                    {
+                        "advisoryId": "PKSA-1234-abcd-1234",
+                        "packageName": "acme/library",
+                        "remoteId": "test",
+                        "title": "Security Advisory",
+                        "link": null,
+                        "cve": null,
+                        "affectedVersions": "<3.5",
+                        "source": "Tests",
+                        "reportedAt": "2024-04-31 12:37:47",
+                        "composerRepository": "Package Repository",
+                        "severity": "high",
+                        "sources": [
+                            {
+                                "name": "Security Advisory",
+                                "remoteId": "test"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}
+--RUN--
+update -v
+
+--EXPECT-EXIT-CODE--
+0
+
+--EXPECT--
+Installing acme/library (dev-main abc123)
+Marking acme/library (3.3.0) as installed, alias of acme/library (dev-main abc123)
+Marking acme/library (3.3.x-dev abc123) as installed, alias of acme/library (dev-main abc123)

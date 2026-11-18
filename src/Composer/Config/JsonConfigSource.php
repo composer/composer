@@ -208,11 +208,11 @@ class JsonConfigSource implements ConfigSourceInterface
     public function removeRepository(string $name): void
     {
         $this->manipulateJson('removeRepository', static function (&$config, $repo): void {
-            if (isset($config['repositories'][$repo])) {
+            if (!array_is_list($config['repositories'] ?? []) && array_key_exists($repo, $config['repositories'])) {
                 unset($config['repositories'][$repo]);
             } else {
                 $config['repositories'] = array_values(array_filter($config['repositories'] ?? [], static function ($val) use ($repo) {
-                    return !isset($val['name']) || $val['name'] !== $repo || $val !== [$repo => false];
+                    return ($val['name'] ?? null) !== $repo && $val !== [$repo => false];
                 }));
             }
 
@@ -236,6 +236,21 @@ class JsonConfigSource implements ConfigSourceInterface
                 } else {
                     $config['config'][$key][$host] = $val;
                 }
+            } elseif (strpos($key, 'policy.') === 0) {
+                if (!isset($config['config']) || !is_array($config['config'])) {
+                    $config['config'] = [];
+                }
+
+                $bits = explode('.', $key);
+                $last = array_pop($bits);
+                $arr = &$config['config'];
+                foreach ($bits as $bit) {
+                    if (!isset($arr[$bit]) || !is_array($arr[$bit])) {
+                        $arr[$bit] = [];
+                    }
+                    $arr = &$arr[$bit];
+                }
+                $arr[$last] = $val;
             } else {
                 $config['config'][$key] = $val;
             }
@@ -256,6 +271,39 @@ class JsonConfigSource implements ConfigSourceInterface
                 } else {
                     unset($config['config'][$key][$host]);
                 }
+            } elseif (strpos($key, 'policy.') === 0) {
+                if (!isset($config['config']) || !is_array($config['config'])) {
+                    return;
+                }
+                $bits = explode('.', $key);
+                $last = array_pop($bits);
+                $arr = &$config['config'];
+                foreach ($bits as $bit) {
+                    if (!isset($arr[$bit]) || !is_array($arr[$bit])) {
+                        return;
+                    }
+                    $arr = &$arr[$bit];
+                }
+                unset($arr[$last]);
+                unset($arr);
+
+                // cascade: drop now-empty ancestors within the policy subtree (stops before config itself)
+                while (count($bits) > 0) {
+                    $leafKey = array_pop($bits);
+                    $parent = &$config['config'];
+                    foreach ($bits as $bit) {
+                        if (!isset($parent[$bit])) {
+                            break 2;
+                        }
+                        $parent = &$parent[$bit];
+                    }
+                    if (isset($parent[$leafKey]) && $parent[$leafKey] === []) {
+                        unset($parent[$leafKey]);
+                    } else {
+                        break;
+                    }
+                    unset($parent);
+                }
             } else {
                 unset($config['config'][$key]);
             }
@@ -268,12 +316,12 @@ class JsonConfigSource implements ConfigSourceInterface
     public function addProperty(string $name, $value): void
     {
         $this->manipulateJson('addProperty', static function (&$config, $key, $val): void {
-            if (strpos($key, 'extra.') === 0 || strpos($key, 'scripts.') === 0) {
-                $bits = explode('.', $key);
+            if (Preg::isMatch('{^(suggest|extra|scripts)\.}', $key)) {
+                $bits = self::splitPropertyKey($key);
                 $last = array_pop($bits);
-                $arr = &$config[reset($bits)];
+                $arr = &$config;
                 foreach ($bits as $bit) {
-                    if (!isset($arr[$bit])) {
+                    if (!isset($arr[$bit]) || !is_array($arr[$bit])) {
                         $arr[$bit] = [];
                     }
                     $arr = &$arr[$bit];
@@ -291,17 +339,24 @@ class JsonConfigSource implements ConfigSourceInterface
     public function removeProperty(string $name): void
     {
         $this->manipulateJson('removeProperty', static function (&$config, $key): void {
-            if (strpos($key, 'extra.') === 0 || strpos($key, 'scripts.') === 0 || stripos($key, 'autoload.') === 0 || stripos($key, 'autoload-dev.') === 0) {
-                $bits = explode('.', $key);
+            if (Preg::isMatch('{^(suggest|extra|scripts|autoload|autoload-dev)\.}', $key)) {
+                $bits = self::splitPropertyKey($key);
                 $last = array_pop($bits);
-                $arr = &$config[reset($bits)];
+                $arr = &$config;
                 foreach ($bits as $bit) {
-                    if (!isset($arr[$bit])) {
+                    if (!isset($arr[$bit]) || !is_array($arr[$bit])) {
                         return;
                     }
                     $arr = &$arr[$bit];
                 }
+                $wasList = array_is_list($arr);
                 unset($arr[$last]);
+                // keep lists as lists and emptied objects as objects, as JsonManipulator does
+                if ($wasList) {
+                    $arr = array_values($arr);
+                } elseif ($arr === []) {
+                    $arr = new \stdClass;
+                }
             } else {
                 unset($config[$key]);
             }
@@ -323,14 +378,53 @@ class JsonConfigSource implements ConfigSourceInterface
      */
     public function removeLink(string $type, string $name): void
     {
-        $this->manipulateJson('removeSubNode', static function (&$config, $type, $name): void {
-            unset($config[$type][$name]);
-        }, $type, $name);
-        $this->manipulateJson('removeMainKeyIfEmpty', static function (&$config, $type): void {
-            if (0 === count($config[$type])) {
-                unset($config[$type]);
+        $this->manipulateJson('removeLink', static function (&$config, $type, $name): void {
+            if (is_array($config[$type] ?? null) && array_key_exists($name, $config[$type])) {
+                unset($config[$type][$name]);
+                if ($config[$type] === []) {
+                    unset($config[$type]);
+                }
             }
-        }, $type);
+        }, $type, $name);
+    }
+
+    /**
+     * Turns empty arrays back into objects for composer.json keys that must be objects
+     *
+     * @internal
+     * @param array<mixed> $config
+     */
+    public static function restoreEmptyObjects(array &$config): void
+    {
+        // apply bottom-up so parent coercion to stdClass doesn't hide deeper sub-keys
+        if (isset($config['config']['policy']) && is_array($config['config']['policy'])) {
+            foreach ($config['config']['policy'] as $listName => $listValue) {
+                if ($listValue === []) {
+                    $config['config']['policy'][$listName] = new \stdClass;
+                }
+            }
+            if ($config['config']['policy'] === []) {
+                $config['config']['policy'] = new \stdClass;
+            }
+        }
+        foreach (['platform', 'http-basic', 'bearer', 'gitlab-token', 'gitlab-oauth', 'github-oauth', 'custom-headers', 'forgejo-token', 'preferred-install'] as $prop) {
+            if (isset($config['config'][$prop]) && $config['config'][$prop] === []) {
+                $config['config'][$prop] = new \stdClass;
+            }
+        }
+        foreach (['psr-0', 'psr-4'] as $prop) {
+            if (isset($config['autoload'][$prop]) && $config['autoload'][$prop] === []) {
+                $config['autoload'][$prop] = new \stdClass;
+            }
+            if (isset($config['autoload-dev'][$prop]) && $config['autoload-dev'][$prop] === []) {
+                $config['autoload-dev'][$prop] = new \stdClass;
+            }
+        }
+        foreach (['require', 'require-dev', 'conflict', 'provide', 'replace', 'suggest', 'config', 'autoload', 'autoload-dev', 'scripts', 'scripts-descriptions', 'scripts-aliases', 'support'] as $prop) {
+            if (isset($config[$prop]) && $config[$prop] === []) {
+                $config[$prop] = new \stdClass;
+            }
+        }
     }
 
     /**
@@ -347,7 +441,7 @@ class JsonConfigSource implements ConfigSourceInterface
                 throw new \RuntimeException(sprintf('The file "%s" is not readable.', $this->file->getPath()));
             }
 
-            $contents = file_get_contents($this->file->getPath());
+            $contents = (string) file_get_contents($this->file->getPath());
         } elseif ($this->authConfig) {
             $contents = "{\n}\n";
         } else {
@@ -371,31 +465,13 @@ class JsonConfigSource implements ConfigSourceInterface
 
         // try to update cleanly
         if (call_user_func_array([$manipulator, $method], $args)) {
-            file_put_contents($this->file->getPath(), $manipulator->getContents());
+            Filesystem::safeFilePutContents($this->file->getPath(), $manipulator->getContents());
         } else {
             // on failed clean update, call the fallback and rewrite the whole file
             $config = $this->file->read();
             $this->arrayUnshiftRef($args, $config);
             $fallback(...$args);
-            // avoid ending up with arrays for keys that should be objects
-            foreach (['require', 'require-dev', 'conflict', 'provide', 'replace', 'suggest', 'config', 'autoload', 'autoload-dev', 'scripts', 'scripts-descriptions', 'scripts-aliases', 'support'] as $prop) {
-                if (isset($config[$prop]) && $config[$prop] === []) {
-                    $config[$prop] = new \stdClass;
-                }
-            }
-            foreach (['psr-0', 'psr-4'] as $prop) {
-                if (isset($config['autoload'][$prop]) && $config['autoload'][$prop] === []) {
-                    $config['autoload'][$prop] = new \stdClass;
-                }
-                if (isset($config['autoload-dev'][$prop]) && $config['autoload-dev'][$prop] === []) {
-                    $config['autoload-dev'][$prop] = new \stdClass;
-                }
-            }
-            foreach (['platform', 'http-basic', 'bearer', 'gitlab-token', 'gitlab-oauth', 'github-oauth', 'custom-headers', 'forgejo-token', 'preferred-install'] as $prop) {
-                if (isset($config['config'][$prop]) && $config['config'][$prop] === []) {
-                    $config['config'][$prop] = new \stdClass;
-                }
-            }
+            self::restoreEmptyObjects($config);
             $this->file->write($config);
         }
 
@@ -403,13 +479,28 @@ class JsonConfigSource implements ConfigSourceInterface
             $this->file->validateSchema(JsonFile::LAX_SCHEMA);
         } catch (JsonValidationException $e) {
             // restore contents to the original state
-            file_put_contents($this->file->getPath(), $contents);
+            Filesystem::safeFilePutContents($this->file->getPath(), $contents);
             throw new \RuntimeException('Failed to update composer.json with a valid format, reverting to the original content. Please report an issue to us with details (command you run and a copy of your composer.json). '.PHP_EOL.implode(PHP_EOL, $e->getErrors()), 0, $e);
         }
 
         if ($newFile) {
             Silencer::call('chmod', $this->file->getPath(), 0600);
         }
+    }
+
+    /**
+     * Mirrors JsonManipulator's key handling: extra/scripts nest at most two levels deep, the rest stays a literal dotted key
+     *
+     * @return non-empty-list<string>
+     */
+    private static function splitPropertyKey(string $key): array
+    {
+        [$mainNode, $name] = explode('.', $key, 2);
+        if (in_array($mainNode, ['extra', 'scripts'], true)) {
+            return array_merge([$mainNode], explode('.', $name, 2));
+        }
+
+        return [$mainNode, $name];
     }
 
     /**

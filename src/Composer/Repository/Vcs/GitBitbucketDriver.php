@@ -20,6 +20,7 @@ use Composer\Json\JsonFile;
 use Composer\Pcre\Preg;
 use Composer\Util\Bitbucket;
 use Composer\Util\Http\Response;
+use Composer\Util\Url;
 
 /**
  * @author Per Bernhardt <plb@webfactory.de>
@@ -64,7 +65,7 @@ class GitBitbucketDriver extends VcsDriver
     public function initialize(): void
     {
         if (!Preg::isMatchStrictGroups('#^https?://bitbucket\.org/([^/]+)/([^/]+?)(?:\.git|/?)?$#i', $this->url, $match)) {
-            throw new \InvalidArgumentException(sprintf('The Bitbucket repository URL %s is invalid. It must be the HTTPS URL of a Bitbucket repository.', $this->url));
+            throw new \InvalidArgumentException(sprintf('The Bitbucket repository URL %s is invalid. It must be the HTTPS URL of a Bitbucket repository.', Url::sanitize($this->url)));
         }
 
         $this->owner = $match[1];
@@ -403,7 +404,7 @@ class GitBitbucketDriver extends VcsDriver
                 }
 
                 if (!$this->io->isInteractive() && $fetchingRepoData) {
-                    $this->attemptCloneFallback();
+                    $this->attemptCloneFallback($e);
 
                     return new Response(['url' => 'dummy'], 200, [], 'null');
                 }
@@ -418,7 +419,7 @@ class GitBitbucketDriver extends VcsDriver
      */
     protected function generateSshUrl(): string
     {
-        return 'git@' . $this->originUrl . ':' . $this->owner.'/'.$this->repository.'.git';
+        return 'git@ssh.' . $this->originUrl . ':' . $this->owner.'/'.$this->repository.'.git';
     }
 
     /**
@@ -427,8 +428,12 @@ class GitBitbucketDriver extends VcsDriver
      * @return true
      * @throws \RuntimeException
      */
-    protected function attemptCloneFallback(): bool
+    protected function attemptCloneFallback(?\Throwable $e = null): bool
     {
+        if (isset($this->repoConfig['allow-git-fallback']) && $this->repoConfig['allow-git-fallback'] === false) {
+            throw new \RuntimeException('Fallback to git driver disabled', 0, $e);
+        }
+
         try {
             $this->setupFallbackDriver($this->generateSshUrl());
 
@@ -490,7 +495,7 @@ class GitBitbucketDriver extends VcsDriver
 
             if ($this->vcsType !== 'git') {
                 throw new \RuntimeException(
-                    $this->url.' does not appear to be a git repository, use '.
+                    Url::sanitize($this->url).' does not appear to be a git repository, use '.
                     $this->cloneHttpsUrl.' but remember that Bitbucket no longer supports the mercurial repositories. '.
                     'https://bitbucket.org/blog/sunsetting-mercurial-support-in-bitbucket'
                 );
@@ -512,7 +517,7 @@ class GitBitbucketDriver extends VcsDriver
         }
 
         if (!extension_loaded('openssl')) {
-            $io->writeError('Skipping Bitbucket git driver for '.$url.' because the OpenSSL PHP extension is missing.', true, IOInterface::VERBOSE);
+            $io->writeError('Skipping Bitbucket git driver for '.Url::sanitize($url).' because the OpenSSL PHP extension is missing.', true, IOInterface::VERBOSE);
 
             return false;
         }

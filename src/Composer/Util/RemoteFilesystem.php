@@ -13,13 +13,16 @@
 namespace Composer\Util;
 
 use Closure;
+use Composer\CaBundle\CaBundle;
 use Composer\Config;
 use Composer\Downloader\MaxFileSizeExceededException;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 use Composer\Pcre\Preg;
 use Composer\Util\Http\Response;
+use Composer\Util\Http\TlsChainDenylist;
 use Composer\Util\Http\ProxyManager;
+use Composer\Util\Http\ResponseWarnings;
 
 /**
  * @internal
@@ -65,6 +68,8 @@ class RemoteFilesystem
     private $redirects;
     /** @var int */
     private $maxRedirects = 20;
+    /** @var array<string, string> hosts which presented a distrusted TLS chain, keyed by host:port */
+    private $distrustedHosts = [];
 
     /**
      * Constructor.
@@ -250,6 +255,10 @@ class RemoteFilesystem
             throw new \RuntimeException("RemoteFilesystem doesn't support the 'prevent_ip_access_callable' config.");
         }
 
+        if (isset($options['prevent_url_access_callable'])) {
+            throw new \RuntimeException("RemoteFilesystem doesn't support the 'prevent_url_access_callable' config.");
+        }
+
         if (isset($options['gitlab-token'])) {
             $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['gitlab-token'];
             unset($options['gitlab-token']);
@@ -269,6 +278,14 @@ class RemoteFilesystem
         if (isset($options['max_file_size'])) {
             $maxFileSize = $options['max_file_size'];
             unset($options['max_file_size']);
+        }
+
+        $hostKey = TlsChainDenylist::getHostKey($fileUrl);
+        if (null !== $hostKey && isset($this->distrustedHosts[$hostKey])) {
+            throw TlsChainDenylist::createException($fileUrl, $this->distrustedHosts[$hostKey], false);
+        }
+        if (null !== $hostKey) {
+            $options['ssl']['capture_peer_cert_chain'] = true;
         }
 
         $ctx = StreamContextFactory::getContext($fileUrl, $options, ['notification' => Closure::fromCallable([$this, 'callbackGet'])]);
@@ -302,10 +319,21 @@ class RemoteFilesystem
         try {
             $result = $this->getRemoteContents($originUrl, $fileUrl, $ctx, $http_response_header, $maxFileSize);
 
+            // streams offer no hook between the TLS handshake and sending the request, so this can only be checked afterwards
+            $peerChain = null !== $hostKey ? stream_context_get_options($ctx)['ssl']['peer_certificate_chain'] ?? null : null;
+            if (is_array($peerChain) && null !== ($distrusted = CaBundle::findDistrustedCertificate($peerChain))) {
+                $result = false;
+                $this->distrustedHosts[$hostKey] = $distrusted;
+                $e = TlsChainDenylist::createException($fileUrl, $distrusted, true);
+                // callers may swallow transport errors, but possibly leaked credentials must be reported
+                $this->io->writeError('<error>'.$e->getMessage().'</error>');
+                throw $e;
+            }
+
             if (!empty($http_response_header[0])) {
                 $statusCode = self::findStatusCode($http_response_header);
                 if ($statusCode >= 300 && Response::findHeaderValue($http_response_header, 'content-type') === 'application/json') {
-                    HttpDownloader::outputWarnings($this->io, $originUrl, json_decode($result, true));
+                    ResponseWarnings::output($this->io, $originUrl, json_decode($result, true));
                 }
 
                 if (in_array($statusCode, [401, 403]) && $retryAuthFailure) {
@@ -316,7 +344,7 @@ class RemoteFilesystem
             $contentLength = !empty($http_response_header[0]) ? Response::findHeaderValue($http_response_header, 'content-length') : null;
             if ($contentLength && Platform::strlen($result) < $contentLength) {
                 // alas, this is not possible via the stream callback because STREAM_NOTIFY_COMPLETED is documented, but not implemented anywhere in PHP
-                $e = new TransportException('Content-Length mismatch, received '.Platform::strlen($result).' bytes out of the expected '.$contentLength);
+                $e = new TransportException('Content-Length mismatch, received '.Platform::strlen($result).' bytes out of the expected '.$contentLength.' for '.Url::sanitize($fileUrl));
                 $e->setHeaders($http_response_header);
                 $e->setStatusCode(self::findStatusCode($http_response_header));
                 try {
@@ -405,7 +433,7 @@ class RemoteFilesystem
                     $this->io->overwriteError("Downloading (<error>failed</error>)", false);
                 }
 
-                $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.$http_response_header[0].')', $statusCode);
+                $e = new TransportException('The "'.Url::sanitize($this->fileUrl).'" file could not be downloaded ('.$http_response_header[0].')', $statusCode);
                 $e->setHeaders($http_response_header);
                 $e->setResponse($this->decodeResult($result, $http_response_header));
                 $e->setStatusCode($statusCode);
@@ -441,7 +469,7 @@ class RemoteFilesystem
         // handle copy command if download was successful
         if (false !== $result && null !== $fileName && !$isRedirect) {
             if ('' === $result) {
-                throw new TransportException('"'.$this->fileUrl.'" appears broken, and returned an empty 200 response');
+                throw new TransportException('"'.Url::sanitize($this->fileUrl).'" appears broken, and returned an empty 200 response');
             }
 
             $errorMessage = '';
@@ -456,7 +484,7 @@ class RemoteFilesystem
             $result = (bool) file_put_contents($fileName, $result);
             restore_error_handler();
             if (false === $result) {
-                throw new TransportException('The "'.$this->fileUrl.'" file could not be written to '.$fileName.': '.$errorMessage);
+                throw new TransportException('The "'.Url::sanitize($this->fileUrl).'" file could not be written to '.$fileName.': '.$errorMessage);
             }
         }
 
@@ -474,7 +502,7 @@ class RemoteFilesystem
         }
 
         if (false === $result) {
-            $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded: '.$errorMessage, $errorCode);
+            $e = new TransportException('The "'.Url::sanitize($this->fileUrl).'" file could not be downloaded: '.$errorMessage, $errorCode);
             if (!empty($http_response_header[0])) {
                 $e->setHeaders($http_response_header);
             }
@@ -533,7 +561,7 @@ class RemoteFilesystem
         }
 
         if ($result !== false && $maxFileSize !== null && Platform::strlen($result) >= $maxFileSize) {
-            throw new MaxFileSizeExceededException('Maximum allowed download size reached. Downloaded ' . Platform::strlen($result) . ' of allowed ' .  $maxFileSize . ' bytes');
+            throw new MaxFileSizeExceededException('Maximum allowed download size reached. Downloaded ' . Platform::strlen($result) . ' of allowed ' .  $maxFileSize . ' bytes for ' . Url::sanitize($fileUrl));
         }
 
         // https://www.php.net/manual/en/reserved.variables.httpresponseheader.php
@@ -572,7 +600,7 @@ class RemoteFilesystem
                 if (400 === $messageCode) {
                     // This might happen if your host is secured by ssl client certificate authentication
                     // but you do not send an appropriate certificate
-                    throw new TransportException("The '" . $this->fileUrl . "' URL could not be accessed: " . $message, $messageCode);
+                    throw new TransportException("The '" . Url::sanitize($this->fileUrl) . "' URL could not be accessed: " . $message, $messageCode);
                 }
                 break;
 
@@ -680,18 +708,23 @@ class RemoteFilesystem
         }
 
         if (!empty($targetUrl)) {
+            if (!Url::isAllowedRedirect($targetUrl)) {
+                throw new TransportException('Could not follow the redirect to "'.Url::sanitize($targetUrl).'" because only http and https redirects are supported.');
+            }
+
             $this->redirects++;
 
             $this->io->writeError('', true, IOInterface::DEBUG);
             $this->io->writeError(sprintf('Following redirect (%u) %s', $this->redirects, Url::sanitize($targetUrl)), true, IOInterface::DEBUG);
 
+            $additionalOptions = AuthHelper::stripCredentialHeadersOnRedirect($additionalOptions, $this->fileUrl, $targetUrl);
             $additionalOptions['redirects'] = $this->redirects;
 
             return $this->get(parse_url($targetUrl, PHP_URL_HOST), $targetUrl, $additionalOptions, $this->fileName, $this->progress);
         }
 
         if (!$this->retry) {
-            $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded, got redirect without Location ('.$responseHeaders[0].')');
+            $e = new TransportException('The "'.Url::sanitize($this->fileUrl).'" file could not be downloaded, got redirect without Location ('.$responseHeaders[0].')');
             $e->setHeaders($responseHeaders);
             $e->setResponse($this->decodeResult($result, $responseHeaders));
 

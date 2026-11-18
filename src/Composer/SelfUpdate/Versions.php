@@ -36,7 +36,7 @@ class Versions
     private $config;
     /** @var string */
     private $channel;
-    /** @var array<string, array<int, array{path: string, version: string, min-php: int, eol?: true}>>|null */
+    /** @var array<string, array<int, array{path: string, version: string, min-php: int, eol?: bool, lts?: bool, maintenance?: string, maintenance-until?: string|null}>>|null */
     private $versionsData = null;
 
     public function __construct(Config $config, HttpDownloader $httpDownloader)
@@ -82,7 +82,7 @@ class Versions
     }
 
     /**
-     * @return array{path: string, version: string, min-php: int, eol?: true}
+     * @return array{path: string, version: string, min-php: int, eol?: bool, lts?: bool, maintenance?: string, maintenance-until?: string|null}
      */
     public function getLatest(?string $channel = null): array
     {
@@ -98,7 +98,65 @@ class Versions
     }
 
     /**
-     * @return array<string, array<int, array{path: string, version: string, min-php: int, eol?: true}>>
+     * Returns the newest version in the channel that is not installable because it requires a newer PHP
+     * version than the one currently running, if any.
+     *
+     * Versions are listed newest-first and getLatest() returns the first installable one, so the newest
+     * PHP-blocked version (if there is one) is the very first entry, sitting before whatever getLatest()
+     * resolved to. This lets self-update explain why a user is pinned to an older line.
+     *
+     * @return array{path: string, version: string, min-php: int, eol?: bool, lts?: bool, maintenance?: string, maintenance-until?: string|null}|null
+     */
+    public function getNewerPhpBlockedVersion(?string $channel = null): ?array
+    {
+        $versions = $this->getVersionsData();
+
+        if ($channel === null || $channel === '') {
+            $channel = $this->getChannel();
+        }
+
+        $newest = $versions[$channel][0] ?? null;
+        if ($newest !== null && $newest['min-php'] > \PHP_VERSION_ID) {
+            return $newest;
+        }
+
+        return null;
+    }
+
+    /**
+     * Classifies a resolved version entry for self-update maintenance warnings.
+     *
+     * Returns null for actively-maintained ('bugfix') or security-only versions, and for
+     * 'critical-security' versions whose end of life is still more than 6 months away. The fields are
+     * optional so a versions response missing them (or an unknown future maintenance status) never
+     * produces a warning rather than failing.
+     *
+     * @param  array{version: string, maintenance?: string, maintenance-until?: string|null, lts?: bool} $entry
+     * @return array{type: 'eol'|'critical-security', version: string, until: string|null, lts: bool}|null
+     */
+    public static function getMaintenanceWarning(array $entry, \DateTimeImmutable $now): ?array
+    {
+        $maintenance = $entry['maintenance'] ?? null;
+        $until = $entry['maintenance-until'] ?? null;
+        $lts = $entry['lts'] ?? false;
+
+        if ($maintenance === 'eol') {
+            return ['type' => 'eol', 'version' => $entry['version'], 'until' => $until, 'lts' => $lts];
+        }
+
+        if ($maintenance === 'critical-security') {
+            $parsed = is_string($until) ? \DateTimeImmutable::createFromFormat('!Y-m-d', $until) : false;
+            // only warn once end of life is within 6 months, so users are not nagged years in advance
+            if ($parsed !== false && $parsed <= $now->modify('+6 months')) {
+                return ['type' => 'critical-security', 'version' => $entry['version'], 'until' => $until, 'lts' => $lts];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array<string, array<int, array{path: string, version: string, min-php: int, eol?: bool, lts?: bool, maintenance?: string, maintenance-until?: string|null}>>
      */
     private function getVersionsData(): array
     {

@@ -31,6 +31,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Seld\JsonLint\ParsingException;
+use Seld\Signal\SignalHandler;
 use Composer\Command;
 use Composer\Composer;
 use Composer\Factory;
@@ -43,6 +44,7 @@ use Composer\Util\HttpDownloader;
 use Composer\EventDispatcher\ScriptExecutionException;
 use Composer\Exception\NoSslException;
 use Composer\XdebugHandler\XdebugHandler;
+use Symfony\Component\Console\SingleCommandApplication;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
 
 /**
@@ -79,6 +81,8 @@ class Application extends BaseApplication
     private $disablePluginsByDefault = false;
     /** @var bool */
     private $disableScriptsByDefault = false;
+    /** @var string|false|null */
+    private $commandName = '';
 
     /**
      * @var string|false Store the initial working directory at startup time
@@ -140,6 +144,56 @@ class Application extends BaseApplication
 
     public function doRun(InputInterface $input, OutputInterface $output): int
     {
+        $io = $this->io = new ConsoleIO($input, $output, new HelperSet([
+            new QuestionHelper(),
+        ]));
+        $reportStatus = !Platform::isInputCompletionProcess() && $io->isProgramStatusEnabled();
+        $originalTerminalStatus = Platform::getEnv('COMPOSER_TERMINAL_STATUS');
+        if ($reportStatus) {
+            $io->startProgramStatus();
+        }
+
+        $signalHandler = $reportStatus ? SignalHandler::create(
+            [SignalHandler::SIGINT, SignalHandler::SIGTERM, SignalHandler::SIGHUP],
+            static function (string $signal, SignalHandler $handler) use ($io): void {
+                $io->writeProgramStatus(ProgramStatus::idle());
+                $handler->exitWithLastSignal();
+            }
+        ) : null;
+
+        try {
+            if ($reportStatus) {
+                // This IO keeps its encoders while nested Composer processes inherit disabled reporting.
+                Platform::putEnv('COMPOSER_TERMINAL_STATUS', 'off');
+            }
+            $result = $this->doRunComposer($input, $output, $io);
+            if ($reportStatus) {
+                $io->writeProgramStatus(ProgramStatus::fromExitCode($result));
+            }
+
+            return $result;
+        } catch (\Throwable $e) {
+            if ($reportStatus) {
+                $io->writeProgramStatus(ProgramStatus::error());
+            }
+
+            throw $e;
+        } finally {
+            if ($reportStatus) {
+                if ($originalTerminalStatus === false) {
+                    Platform::clearEnv('COMPOSER_TERMINAL_STATUS');
+                } else {
+                    Platform::putEnv('COMPOSER_TERMINAL_STATUS', $originalTerminalStatus);
+                }
+            }
+            if ($signalHandler !== null) {
+                $signalHandler->unregister();
+            }
+        }
+    }
+
+    private function doRunComposer(InputInterface $input, OutputInterface $output, ConsoleIO $io): int
+    {
         $this->disablePluginsByDefault = $input->hasParameterOption('--no-plugins');
         $this->disableScriptsByDefault = $input->hasParameterOption('--no-scripts');
 
@@ -150,10 +204,6 @@ class Application extends BaseApplication
         if (Platform::getEnv('COMPOSER_TESTS_ARE_RUNNING') !== '1' && (Platform::getEnv('COMPOSER_NO_INTERACTION') || $stdin === false || !Platform::isTty($stdin))) {
             $input->setInteractive(false);
         }
-
-        $io = $this->io = new ConsoleIO($input, $output, new HelperSet([
-            new QuestionHelper(),
-        ]));
 
         // Register error handler again to pass it the IO instance
         ErrorHandler::register($io);
@@ -168,22 +218,23 @@ class Application extends BaseApplication
         if (null !== $newWorkDir) {
             $oldWorkingDir = Platform::getCwd(true);
             chdir($newWorkDir);
-            $this->initialWorkingDirectory = $newWorkDir;
+            $this->initialWorkingDirectory = getcwd();
             $cwd = Platform::getCwd(true);
             $io->writeError('Changed CWD to ' . ($cwd !== '' ? $cwd : $newWorkDir), true, IOInterface::DEBUG);
         }
 
         // determine command name to be executed without including plugin commands
         $commandName = '';
-        if ($name = $this->getCommandNameBeforeBinding($input)) {
+        if ($rawCommandName = $this->getCommandNameBeforeBinding($input)) {
             try {
-                $commandName = $this->find($name)->getName();
+                $commandName = $this->find($rawCommandName)->getName();
             } catch (CommandNotFoundException $e) {
                 // we'll check command validity again later after plugins are loaded
                 $commandName = false;
             } catch (\InvalidArgumentException $e) {
             }
         }
+        $this->commandName = $commandName;
 
         // prompt user for dir change if no composer.json is present in current dir
         if (
@@ -260,6 +311,8 @@ class Application extends BaseApplication
                 || ($commandName === '_complete' && !$isNonAllowedRoot)
             );
 
+        $mayNeedScriptCommand = $mayNeedPluginCommand || $commandName === 'run-script' || $rawCommandName !== $commandName;
+
         if ($mayNeedPluginCommand && !$this->disablePluginsByDefault && !$this->hasPluginCommands) {
             // at this point plugins are needed, so if we are running as root and it is not allowed we need to prompt
             // if interactive, and abort otherwise
@@ -319,6 +372,7 @@ class Application extends BaseApplication
             try {
                 $command = $this->find($name);
                 $commandName = $command->getName();
+                $this->commandName = $commandName;
                 $isProxyCommand = ($command instanceof Command\BaseCommand && $command->isProxyCommand());
             } catch (\InvalidArgumentException $e) {
             }
@@ -368,36 +422,56 @@ class Application extends BaseApplication
 
             // add non-standard scripts as own commands
             $file = Factory::getComposerFile();
-            if (is_file($file) && Filesystem::isReadable($file) && is_array($composer = json_decode(file_get_contents($file), true))) {
-                if (isset($composer['scripts']) && is_array($composer['scripts'])) {
-                    foreach ($composer['scripts'] as $script => $dummy) {
+            if ($mayNeedScriptCommand && is_file($file) && Filesystem::isReadable($file) && is_array($composerJson = json_decode(file_get_contents($file), true))) {
+                if (isset($composerJson['scripts']) && is_array($composerJson['scripts'])) {
+                    $projectLoaderRegistered = false;
+                    foreach ($composerJson['scripts'] as $script => $dummy) {
                         if (!defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
                             if ($this->has($script)) {
                                 $io->writeError('<warning>A script named '.$script.' would override a Composer command and has been skipped</warning>');
                             } else {
-                                $description = null;
+                                $description = 'Runs the '.$script.' script as defined in composer.json';
 
-                                if (isset($composer['scripts-descriptions'][$script])) {
-                                    $description = $composer['scripts-descriptions'][$script];
+                                if (isset($composerJson['scripts-descriptions'][$script])) {
+                                    $description = $composerJson['scripts-descriptions'][$script];
                                 }
 
-                                $aliases = $composer['scripts-aliases'][$script] ?? [];
+                                $aliases = $composerJson['scripts-aliases'][$script] ?? [];
 
-                                //if the command is not an array of commands, and points to a valid Command subclass, import its details directly
+                                if (!$projectLoaderRegistered) {
+                                    $projectLoaderRegistered = true;
+                                    $composer = $this->getComposer(false);
+                                    if ($composer !== null) {
+                                        $rootPackage = $composer->getPackage();
+                                        $generator = $composer->getAutoloadGenerator();
+
+                                        $packageMap = $generator->buildPackageMap($composer->getInstallationManager(), $rootPackage, []);
+                                        $map = $generator->parseAutoloads($packageMap, $rootPackage);
+
+                                        $loader = $generator->createLoader($map, $composer->getConfig()->get('vendor-dir'));
+                                        $loader->register(false);
+                                    }
+                                }
+
+                                // if the command is not an array of commands, and points to a valid Command subclass, import its details directly
                                 if (is_string($dummy) && class_exists($dummy) && is_subclass_of($dummy, SymfonyCommand::class)) {
+                                    if (is_subclass_of($dummy, SingleCommandApplication::class)) {
+                                        $io->writeError('<warning>The script named '.$script.' extends SingleCommandApplication which is not compatible with Composer 2.9+, make sure you extend Symfony\Component\Console\Command instead.</warning>');
+                                    }
+
                                     $cmd = new $dummy($script);
 
-                                    //makes sure the command is find()'able by the name defined in composer.json, and the name isn't overridden in its configure()
+                                    // makes sure the command is find()'able by the name defined in composer.json, and the name isn't overridden in its configure()
                                     if ($cmd->getName() !== '' && $cmd->getName() !== null && $cmd->getName() !== $script) {
                                         $io->writeError('<warning>The script named '.$script.' in composer.json has a mismatched name in its class definition. For consistency, either use the same name, or do not define one inside the class.</warning>');
-                                        $cmd->setName($script); //override it with the defined script name
+                                        $cmd->setName($script); // override it with the defined script name
                                     }
 
                                     if ($cmd->getDescription() === '' && is_string($description)) {
                                         $cmd->setDescription($description);
                                     }
                                 } else {
-                                    //fallback to usual aliasing behavior
+                                    // fallback to usual aliasing behavior
                                     $cmd = new Command\ScriptAliasCommand($script, $description, $aliases);
                                 }
 
@@ -411,13 +485,27 @@ class Application extends BaseApplication
             }
         }
 
+        // record the running command for telemetry purposes (sent via the User-Agent in StreamContextFactory)
+        // this runs once all commands (incl. plugin and script commands) are registered so it sees the final command
+        if (is_string($rawCommandName) && $rawCommandName !== '') {
+            try {
+                Composer::setRunningCommand(self::getTelemetryCommandName($this->find($rawCommandName)));
+            } catch (\InvalidArgumentException $e) {
+                // command is unknown or ambiguous, nothing to record
+            }
+        }
+
         try {
             if ($input->hasParameterOption('--profile')) {
                 $startTime = microtime(true);
-                $this->io->enableDebugging($startTime);
+                $io->enableDebugging($startTime);
             }
 
             $result = parent::doRun($input, $output);
+
+            if (!$isProxyCommand && ($commandName ?? null) !== '_complete' && Platform::isWindowsSubsystemForLinux()) {
+                $this->warnIfCacheDirIsOnWindowsDrive($io);
+            }
 
             if (true === $input->hasParameterOption(['--version', '-V'], true)) {
                 $io->writeError(sprintf('<info>PHP</info> version <comment>%s</comment> (%s)', \PHP_VERSION, \PHP_BINARY));
@@ -532,12 +620,12 @@ class Application extends BaseApplication
 
         if (Platform::isWindows() && false !== strpos($exception->getMessage(), 'The system cannot find the path specified')) {
             $io->writeError('<error>The following exception may be caused by a stale entry in your cmd.exe AutoRun</error>', true, IOInterface::QUIET);
-            $io->writeError('<error>Check https://getcomposer.org/doc/articles/troubleshooting.md#-the-system-cannot-find-the-path-specified-windows- for details</error>', true, IOInterface::QUIET);
+            $io->writeError('<error>Check https://getcomposer.org/doc/articles/troubleshooting.md#the-system-cannot-find-the-path-specified-windows for details</error>', true, IOInterface::QUIET);
         }
 
         if (false !== strpos($exception->getMessage(), 'fork failed - Cannot allocate memory')) {
             $io->writeError('<error>The following exception is caused by a lack of memory or swap, or not having swap configured</error>', true, IOInterface::QUIET);
-            $io->writeError('<error>Check https://getcomposer.org/doc/articles/troubleshooting.md#proc-open-fork-failed-errors for details</error>', true, IOInterface::QUIET);
+            $io->writeError('<error>Check https://getcomposer.org/doc/articles/troubleshooting.md#proc_open-fork-failed-errors for details</error>', true, IOInterface::QUIET);
         }
 
         if ($exception instanceof ProcessTimedOutException) {
@@ -557,12 +645,26 @@ class Application extends BaseApplication
                 $io->writeError($hint, true, IOInterface::QUIET);
             }
         }
+
+        if (
+            $exception instanceof TransportException
+            // self-update is online-only, so suggesting offline mode there is nonsensical
+            && $this->commandName !== 'self-update'
+            && (
+                false !== strpos($exception->getMessage(), 'curl error 28 ') // CURLE_OPERATION_TIMEDOUT
+                || false !== strpos($exception->getMessage(), 'Resolving timed out')
+                || false !== strpos($exception->getMessage(), 'Could not resolve host')
+            )
+        ) {
+            $io->writeError('<warning>If you intend to run Composer without connecting to the internet, run the command again prefixed with COMPOSER_DISABLE_NETWORK=1 to make Composer run in offline mode.</warning>', true, IOInterface::QUIET);
+        }
     }
 
     /**
      * @throws JsonValidationException
      * @throws \InvalidArgumentException
      * @return ?Composer If $required is true then the return value is guaranteed
+     * @phpstan-return ($required is true ? Composer : Composer|null)
      */
     public function getComposer(bool $required = true, ?bool $disablePlugins = null, ?bool $disableScripts = null): ?Composer
     {
@@ -580,6 +682,9 @@ class Application extends BaseApplication
                 if ($required) {
                     $this->io->writeError($e->getMessage());
                     if ($this->areExceptionsCaught()) {
+                        if ($this->io instanceof ConsoleIO && !Platform::isInputCompletionProcess()) {
+                            $this->io->writeProgramStatus(ProgramStatus::error());
+                        }
                         exit(1);
                     }
                     throw $e;
@@ -657,6 +762,7 @@ class Application extends BaseApplication
             new Command\ReinstallCommand(),
             new Command\BumpCommand(),
             new Command\RepositoryCommand(),
+            new Command\PolicyCommand(),
             new Command\SelfUpdateCommand(),
         ]);
     }
@@ -677,6 +783,25 @@ class Application extends BaseApplication
         }
 
         return $input->getFirstArgument();
+    }
+
+    /**
+     * Classifies the running command for telemetry: built-in Composer and Symfony console commands report
+     * their own name, commands defined as composer.json scripts report "script", and everything else
+     * (plugin commands, command classes shipped by other namespaces) reports "plugin".
+     */
+    private static function getTelemetryCommandName(SymfonyCommand $command): string
+    {
+        if ($command instanceof Command\ScriptAliasCommand) {
+            return 'script';
+        }
+
+        $class = get_class($command);
+        if (str_starts_with($class, 'Composer\\') || str_starts_with($class, 'Symfony\\Component\\Console\\')) {
+            return (string) $command->getName();
+        }
+
+        return 'plugin';
     }
 
     public function getLongVersion(): string
@@ -766,6 +891,30 @@ class Application extends BaseApplication
         $config = Factory::createConfig($this->io);
 
         return $config->get('use-parent-dir');
+    }
+
+    private function warnIfCacheDirIsOnWindowsDrive(IOInterface $io): void
+    {
+        // reuse the loaded Composer instance if any so project-level config is taken into account
+        $config = $this->composer !== null ? $this->composer->getConfig() : Factory::createConfig($io);
+        $cacheDir = $config->get('cache-dir');
+        if (!Platform::isWindowsMountInWsl($cacheDir)) {
+            return;
+        }
+
+        // ~/.cache is no fix if the home dir itself is on the Windows drive
+        $home = Platform::getEnv('HOME');
+        $suggestedDir = is_string($home) && $home !== '' && !Platform::isWindowsMountInWsl($home) ? '~/.cache/composer' : '/path/on/wsl/filesystem';
+        // point at wherever the value comes from, as env and project config override the global config
+        $source = $config->getSourceOfValue('cache-dir');
+        if ($source === 'COMPOSER_CACHE_DIR') {
+            $fix = 'by changing the COMPOSER_CACHE_DIR env var to e.g. '.$suggestedDir;
+        } elseif (is_file($source) && realpath(dirname($source)) !== realpath($config->get('home'))) {
+            $fix = 'by changing the cache-dir config in '.$source.' to e.g. '.$suggestedDir;
+        } else {
+            $fix = 'e.g. by running: composer config --global cache-dir '.$suggestedDir;
+        }
+        $io->writeError('<warning>Your Composer cache directory ('.$cacheDir.') is on a Windows drive while Composer runs in WSL, which makes filesystem operations very slow. Move it to the WSL filesystem for better performance, '.$fix.'</warning>');
     }
 
     private function isRunningAsRoot(): bool

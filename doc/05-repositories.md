@@ -298,6 +298,37 @@ described [above](#packages).
 These fields are optional. You probably don't need them for your own custom
 repository.
 
+#### Rate limiting and warnings
+
+A repository which needs to turn requests away for a while should respond with
+`429 Too Many Requests` and a `Retry-After` header, either as a number of
+seconds or as an HTTP date. When the interval is 60 seconds or less, Composer
+waits it out and retries the request, up to three times. The interval is taken
+to apply to the whole repository, so no further request to it, new or retried,
+is sent before the latest interval it asked for has passed. Requests to other
+repositories keep downloading in the meantime. A longer interval is not waited
+for, and the request fails with a message which says how long the repository
+asked to wait. A `429` without a `Retry-After` header is not retried.
+
+`Retry-After` is also honoured on the status codes Composer already retries,
+such as `503 Service Unavailable`. There, an interval longer than 60 seconds
+is ignored and Composer retries on its usual short backoff.
+
+To tell users why they are limited, and how to raise the limit, return a JSON
+body with a `warning` key and an `application/json` content type:
+
+```http
+HTTP/1.1 429 Too Many Requests
+Retry-After: 30
+Content-Type: application/json
+
+{"warning": "Anonymous requests are limited to 100 per minute, authenticate to raise the limit"}
+```
+
+Composer shows the warning whether it then retries or fails. When many
+parallel requests are limited at once, the warning and the notice that
+Composer is waiting are each shown once per repository, not once per request.
+
 #### cURL or stream options
 
 The repository is accessed either using cURL (Composer 2 with ext-curl enabled)
@@ -323,6 +354,172 @@ can be configured.
     "require": {
         "acme/package": "^1.0"
     }
+}
+```
+
+#### filter
+
+A Composer repository can advertise filter list support to clients by including a `filter` object in
+its `packages.json` response. This tells Composer that the repository provides filter list data and
+describes what lists are available.
+
+```json
+{
+    "metadata-url": "/p2/%package%.json",
+    "filter": {
+        "metadata": true,
+        "lists": {
+            "malware": { "enabled": true },
+            "typosquatting": { "enabled": true }
+        },
+        "summary-url": "/p2/filter-summary.json"
+    }
+}
+```
+
+- **`metadata`** (required, boolean) — Set to `true` to indicate that per-package metadata files
+  (served via `metadata-url`) contain filter list data. Composer will fetch the metadata for each
+  relevant package and look for a `filter` key containing list entries.
+- **`lists`** (required, object) — The names of all filter lists this repository provides, mapped to
+  an object describing the list. The object currently carries an `enabled` flag (set to `true` when
+  the list is available) and is structured this way so future per-list metadata can be added without
+  breaking the wire format.
+- **`summary-url`** (optional, string) — A URL (absolute or root-relative) returning a compact
+  mapping of list name → package name → version constraint. When configured, Composer fetches this
+  endpoint during `composer install`, `composer update` and `composer audit` and uses it to skip per-package metadata
+  fetches for packages that cannot match any active list.
+
+  The summary endpoint must return JSON of the form:
+
+  ```json
+  {
+      "filter": {
+          "malware": {
+              "vendor/package": ">=1.0.0,<1.2.0",
+              "other/package": "*"
+          }
+      }
+  }
+  ```
+
+  Composer revalidates the cached summary via `If-Modified-Since` on every install/update/audit, using the
+  same on-disk repository cache as package metadata.
+
+- **`api-url`** (optional, string) — A URL (absolute or root-relative) that accepts a POST request
+  with the relevant package PURLs and configured list names, and replies with the matching filter
+  entries directly. When set, Composer uses `api-url` instead of `summary-url` and per-package
+  metadata for filter purposes; this is useful when the summary would be too large to serve in
+  full. If both `summary-url` and `api-url` are advertised, `api-url` takes precedence and
+  `summary-url` is ignored. Implementors should be aware that large amounts (a few hundreds
+  would be normal) of package names can be submitted by Composer. You can decide to cap
+  that list and return only the first 1000 or whatever you decide but make sure to limit this
+  somehow.
+
+  The endpoint receives a JSON body of the form:
+
+  ```json
+  {
+      "packages": ["pkg://composer/vendor/package", "pkg://composer/other/package"],
+      "lists": ["malware"]
+  }
+  ```
+
+  and must return JSON of the form:
+
+  ```json
+  {
+      "filter": {
+          "malware": [
+              {
+                  "package": "vendor/package",
+                  "constraint": ">=1.0.0,<1.2.0",
+                  "url": "https://example.org/filters/123",
+                  "reason": "Malware",
+                  "id": "PKFE-xxxx-xxxx-xxxx"
+              }
+          ]
+      }
+  }
+  ```
+
+  Each entry has the same shape as a per-package metadata filter entry, with the addition of the
+  `package` field (since one response covers many packages). The `api-url` POST is not cached
+  client-side because each request body is different.
+
+Per-package metadata files should include a `filter` key whose value is an object mapping list names
+to arrays of filter entries:
+
+```json
+{
+    "packages": {
+        "vendor/package": [{ ... }]
+    },
+    "filter": {
+        "malware": [
+            {
+                "constraint": ">=1.0.0,<1.2.0",
+                "url": "https://example.org/filters/123",
+                "reason": "Malware",
+                "id": "PKFE-xxxx-xxxx-xxxx"
+            }
+        ]
+    }
+}
+```
+
+In a `composer.json` file, the `filter` key on a repository definition controls which lists advertised by that
+repository are honoured for audit reports and version blocking.
+
+Set `filter: false` to opt out of every list this repository advertises:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://example.org",
+            "filter": false
+        }
+    ]
+}
+```
+
+Set `filter` to an object listing advertised list names that should be skipped from this repository.
+
+```json
+{
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://example.org",
+            "filter": {
+                "untrusted-list": false
+            }
+        }
+    ]
+}
+```
+
+The repo-level `filter` only narrows what this repository contributes; it cannot enable a list that is not
+configured globally under [`config.policy`](06-config.md#policy).
+
+#### require-published-time
+
+Defaults to `true`. When the [cooldown policy](06-config.md#cooldown) is active, Composer errors
+out and exits if a version from this repository carries no `published-time`, as the policy then
+cannot tell whether the version is new or old. Set it to `false` for repositories that cannot provide
+publication times, such as Satis-generated ones, to fall back to the `time` field of each package's
+`composer.json`. That field is set by the package author, so the protection is weaker.
+
+```json
+{
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://packages.example.org",
+            "require-published-time": false
+        }
+    ]
 }
 ```
 
@@ -390,7 +587,7 @@ GitHub and Bitbucket:
     "repositories": [
         {
             "type": "vcs",
-            "url":  "git@bitbucket.org:vendor/my-private-repo.git"
+            "url":  "git@ssh.bitbucket.org:vendor/my-private-repo.git"
         }
     ],
     "require": {
@@ -434,6 +631,52 @@ Please note:
 * **To let Composer choose which driver to use** the repository type needs to be defined as "vcs"
 * **If you already used a private repository**, this means Composer should have cloned it in cache. If you want to install the same package with drivers, remember to launch the command `composer clearcache` followed by the command `composer update` to update Composer cache and install the package from dist.
 * VCS driver `git-bitbucket` is deprecated in favor of `bitbucket`
+
+#### Restricting the loaded branches
+
+Repositories with a large number of branches can be slow to load, as the
+`composer.json` of every branch has to be read. You can restrict which
+branches are loaded with the `only-branches` key, which takes a list of branch
+names that may contain `*` wildcards. The default branch is always loaded,
+so an empty list loads only the default branch.
+
+```json
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/symfony/symfony",
+            "only-branches": ["7.4", "8.*"]
+        }
+    ]
+}
+```
+
+The `exclude-branches` key does the opposite and skips the branches matching
+its patterns, which lets you leave out bot-managed or otherwise short-lived
+branches. Both keys can be combined, in which case a branch is loaded only if
+it matches `only-branches` and does not match `exclude-branches`.
+
+```json
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/acme/foo",
+            "exclude-branches": ["dependabot/*", "renovate/*", "gh-pages"]
+        }
+    ]
+}
+```
+
+Patterns are matched case-sensitively against the branch names as they appear
+in the repository (e.g. `7.4`, not `7.4.x-dev`). Tags are not affected by these
+options.
+
+> **Note:** For Mercurial and Perforce repositories the default branch is not
+> detected and thus not protected by these options, so make sure it is included
+> in `only-branches` (e.g. `default` for Mercurial, `master` for Perforce) and
+> not matched by `exclude-branches`, or it will be skipped.
 
 #### Bitbucket Driver Configuration
 
@@ -503,174 +746,11 @@ for this server will be overwritten. To change this behavior by setting the
 }
 ```
 
-### Package
-
-If you want to use a project that does not support Composer through any of the
-means above, you still can define the package yourself by using a `package`
-repository.
-
-Basically, you define the same information that is included in the `composer`
-repository's `packages.json`, but only for a single package. Again, the
-minimum required fields are `name`, `version`, and either of `dist` or
-`source`.
-
-Here is an example for the smarty template engine:
-
-```json
-{
-    "repositories": [
-        {
-            "type": "package",
-            "package": {
-                "name": "smarty/smarty",
-                "version": "3.1.7",
-                "dist": {
-                    "url": "https://www.smarty.net/files/Smarty-3.1.7.zip",
-                    "type": "zip"
-                },
-                "source": {
-                    "url": "http://smarty-php.googlecode.com/svn/",
-                    "type": "svn",
-                    "reference": "tags/Smarty_3_1_7/distribution/"
-                },
-                "autoload": {
-                    "classmap": ["libs/"]
-                }
-            }
-        }
-    ],
-    "require": {
-        "smarty/smarty": "3.1.*"
-    }
-}
-```
-
-Typically, you would leave the source part off, as you don't really need it.
-
-If a source key is included, the reference field should be a reference to the version that will be installed.
-Where the type field is `git`, this will the be the commit id, branch or tag name.
-
-> **Note**: It is not recommended to use a git branch name for the reference field. While this is valid since it is supported by `git checkout`,
-> branch names are mutable so cannot be locked.
-
-Where the type field is `svn`, the reference field should contain the reference that gets appended to the URL when running `svn co`.
-
-> **Note**: This repository type has a few limitations and should be avoided
-> whenever possible:
->
-> - Composer will not update the package unless you change the `version` field.
-> - Composer will not update the commit references, so if you use `master` as
->   reference you will have to delete the package to force an update, and will
->   have to deal with an unstable lock file.
-
-The `"package"` key in a `package` repository may be set to an array to define multiple versions of a package:
-
-```json
-{
-    "repositories": [
-        {
-            "type": "package",
-            "package": [
-                {
-                    "name": "foo/bar",
-                    "version": "1.0.0",
-                    ...
-                },
-                {
-                    "name": "foo/bar",
-                    "version": "2.0.0",
-                    ...
-                }
-            ]
-        }
-    ]
-}
-```
-
-## Hosting your own
-
-While you will probably want to put your packages on packagist most of the
-time, there are some use cases for hosting your own repository.
-
-* **Private company packages:** If you are part of a company that uses Composer
-  for their packages internally, you might want to keep those packages private.
-
-* **Separate ecosystem:** If you have a project which has its own ecosystem,
-  and the packages aren't really reusable by the greater PHP community, you
-  might want to keep them separate to packagist. An example of this would be
-  WordPress plugins.
-
-For hosting your own packages, a native `composer` type of repository is
-recommended, which provides the best performance.
-
-There are a few tools that can help you create a `composer` repository.
-
-### Private Packagist
-
-[Private Packagist](https://packagist.com/) is a hosted or self-hosted
-application providing private package hosting as well as mirroring of
-GitHub, Packagist.org and other package repositories.
-
-Check out [Packagist.com](https://packagist.com/) for more information.
-
-### Satis
-
-Satis is a static `composer` repository generator. It is a bit like an ultra-
-lightweight, static file-based version of packagist.
-
-You give it a `composer.json` containing repositories, typically VCS and
-package repository definitions. It will fetch all the packages that are
-`require`d and dump a `packages.json` that is your `composer` repository.
-
-Check [the satis GitHub repository](https://github.com/composer/satis) and
-the [handling private packages article](articles/handling-private-packages.md) for more
-information.
-
-### Artifact
-
-There are some cases, when there is no ability to have one of the previously
-mentioned repository types online, even the VCS one. A typical example could be
-cross-organisation library exchange through build artifacts. Of course, most
-of the time these are private. To use these archives as-is, one can use a
-repository of type `artifact` with a folder containing ZIP or TAR archives of
-those private packages:
-
-```json
-{
-    "repositories": [
-        {
-            "type": "artifact",
-            "url": "path/to/directory/with/zips/"
-        }
-    ],
-    "require": {
-        "private-vendor-one/core": "15.6.2",
-        "private-vendor-two/connectivity": "*",
-        "acme-corp/parser": "10.3.5"
-    }
-}
-```
-
-Each zip artifact is a ZIP archive with `composer.json` in root folder:
-
-```shell
-unzip -l acme-corp-parser-10.3.5.zip
-```
-```text
-composer.json
-...
-```
-
-If there are two archives with different versions of a package, they are both
-imported. When an archive with a newer version is added in the artifact folder
-and you run `update`, that version will be imported as well and Composer will
-update to the latest version.
-
 ### Path
 
-In addition to the artifact repository, you can use the path one, which allows
-you to depend on a local directory, either absolute or relative. This can be
-especially useful when dealing with monolithic repositories.
+The `path` repository allows you to depend on a local directory, either
+absolute or relative. This can be especially useful when dealing with
+monolithic repositories.
 
 For instance, if you have the following directory structure in your repository:
 ```text
@@ -787,6 +867,169 @@ The following modes exist:
     ]
 }
 ```
+
+### Package
+
+If you want to use a project that does not support Composer through any of the
+means above, you still can define the package yourself by using a `package`
+repository.
+
+Basically, you define the same information that is included in the `composer`
+repository's `packages.json`, but only for a single package. Again, the
+minimum required fields are `name`, `version`, and either of `dist` or
+`source`.
+
+Here is an example for the smarty template engine:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "smarty/smarty",
+                "version": "3.1.7",
+                "dist": {
+                    "url": "https://www.smarty.net/files/Smarty-3.1.7.zip",
+                    "type": "zip"
+                },
+                "source": {
+                    "url": "http://smarty-php.googlecode.com/svn/",
+                    "type": "svn",
+                    "reference": "tags/Smarty_3_1_7/distribution/"
+                },
+                "autoload": {
+                    "classmap": ["libs/"]
+                }
+            }
+        }
+    ],
+    "require": {
+        "smarty/smarty": "3.1.*"
+    }
+}
+```
+
+Typically, you would leave the source part off, as you don't really need it.
+
+If a source key is included, the reference field should be a reference to the version that will be installed.
+Where the type field is `git`, this will the be the commit id, branch or tag name.
+
+> **Note**: It is not recommended to use a git branch name for the reference field. While this is valid since it is supported by `git checkout`,
+> branch names are mutable so cannot be locked.
+
+Where the type field is `svn`, the reference field should contain the reference that gets appended to the URL when running `svn co`.
+
+> **Note**: This repository type has a few limitations and should be avoided
+> whenever possible:
+>
+> - Composer will not update the package unless you change the `version` field.
+> - Composer will not update the commit references, so if you use `master` as
+>   reference you will have to delete the package to force an update, and will
+>   have to deal with an unstable lock file.
+
+The `"package"` key in a `package` repository may be set to an array to define multiple versions of a package:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "foo/bar",
+                    "version": "1.0.0",
+                    ...
+                },
+                {
+                    "name": "foo/bar",
+                    "version": "2.0.0",
+                    ...
+                }
+            ]
+        }
+    ]
+}
+```
+
+### Artifact
+
+There are some cases, when there is no ability to have one of the previously
+mentioned repository types online, even the VCS one. A typical example could be
+cross-organisation library exchange through build artifacts. Of course, most
+of the time these are private. To use these archives as-is, one can use a
+repository of type `artifact` with a folder containing ZIP or TAR archives of
+those private packages:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "artifact",
+            "url": "path/to/directory/with/zips/"
+        }
+    ],
+    "require": {
+        "private-vendor-one/core": "15.6.2",
+        "private-vendor-two/connectivity": "*",
+        "acme-corp/parser": "10.3.5"
+    }
+}
+```
+
+Each zip artifact is a ZIP archive with `composer.json` in root folder:
+
+```shell
+unzip -l acme-corp-parser-10.3.5.zip
+```
+```text
+composer.json
+...
+```
+
+If there are two archives with different versions of a package, they are both
+imported. When an archive with a newer version is added in the artifact folder
+and you run `update`, that version will be imported as well and Composer will
+update to the latest version.
+
+## Hosting your own
+
+While you will probably want to put your packages on packagist most of the
+time, there are some use cases for hosting your own repository.
+
+* **Private company packages:** If you are part of a company that uses Composer
+  for their packages internally, you might want to keep those packages private.
+
+* **Separate ecosystem:** If you have a project which has its own ecosystem,
+  and the packages aren't really reusable by the greater PHP community, you
+  might want to keep them separate to packagist. An example of this would be
+  WordPress plugins.
+
+For hosting your own packages, a native `composer` type of repository is
+recommended, which provides the best performance.
+
+There are a few tools that can help you create a `composer` repository.
+
+### Private Packagist
+
+[Private Packagist](https://packagist.com/) is a hosted or self-hosted
+application providing private package hosting as well as mirroring of
+GitHub, Packagist.org and other package repositories.
+
+Check out [Packagist.com](https://packagist.com/) for more information.
+
+### Satis
+
+Satis is a static `composer` repository generator. It is a bit like an ultra-
+lightweight, static file-based version of packagist.
+
+You give it a `composer.json` containing repositories, typically VCS and
+package repository definitions. It will fetch all the packages that are
+`require`d and dump a `packages.json` that is your `composer` repository.
+
+Check [the satis GitHub repository](https://github.com/composer/satis) and
+the [handling private packages article](articles/handling-private-packages.md) for more
+information.
 
 ## Disabling Packagist.org
 

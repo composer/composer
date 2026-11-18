@@ -30,6 +30,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Factory;
 use Composer\Installer;
 use Composer\Installer\InstallerEvents;
+use Composer\Config\JsonConfigSource;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
 use Composer\Package\Version\VersionParser;
@@ -40,6 +41,8 @@ use Composer\Plugin\PluginEvents;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
+use Composer\Console\ProgramStatus;
+use Composer\IO\ConsoleIO;
 use Composer\IO\IOInterface;
 use Composer\Advisory\Auditor;
 use Composer\Util\Silencer;
@@ -83,14 +86,16 @@ class RequireCommand extends BaseCommand
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist (default behavior).'),
                 new InputOption('prefer-install', null, InputOption::VALUE_REQUIRED, 'Forces installation from package dist|source|auto (auto chooses source for dev versions, dist for the rest).', null, $this->suggestPreferInstall()),
-                new InputOption('fixed', null, InputOption::VALUE_NONE, 'Write fixed version to the composer.json.'),
+                new InputOption('fixed', null, InputOption::VALUE_NONE, 'Write the exact resolved version to the composer.json instead of the recommended constraint (only allowed when the root package type is "project", or with --dev).'),
                 new InputOption('no-suggest', null, InputOption::VALUE_NONE, 'DEPRECATED: This flag does not exist anymore.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('no-update', null, InputOption::VALUE_NONE, 'Disables the automatic update of the dependencies (implies --no-install).'),
                 new InputOption('no-install', null, InputOption::VALUE_NONE, 'Skip the install step after updating the composer.lock file.'),
                 new InputOption('no-audit', null, InputOption::VALUE_NONE, 'Skip the audit step after updating the composer.lock file (can also be set via the COMPOSER_NO_AUDIT=1 env var).'),
                 new InputOption('audit-format', null, InputOption::VALUE_REQUIRED, 'Audit output format. Must be "table", "plain", "json", or "summary".', Auditor::FORMAT_SUMMARY, Auditor::FORMATS),
-                new InputOption('no-security-blocking', null, InputOption::VALUE_NONE, 'Allows installing packages with security advisories or that are abandoned (can also be set via the COMPOSER_NO_SECURITY_BLOCKING=1 env var).'),
+                new InputOption('no-security-blocking', null, InputOption::VALUE_NONE, 'DEPRECATED: use --no-blocking instead. Allows installing packages with security advisories, that are abandoned or that are still in the cooldown period (can also be set via the COMPOSER_NO_SECURITY_BLOCKING=1 env var).'),
+                new InputOption('no-blocking', null, InputOption::VALUE_NONE, 'Disables all policy blocking during this command, including the cooldown period (can also be set via the COMPOSER_NO_BLOCKING=1 env var).'),
+                new InputOption('no-cooldown', null, InputOption::VALUE_NONE, 'Disables the cooldown policy blocking during this command, other policies still apply.'),
                 new InputOption('update-no-dev', null, InputOption::VALUE_NONE, 'Run the dependency update with the --no-dev option.'),
                 new InputOption('update-with-dependencies', 'w', InputOption::VALUE_NONE, 'Allows inherited dependencies to be updated, except those that are root requirements (can also be set via the COMPOSER_WITH_DEPENDENCIES=1 env var).'),
                 new InputOption('update-with-all-dependencies', 'W', InputOption::VALUE_NONE, 'Allows all inherited dependencies to be updated, including those that are root requirements (can also be set via the COMPOSER_WITH_ALL_DEPENDENCIES=1 env var).'),
@@ -118,7 +123,7 @@ If you do not specify a version constraint, composer will choose a suitable one 
 
 If you do not want to install the new dependencies immediately you can call it with --no-update
 
-Read more at https://getcomposer.org/doc/03-cli.md#require-r
+Read more at https://getcomposer.org/doc/03-cli.md#require--r
 EOT
             )
         ;
@@ -149,7 +154,7 @@ EOT
         }
 
         if (filesize($this->file) === 0) {
-            file_put_contents($this->file, "{\n}\n");
+            Filesystem::safeFilePutContents($this->file, "{\n}\n");
         }
 
         $this->json = new JsonFile($this->file);
@@ -160,6 +165,10 @@ EOT
         $signalHandler = SignalHandler::create([SignalHandler::SIGINT, SignalHandler::SIGTERM, SignalHandler::SIGHUP], function (string $signal, SignalHandler $handler) {
             $this->getIO()->writeError('Received '.$signal.', aborting', true, IOInterface::DEBUG);
             $this->revertComposerFile();
+            $io = $this->getIO();
+            if ($io instanceof ConsoleIO) {
+                $io->writeProgramStatus(ProgramStatus::idle());
+            }
             $handler->exitWithLastSignal();
         });
 
@@ -180,7 +189,7 @@ EOT
              * @see https://github.com/composer/composer/pull/8313#issuecomment-532637955
              */
             if ($packageType !== 'project' && !$input->getOption('dev')) {
-                $io->writeError('<error>The "--fixed" option is only allowed for packages with a "project" type or for dev dependencies to prevent possible misuses.</error>');
+                $io->writeError('<error>The "--fixed" option is only allowed when the root package has a "project" type or for dev dependencies to prevent possible misuses.</error>');
 
                 if (!isset($config['type'])) {
                     $io->writeError('<error>If your package is not a library, you can explicitly specify the "type" by using "composer config type project".</error>');
@@ -492,7 +501,8 @@ EOT
             ->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input))
             ->setPreferStable($input->getOption('prefer-stable'))
             ->setPreferLowest($input->getOption('prefer-lowest'))
-            ->setAuditConfig($this->createAuditConfig($composer->getConfig(), $input))
+            ->setPolicyConfig($this->createPolicyConfig($composer->getConfig(), $input))
+            ->setAuditConfig($this->createAuditConfig($input))
             ->setMinimalUpdate($minimalChanges)
         ;
 
@@ -585,15 +595,18 @@ EOT
             return;
         }
 
-        $composerDefinition = $this->json->read();
+        $composerDefinition = $json->read();
         foreach ($new as $package => $version) {
             $composerDefinition[$requireKey][$package] = $version;
-            unset($composerDefinition[$removeKey][$package]);
-            if (isset($composerDefinition[$removeKey]) && count($composerDefinition[$removeKey]) === 0) {
-                unset($composerDefinition[$removeKey]);
+            if (isset($composerDefinition[$removeKey][$package])) {
+                unset($composerDefinition[$removeKey][$package]);
+                if ($composerDefinition[$removeKey] === []) {
+                    unset($composerDefinition[$removeKey]);
+                }
             }
         }
-        $this->json->write($composerDefinition);
+        JsonConfigSource::restoreEmptyObjects($composerDefinition);
+        $json->write($composerDefinition);
     }
 
     /**
@@ -609,14 +622,12 @@ EOT
             if (!$manipulator->addLink($requireKey, $package, $constraint, $sortPackages)) {
                 return false;
             }
-            if (!$manipulator->removeSubNode($removeKey, $package)) {
+            if (!$manipulator->removeLink($removeKey, $package)) {
                 return false;
             }
         }
 
-        $manipulator->removeMainKeyIfEmpty($removeKey);
-
-        file_put_contents($json->getPath(), $manipulator->getContents());
+        Filesystem::safeFilePutContents($json->getPath(), $manipulator->getContents());
 
         return true;
     }
@@ -641,9 +652,9 @@ EOT
                 $msg = ' and '.$this->lock.' to their ';
             }
             $io->writeError("\n".'<error>Installation failed, reverting '.$this->file.$msg.'original content.</error>');
-            file_put_contents($this->json->getPath(), $this->composerBackup);
+            Filesystem::safeFilePutContents($this->json->getPath(), $this->composerBackup);
             if ($this->lockBackup) {
-                file_put_contents($this->lock, $this->lockBackup);
+                Filesystem::safeFilePutContents($this->lock, $this->lockBackup);
             }
         }
     }

@@ -192,7 +192,7 @@ class Svn
             );
         }
 
-        $this->io->writeError("The Subversion server ({$this->url}) requested credentials:");
+        $this->io->writeError("The Subversion server (" . Url::sanitize($this->url) . ") requested credentials:");
 
         $this->hasAuth = true;
         $this->credentials = [

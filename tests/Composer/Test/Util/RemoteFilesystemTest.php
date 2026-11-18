@@ -13,6 +13,7 @@
 namespace Composer\Test\Util;
 
 use Composer\Config;
+use Composer\Downloader\TransportException;
 use Composer\IO\IOInterface;
 use Composer\Util\AuthHelper;
 use Composer\Util\RemoteFilesystem;
@@ -240,6 +241,107 @@ class RemoteFilesystemTest extends TestCase
     }
 
     /**
+     * @dataProvider provideDisallowedRedirectSchemes
+     */
+    public function testRedirectToDisallowedSchemeIsRejected(string $location): void
+    {
+        self::expectException('Composer\Downloader\TransportException');
+        self::expectExceptionMessage('only http and https redirects are supported');
+
+        $fs = $this->getRemoteFilesystemWithMockedMethods(['getRemoteContents']);
+        $fs->expects($this->once())->method('getRemoteContents')
+            ->willReturnCallback(static function ($originUrl, $fileUrl, $ctx, &$http_response_header) use ($location): string {
+                $http_response_header = ['HTTP/1.1 302 Found', 'Location: '.$location];
+
+                return '';
+            });
+
+        $fs->getContents('http://example.org', 'http://example.org/packages.json', false);
+    }
+
+    /**
+     * @dataProvider provideFailedResponseHeaders
+     * @param string[] $responseHeaders
+     */
+    public function testErrorMessagesDoNotContainUrlCredentials(array $responseHeaders): void
+    {
+        $fs = $this->getRemoteFilesystemWithMockedMethods(['getRemoteContents']);
+        $fs->expects($this->once())->method('getRemoteContents')
+            ->willReturnCallback(static function ($originUrl, $fileUrl, $ctx, &$http_response_header) use ($responseHeaders): string {
+                $http_response_header = $responseHeaders;
+
+                return '';
+            });
+
+        try {
+            $fs->getContents('example.org', 'https://user:secret@example.org/packages.json', false);
+            self::fail('Expected a TransportException');
+        } catch (TransportException $e) {
+            self::assertStringNotContainsString('secret', $e->getMessage());
+            self::assertStringContainsString('https://user:***@example.org/packages.json', $e->getMessage());
+        }
+    }
+
+    /**
+     * @return array<string, array{string[]}>
+     */
+    public static function provideFailedResponseHeaders(): array
+    {
+        return [
+            'not found' => [['HTTP/1.1 404 Not Found']],
+            'redirect without location' => [['HTTP/1.1 302 Found']],
+        ];
+    }
+
+    /**
+     * @dataProvider provideRedirectHeaderCases
+     */
+    public function testCredentialHeadersAreOnlyKeptOnSameOriginRedirects(string $location, bool $expectAuthHeader): void
+    {
+        $sentHeaders = [];
+        $fs = $this->getRemoteFilesystemWithMockedMethods(['getRemoteContents']);
+        $fs->expects($this->exactly(2))->method('getRemoteContents')
+            ->willReturnCallback(static function ($originUrl, $fileUrl, $ctx, &$http_response_header) use ($location, &$sentHeaders): string {
+                $sentHeaders[] = implode("\n", (array) stream_context_get_options($ctx)['http']['header']);
+                $http_response_header = count($sentHeaders) === 1 ? ['HTTP/1.1 302 Found', 'Location: '.$location] : ['HTTP/1.1 200 OK'];
+
+                return 'ok';
+            });
+
+        $fs->getContents('example.org', 'https://example.org/packages.json', false, ['http' => ['header' => ['Authorization: Bearer abc', 'X-Custom: 1']]]);
+
+        self::assertStringContainsString('Authorization: Bearer abc', $sentHeaders[0]);
+        self::assertSame($expectAuthHeader, str_contains($sentHeaders[1], 'Authorization: Bearer abc'));
+        self::assertStringContainsString('X-Custom: 1', $sentHeaders[1]);
+    }
+
+    /**
+     * @return array<string, array{string, bool}>
+     */
+    public static function provideRedirectHeaderCases(): array
+    {
+        return [
+            'same origin, absolute path' => ['/other.json', true],
+            'same origin, absolute url' => ['https://example.org:443/other.json', true],
+            'other host' => ['https://example.net/other.json', false],
+            'other scheme' => ['http://example.org/other.json', false],
+            'other port' => ['https://example.org:8443/other.json', false],
+        ];
+    }
+
+    /**
+     * @return string[][]
+     */
+    public static function provideDisallowedRedirectSchemes(): array
+    {
+        return [
+            ['file://localhost/etc/passwd'],
+            ['phar://archive.phar/file'],
+            ['data://text/plain;base64,Zm9v'],
+        ];
+    }
+
+    /**
      * @group TLS
      */
     public function testGetOptionsForUrlCreatesSecureTlsDefaults(): void
@@ -249,7 +351,7 @@ class RemoteFilesystemTest extends TestCase
         $res = $this->callGetOptionsForUrl($io, ['example.org', ['ssl' => ['cafile' => '/some/path/file.crt']]], [], 'http://www.example.org');
 
         self::assertTrue(isset($res['ssl']['ciphers']));
-        self::assertMatchesRegularExpression('|!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA|', $res['ssl']['ciphers']);
+        self::assertMatchesRegularExpression('|!aNULL:!eNULL:!EXPORT:!DES:!3DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA|', $res['ssl']['ciphers']);
         self::assertTrue($res['ssl']['verify_peer']);
         self::assertTrue($res['ssl']['SNI_enabled']);
         self::assertEquals(7, $res['ssl']['verify_depth']);
@@ -290,7 +392,15 @@ class RemoteFilesystemTest extends TestCase
         $rfs = new RemoteFilesystem($io, $this->getConfigMock());
         $hostname = parse_url($url, PHP_URL_HOST);
 
-        $result = $rfs->getContents($hostname, $url, false);
+        try {
+            $result = $rfs->getContents($hostname, $url, false);
+        } catch (\Exception $e) {
+            if (str_contains($e->getMessage(), 'Connection timed out')) {
+                $this->markTestSkipped('Bitbucket unreliability skip');
+            }
+
+            throw $e;
+        }
 
         self::assertEquals($contents, $result);
     }

@@ -12,15 +12,18 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Advisory\AuditConfig;
 use Composer\Advisory\Auditor;
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
+use Composer\IO\IOInterface;
+use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
+use Composer\Policy\PolicyConfig;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositorySet;
+use Composer\Semver\CompilingMatcher;
 use Composer\Semver\Constraint\Constraint;
 
 /**
@@ -30,15 +33,19 @@ class SecurityAdvisoryPoolFilter
 {
     /** @var Auditor */
     private $auditor;
-    /** @var AuditConfig $auditConfig */
-    private $auditConfig;
+    /** @var PolicyConfig */
+    private $policyConfig;
+    /** @var IOInterface */
+    private $io;
 
     public function __construct(
         Auditor $auditor,
-        AuditConfig $auditConfig
+        PolicyConfig $policyConfig,
+        IOInterface $io
     ) {
         $this->auditor = $auditor;
-        $this->auditConfig = $auditConfig;
+        $this->policyConfig = $policyConfig;
+        $this->io = $io;
     }
 
     /**
@@ -46,7 +53,10 @@ class SecurityAdvisoryPoolFilter
      */
     public function filter(Pool $pool, array $repositories, Request $request): Pool
     {
-        if (!$this->auditConfig->blockInsecure) {
+        $advisories = $this->policyConfig->advisories;
+        $abandoned = $this->policyConfig->abandoned;
+
+        if (!$advisories->block) {
             return $pool;
         }
 
@@ -57,34 +67,42 @@ class SecurityAdvisoryPoolFilter
 
         $packagesForAdvisories = [];
         foreach ($pool->getPackages() as $package) {
+            $package = self::getAdvisoryTarget($package);
             if (!$package instanceof RootPackageInterface && !PlatformRepository::isPlatformPackage($package->getName()) && !$request->isLockedPackage($package)) {
                 $packagesForAdvisories[] = $package;
             }
         }
 
-        $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, true, true);
-        if ($this->auditor->needsCompleteAdvisoryLoad($allAdvisories['advisories'], $this->auditConfig->ignoreListForBlocking)) {
-            $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, false, true);
+        $ignoreListForBlocking = $advisories->getIgnoreListForOperation('block');
+        $ignoreUnreachableUpdate = $this->policyConfig->ignoreUnreachable->update;
+
+        $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, true, $ignoreUnreachableUpdate);
+        if ($this->auditor->needsCompleteAdvisoryLoad($allAdvisories['advisories'], $ignoreListForBlocking)) {
+            $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, false, $ignoreUnreachableUpdate);
         }
 
-        $advisoryMap = $this->auditor->processAdvisories($allAdvisories['advisories'], $this->auditConfig->ignoreListForBlocking, $this->auditConfig->ignoreSeverityForBlocking)['advisories'];
+        if ($ignoreUnreachableUpdate && count($allAdvisories['unreachableRepos']) > 0) {
+            $this->io->writeError('<warning>Security advisory data could not be fetched from some repositories (ignored per policy.ignore-unreachable); matches may be incomplete:</warning>');
+            foreach ($allAdvisories['unreachableRepos'] as $repo) {
+                $this->io->writeError('  - ' . $repo);
+            }
+        }
+
+        $advisoryMap = $this->auditor->processAdvisories($allAdvisories['advisories'], $ignoreListForBlocking, $advisories->getIgnoreSeverityForOperation('block'))['advisories'];
+
+        $ignoreAbandonedForBlocking = $abandoned->getFlatIgnoreForOperation('block');
 
         $packages = [];
-        $securityRemovedVersions = [];
-        $abandonedRemovedVersions = [];
+        $policyRemovedVersions = $pool->getAllPolicyRemovedVersions();
         foreach ($pool->getPackages() as $package) {
-            if ($this->auditConfig->blockAbandoned && count($this->auditor->filterAbandonedPackages([$package], $this->auditConfig->ignoreAbandonedForBlocking)) !== 0) {
-                foreach ($package->getNames(false) as $packageName) {
-                    $abandonedRemovedVersions[$packageName][$package->getVersion()] = $package->getPrettyVersion();
-                }
+            if ($abandoned->block && count($this->auditor->filterAbandonedPackages([$package], $ignoreAbandonedForBlocking)) !== 0) {
+                Pool::recordPolicyRemoval($policyRemovedVersions, $package, PolicyRemovalReason::abandoned($package->getName(), $package->getPrettyVersion()));
                 continue;
             }
 
             $matchingAdvisories = $this->getMatchingAdvisories($package, $advisoryMap);
             if (count($matchingAdvisories) > 0) {
-                foreach ($package->getNames(false) as $packageName) {
-                    $securityRemovedVersions[$packageName][$package->getVersion()] = $matchingAdvisories;
-                }
+                Pool::recordPolicyRemoval($policyRemovedVersions, $package, PolicyRemovalReason::advisories($package->getName(), $package->getPrettyVersion(), $matchingAdvisories));
 
                 continue;
             }
@@ -92,7 +110,7 @@ class SecurityAdvisoryPoolFilter
             $packages[] = $package;
         }
 
-        return new Pool($packages, $pool->getUnacceptableFixedOrLockedPackages(), $pool->getAllRemovedVersions(), $pool->getAllRemovedVersionsByPackage(), $securityRemovedVersions, $abandonedRemovedVersions);
+        return new Pool($packages, $pool->getUnacceptableFixedOrLockedPackages(), $pool->getAllRemovedVersions(), $pool->getAllRemovedVersionsByPackage(), $policyRemovedVersions);
     }
 
     /**
@@ -101,24 +119,39 @@ class SecurityAdvisoryPoolFilter
      */
     private function getMatchingAdvisories(PackageInterface $package, array $advisoryMap): array
     {
-        if ($package->isDev()) {
+        $package = self::getAdvisoryTarget($package);
+
+        if (RepositorySet::isUnversionedBranch($package)) {
             return [];
         }
 
+        $version = $package->getVersion();
         $matchingAdvisories = [];
+
         foreach ($package->getNames(false) as $packageName) {
             if (!isset($advisoryMap[$packageName])) {
                 continue;
             }
 
-            $packageConstraint = new Constraint(Constraint::STR_OP_EQ, $package->getVersion());
             foreach ($advisoryMap[$packageName] as $advisory) {
-                if ($advisory->affectedVersions->matches($packageConstraint)) {
+                if (CompilingMatcher::match($advisory->affectedVersions, Constraint::OP_EQ, $version)) {
                     $matchingAdvisories[] = $advisory;
                 }
             }
         }
 
         return $matchingAdvisories;
+    }
+
+    /**
+     * A root alias version is chosen by the root package author and says nothing about the actual code, so advisories are checked against the aliased package
+     */
+    private static function getAdvisoryTarget(PackageInterface $package): PackageInterface
+    {
+        if ($package instanceof AliasPackage && $package->isRootPackageAlias()) {
+            return $package->getAliasOf();
+        }
+
+        return $package;
     }
 }

@@ -233,30 +233,47 @@ class EventDispatcher
                 } elseif ($this->isComposerScript($callable)) {
                     $this->io->writeError(sprintf('> %s: %s', $formattedEventNameWithArgs, $callable), true, IOInterface::VERBOSE);
 
-                    $script = explode(' ', substr($callable, 1));
-                    $scriptName = $script[0];
-                    unset($script[0]);
-
-                    $index = array_search('@additional_args', $script, true);
-                    if ($index !== false) {
-                        $args = array_splice($script, $index, 0, $additionalArgs);
-                    } else {
-                        $args = array_merge($script, $additionalArgs);
-                    }
-                    $flags = $event->getFlags();
-                    if (isset($flags['script-alias-input'])) {
-                        $argsString = implode(' ', array_map(static function ($arg) { return ProcessExecutor::escape($arg); }, $script));
-                        $flags['script-alias-input'] = $argsString . ' ' . $flags['script-alias-input'];
-                        unset($argsString);
-                    }
                     if (strpos($callable, '@composer ') === 0) {
-                        $exec = $this->getPhpExecCommand() . ' ' . ProcessExecutor::escape(Platform::getEnv('COMPOSER_BINARY')) . ' ' . implode(' ', $args);
+                        // the script's own args are passed to the shell as is, but the additional args come from the command line so they must be escaped
+                        $args = implode(' ', array_map([ProcessExecutor::class, 'escape'], $additionalArgs));
+                        $exec = substr($callable, strlen('@composer '));
+                        if (str_contains($exec, '@additional_args')) {
+                            $exec = str_replace('@additional_args', $args, $exec);
+                        } elseif ($args !== '') {
+                            $exec .= ' '.$args;
+                        }
+                        $exec = $this->getPhpExecCommand() . ' ' . ProcessExecutor::escape(Platform::getEnv('COMPOSER_BINARY')) . ' ' . $exec;
                         if (0 !== ($exitCode = $this->executeTty($exec))) {
                             $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()), true, IOInterface::QUIET);
 
                             throw new ScriptExecutionException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
                         }
                     } else {
+                        // the fixed args are passed on as arguments of the referenced script, which escapes them, so they need to be unquoted
+                        $script = self::splitScriptArgs(substr($callable, 1));
+                        $scriptName = (string) array_shift($script);
+
+                        $args = [];
+                        $aliasArgs = [];
+                        $flags = $event->getFlags();
+                        $hasAdditionalArgs = in_array('@additional_args', $script, true);
+                        foreach ($script as $arg) {
+                            if ($arg === '@additional_args') {
+                                $args = array_merge($args, $additionalArgs);
+                                $aliasArgs[] = $flags['script-alias-input'] ?? '';
+                            } else {
+                                $args[] = $arg;
+                                $aliasArgs[] = ProcessExecutor::escape($arg);
+                            }
+                        }
+                        if (!$hasAdditionalArgs) {
+                            $args = array_merge($args, $additionalArgs);
+                            $aliasArgs[] = $flags['script-alias-input'] ?? '';
+                        }
+                        if (isset($flags['script-alias-input'])) {
+                            $flags['script-alias-input'] = implode(' ', $aliasArgs);
+                        }
+
                         if (!$this->getListeners(new Event($scriptName))) {
                             $this->io->writeError(sprintf('<warning>You made a reference to a non-existent script %s</warning>', $callable), true, IOInterface::QUIET);
                         }
@@ -345,6 +362,10 @@ class EventDispatcher
                         throw $e;
                     }
                 } else {
+                    if ($callable === '') {
+                        continue;
+                    }
+
                     $args = implode(' ', array_map(['Composer\Util\ProcessExecutor', 'escape'], $additionalArgs));
 
                     // @putenv does not receive arguments
@@ -360,12 +381,7 @@ class EventDispatcher
 
                     if ($this->io->isVerbose()) {
                         $this->io->writeError(sprintf('> %s: %s', $event->getName(), $exec));
-                    } elseif (
-                        // do not output the command being run when using `composer exec` as it is fairly obvious the user is running it
-                        $event->getName() !== '__exec_command'
-                        // do not output the command being run when using `composer <script-name>` as it is also fairly obvious the user is running it
-                        && ($event->getFlags()['script-alias-input'] ?? null) === null
-                    ) {
+                    } elseif ($this->eventNeedsToOutput($event)) {
                         $this->io->writeError(sprintf('> %s', $exec));
                     }
 
@@ -510,11 +526,26 @@ class EventDispatcher
     {
         if ($this->io->isVerbose()) {
             $this->io->writeError(sprintf('> %s: %s::%s', $event->getName(), $className, $methodName));
-        } else {
+        } elseif ($this->eventNeedsToOutput($event)) {
             $this->io->writeError(sprintf('> %s::%s', $className, $methodName));
         }
 
         return $className::$methodName($event);
+    }
+
+    private function eventNeedsToOutput(Event $event): bool
+    {
+        // do not output the command being run when using `composer exec` as it is fairly obvious the user is running it
+        if ($event->getName() === '__exec_command') {
+            return false;
+        }
+
+        // do not output the command being run when using `composer <script-name>` as it is also fairly obvious the user is running it
+        if (($event->getFlags()['script-alias-input'] ?? null) !== null) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -636,6 +667,22 @@ class EventDispatcher
     }
 
     /**
+     * Splits on whitespace, keeping quoted parts together and unquoting them
+     *
+     * @return list<string>
+     */
+    private static function splitScriptArgs(string $command): array
+    {
+        Preg::matchAll('{(?:[^\s"\']+|"[^"]*"|\'[^\']*\'|["\'])+}', $command, $matches);
+
+        return array_map(static function (string $token): string {
+            return Preg::replaceCallback('{(["\'])(.*?)\1}s', static function (array $match): string {
+                return $match[2];
+            }, $token);
+        }, $matches[0]);
+    }
+
+    /**
      * Checks if string given references a composer run-script
      */
     protected function isComposerScript(string $callable): bool
@@ -697,10 +744,10 @@ class EventDispatcher
             return 'fn:'.$cb;
         }
         if (is_object($cb)) {
-            return 'obj:'.spl_object_hash($cb);
+            return 'obj:'.spl_object_id($cb);
         }
         if (is_array($cb)) {
-            return 'array:'.(is_string($cb[0]) ? $cb[0] : get_class($cb[0]) .'#'.spl_object_hash($cb[0])).'::'.$cb[1];
+            return 'array:'.(is_string($cb[0]) ? $cb[0] : get_class($cb[0]) .'#'.spl_object_id($cb[0])).'::'.$cb[1];
         }
 
         // not great but also do not want to break everything here

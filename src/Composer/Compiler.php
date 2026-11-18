@@ -126,6 +126,7 @@ class Compiler
             ->notPath('/bin\/(jsonlint|validate-json|simple-phpunit|phpstan|phpstan\.phar)(\.bat)?$/')
             ->notPath('justinrainbow/json-schema/demo/')
             ->notPath('justinrainbow/json-schema/dist/')
+            ->notPath('justinrainbow/json-schema/bin/')
             ->notPath('composer/pcre/extension.neon')
             ->notPath('composer/LICENSE')
             ->exclude('Tests')
@@ -200,7 +201,10 @@ class Compiler
             'vendor/symfony/polyfill-php73/Resources/stubs/JsonException.php',
             'vendor/symfony/service-contracts/Attribute/SubscribedService.php',
             'vendor/symfony/polyfill-php84/Resources/stubs/Deprecated.php',
+            'vendor/symfony/polyfill-php84/Resources/Deprecated.php',
+            'vendor/symfony/polyfill-php84/Resources/RoundingMode.php',
             'vendor/symfony/polyfill-php84/bootstrap82.php',
+            'vendor/symfony/polyfill-intl-grapheme/bootstrap85.php',
         ]);
     }
 

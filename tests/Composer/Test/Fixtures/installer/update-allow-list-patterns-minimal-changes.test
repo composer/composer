@@ -1,0 +1,61 @@
+--TEST--
+Partial update with wildcard and exact package names using --minimal-changes
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "allowed/pkg-a", "version": "1.1.0" },
+                { "name": "allowed/pkg-a", "version": "1.0.0" },
+                { "name": "allowed/pkg-b", "version": "1.1.0" },
+                { "name": "allowed/pkg-b", "version": "1.0.0" },
+                { "name": "allowed/other", "version": "1.1.0" },
+                { "name": "allowed/other", "version": "1.0.0" },
+                { "name": "exact/pkg", "version": "1.1.0" },
+                { "name": "exact/pkg", "version": "1.0.0" },
+                { "name": "unrelated/pkg", "version": "1.1.0" },
+                { "name": "unrelated/pkg", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "allowed/pkg-a": "1.*",
+        "allowed/pkg-b": "1.*",
+        "allowed/other": "1.*",
+        "exact/pkg": "1.*",
+        "unrelated/pkg": "1.*"
+    }
+}
+--INSTALLED--
+[
+    { "name": "allowed/pkg-a", "version": "1.0.0" },
+    { "name": "allowed/pkg-b", "version": "1.0.0" },
+    { "name": "allowed/other", "version": "1.0.0" },
+    { "name": "exact/pkg", "version": "1.0.0" },
+    { "name": "unrelated/pkg", "version": "1.0.0" }
+]
+--LOCK--
+{
+    "packages": [
+        { "name": "allowed/pkg-a", "version": "1.0.0" },
+        { "name": "allowed/pkg-b", "version": "1.0.0" },
+        { "name": "allowed/other", "version": "1.0.0" },
+        { "name": "exact/pkg", "version": "1.0.0" },
+        { "name": "unrelated/pkg", "version": "1.0.0" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": {},
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {},
+    "platform-dev": {}
+}
+--RUN--
+update allowed/pkg-* Exact/Pkg --minimal-changes
+--EXPECT--
+Upgrading allowed/pkg-a (1.0.0 => 1.1.0)
+Upgrading allowed/pkg-b (1.0.0 => 1.1.0)
+Upgrading exact/pkg (1.0.0 => 1.1.0)

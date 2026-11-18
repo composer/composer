@@ -50,6 +50,7 @@ final class RuleReasonDataReturnTypeExtension implements DynamicMethodReturnType
         $types = [
             Rule::RULE_ROOT_REQUIRE => new ConstantArrayType([new ConstantStringType('packageName'), new ConstantStringType('constraint')], [new StringType, new ObjectType(ConstraintInterface::class)]),
             Rule::RULE_FIXED => new ConstantArrayType([new ConstantStringType('package')], [new ObjectType(BasePackage::class)]),
+            Rule::RULE_LOCKED_FILTER_LIST_REMOVED => new ConstantArrayType([new ConstantStringType('package')], [new ObjectType(BasePackage::class)]),
             Rule::RULE_PACKAGE_CONFLICT => new ObjectType(Link::class),
             Rule::RULE_PACKAGE_REQUIRES => new ObjectType(Link::class),
             Rule::RULE_PACKAGE_SAME_NAME => TypeCombinator::intersect(new StringType, new AccessoryNonEmptyStringType()),
@@ -58,10 +59,21 @@ final class RuleReasonDataReturnTypeExtension implements DynamicMethodReturnType
             Rule::RULE_PACKAGE_INVERSE_ALIAS => new ObjectType(BasePackage::class),
         ];
 
+        // Collect every reasonData type whose reason constant is a possible
+        // value of the call-site's getReason(). Single-case `case RULE_FIXED:`
+        // narrows reasonType to one constant and yields a single match;
+        // fall-through `case RULE_FIXED: case RULE_LOCKED_FILTER_LIST_REMOVED:`
+        // yields a union of constants and we return the union of their
+        // reasonData types so offset access can still narrow correctly.
+        $matched = [];
         foreach ($types as $const => $type) {
-            if ((new ConstantIntegerType($const))->isSuperTypeOf($reasonType)->yes()) {
-                return $type;
+            if ($reasonType->isSuperTypeOf(new ConstantIntegerType($const))->yes()) {
+                $matched[] = $type;
             }
+        }
+
+        if (\count($matched) > 0) {
+            return \count($matched) === 1 ? $matched[0] : TypeCombinator::union(...$matched);
         }
 
         return TypeCombinator::union(...$types);

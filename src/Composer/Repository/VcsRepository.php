@@ -13,6 +13,8 @@
 namespace Composer\Repository;
 
 use Composer\Downloader\TransportException;
+use Composer\Exception\SecurityException;
+use Composer\Package\BasePackage;
 use Composer\Pcre\Preg;
 use Composer\Repository\Vcs\VcsDriverInterface;
 use Composer\Package\Version\VersionParser;
@@ -70,6 +72,10 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     private $emptyReferences = [];
     /** @var array<'tags'|'branches', array<string, TransportException>> */
     private $versionTransportExceptions = [];
+    /** @var ?non-empty-string */
+    private $onlyBranchesRegex = null;
+    /** @var ?non-empty-string */
+    private $excludeBranchesRegex = null;
 
     /**
      * @param array{url: string, type?: string}&array<string, mixed> $repoConfig
@@ -102,6 +108,9 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         $this->versionCache = $versionCache;
         $this->httpDownloader = $httpDownloader;
         $this->processExecutor = $process ?? new ProcessExecutor($io);
+
+        $this->onlyBranchesRegex = $this->createBranchFilterRegex('only-branches');
+        $this->excludeBranchesRegex = $this->createBranchFilterRegex('exclude-branches');
     }
 
     public function getRepoName()
@@ -190,7 +199,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
 
         $driver = $this->getDriver();
         if (!$driver) {
-            throw new \InvalidArgumentException('No driver found to handle VCS repository '.$this->url);
+            throw new \InvalidArgumentException('No driver found to handle VCS repository '.Url::sanitize($this->url));
         }
 
         $this->versionParser = new VersionParser;
@@ -206,7 +215,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 $this->packageName = !empty($data['name']) ? $data['name'] : null;
             }
         } catch (\Exception $e) {
-            if ($e instanceof TransportException && $this->shouldRethrowTransportException($e)) {
+            if ($e instanceof SecurityException || ($e instanceof TransportException && $this->shouldRethrowTransportException($e))) {
                 throw $e;
             }
 
@@ -217,7 +226,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
 
         foreach ($driver->getTags() as $tag => $identifier) {
             $tag = (string) $tag;
-            $msg = 'Reading composer.json of <info>' . ($this->packageName ?: $this->url) . '</info> (<comment>' . $tag . '</comment>)';
+            $msg = 'Reading composer.json of <info>' . ($this->packageName ?: Url::sanitize($this->url)) . '</info> (<comment>' . $tag . '</comment>)';
 
             // strip the release- prefix from tags if present
             $tag = str_replace('release-', '', $tag);
@@ -299,6 +308,9 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
 
                 $this->addPackage($this->loader->load($this->preProcess($driver, $data, $identifier)));
             } catch (\Exception $e) {
+                if ($e instanceof SecurityException) {
+                    throw $e;
+                }
                 if ($e instanceof TransportException) {
                     $this->versionTransportExceptions['tags'][$tag] = $e;
                     if ($e->getCode() === 404) {
@@ -324,10 +336,11 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         if ($hasRootIdentifierComposerJson && isset($branches[$driver->getRootIdentifier()])) {
             $branches = [$driver->getRootIdentifier() => $branches[$driver->getRootIdentifier()]] + $branches;
         }
+        $branches = $this->filterBranches($branches, $driver->getRootIdentifier());
 
         foreach ($branches as $branch => $identifier) {
             $branch = (string) $branch;
-            $msg = 'Reading composer.json of <info>' . ($this->packageName ?: $this->url) . '</info> (<comment>' . $branch . '</comment>)';
+            $msg = 'Reading composer.json of <info>' . ($this->packageName ?: Url::sanitize($this->url)) . '</info> (<comment>' . $branch . '</comment>)';
             if ($isVeryVerbose) {
                 $this->io->writeError($msg);
             } elseif ($isVerbose) {
@@ -404,6 +417,9 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 }
                 continue;
             } catch (\Exception $e) {
+                if ($e instanceof SecurityException) {
+                    throw $e;
+                }
                 if (!$isVeryVerbose) {
                     $this->io->writeError('');
                 }
@@ -420,12 +436,12 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         }
 
         if (!$this->getPackages()) {
-            throw new InvalidRepositoryException('No valid composer.json was found in any branch or tag of '.$this->url.', could not load a package from it.');
+            throw new InvalidRepositoryException('No valid composer.json was found in any branch or tag of '.Url::sanitize($this->url).', could not load a package from it.');
         }
     }
 
     /**
-     * @param array{name?: string, dist?: array{type: string, url: string, reference: string, shasum: string}, source?: array{type: string, url: string, reference: string}} $data
+     * @param array{name?: string, published-time?: string, dist?: array{type: string, url: string, reference: string, shasum: string}, source?: array{type: string, url: string, reference: string}} $data
      *
      * @return array{name: string|null, dist: array{type: string, url: string, reference: string, shasum: string}|null, source: array{type: string, url: string, reference: string}}
      */
@@ -436,6 +452,9 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         // will still be installable using that new name without requiring re-tagging
         $dataPackageName = $data['name'] ?? null;
         $data['name'] = $this->packageName ?: $dataPackageName;
+
+        // only a Composer repository can vouch for a publication date, the package's own composer.json cannot
+        unset($data['published-time']);
 
         if (!isset($data['dist'])) {
             $data['dist'] = $driver->getDist($identifier);
@@ -450,6 +469,60 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         }
 
         return $data;
+    }
+
+    /**
+     * Restricts the branches to the ones matching "only-branches" and not matching "exclude-branches", the default branch is always kept
+     *
+     * @param array<int|string, string> $branches
+     * @return array<int|string, string>
+     */
+    private function filterBranches(array $branches, string $rootIdentifier): array
+    {
+        if (null === $this->onlyBranchesRegex && null === $this->excludeBranchesRegex) {
+            return $branches;
+        }
+
+        foreach ($branches as $branch => $identifier) {
+            $branch = (string) $branch;
+            // svn's root identifier is the trunk identifier (e.g. /trunk/@123) and not a branch name
+            if ($branch === $rootIdentifier || $identifier === $rootIdentifier) {
+                continue;
+            }
+            if (null !== $this->onlyBranchesRegex && !Preg::isMatch($this->onlyBranchesRegex, $branch)) {
+                $reason = 'not matching the only-branches filter';
+            } elseif (null !== $this->excludeBranchesRegex && Preg::isMatch($this->excludeBranchesRegex, $branch)) {
+                $reason = 'matching the exclude-branches filter';
+            } else {
+                continue;
+            }
+            if ($this->isVeryVerbose) {
+                $this->io->writeError('<warning>Skipped branch '.$branch.', '.$reason.'</warning>');
+            }
+            unset($branches[$branch]);
+        }
+
+        return $branches;
+    }
+
+    /**
+     * @return ?non-empty-string
+     */
+    private function createBranchFilterRegex(string $key): ?string
+    {
+        if (!isset($this->repoConfig[$key])) {
+            return null;
+        }
+        if (!is_array($this->repoConfig[$key]) || count(array_filter($this->repoConfig[$key], 'is_string')) !== count($this->repoConfig[$key])) {
+            throw new \InvalidArgumentException('"'.$key.'" key for repository '.Url::sanitize($this->url).' should be an array of strings');
+        }
+        // excluding nothing needs no filtering, whereas an empty only-branches list keeps only the default branch
+        if ('exclude-branches' === $key && [] === $this->repoConfig[$key]) {
+            return null;
+        }
+
+        // branch names are case-sensitive, unlike package names
+        return BasePackage::packageNamesToRegexp($this->repoConfig[$key], '{^(?:%s)$}D');
     }
 
     /**
@@ -502,7 +575,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         }
 
         if ($cachedPackage) {
-            $msg = 'Found cached composer.json of <info>' . ($this->packageName ?: $this->url) . '</info> (<comment>' . $version . '</comment>)';
+            $msg = 'Found cached composer.json of <info>' . ($this->packageName ?: Url::sanitize($this->url)) . '</info> (<comment>' . $version . '</comment>)';
             if ($isVeryVerbose) {
                 $this->io->writeError($msg);
             } elseif ($isVerbose) {

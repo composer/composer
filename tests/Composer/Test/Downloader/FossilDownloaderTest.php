@@ -119,7 +119,7 @@ class FossilDownloaderTest extends TestCase
         $process->expects([
             ['fossil', 'changes'],
             ['fossil', 'pull'],
-            ['fossil', 'up', 'trunk'],
+            ['fossil', 'up', '--', 'trunk'],
         ], true);
 
         $downloader = $this->getDownloaderMock(null, null, $process);

@@ -32,7 +32,9 @@ class PackageSorter
             return null;
         }
 
-        $highest = reset($packages);
+        // reset() would copy the array to move its internal pointer
+        $highest = $packages[array_key_first($packages)];
+
         foreach ($packages as $candidate) {
             if ($candidate->isDefaultBranch()) {
                 return $candidate;
@@ -113,26 +115,27 @@ class PackageSorter
             return $weight;
         };
 
+        // Keep temporary records packed: [name, weight, original index].
         $weightedPackages = [];
 
         foreach ($packages as $index => $package) {
             $name = $package->getName();
             $weight = $computeImportance($name);
-            $weightedPackages[] = ['name' => $name, 'weight' => $weight, 'index' => $index];
+            $weightedPackages[] = [$name, $weight, $index];
         }
 
         usort($weightedPackages, static function (array $a, array $b): int {
-            if ($a['weight'] !== $b['weight']) {
-                return $a['weight'] - $b['weight'];
+            if ($a[1] !== $b[1]) {
+                return $a[1] - $b[1];
             }
 
-            return strnatcasecmp($a['name'], $b['name']);
+            return strnatcasecmp($a[0], $b[0]);
         });
 
         $sortedPackages = [];
 
         foreach ($weightedPackages as $pkg) {
-            $sortedPackages[] = $packages[$pkg['index']];
+            $sortedPackages[] = $packages[$pkg[2]];
         }
 
         return $sortedPackages;

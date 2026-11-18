@@ -214,9 +214,15 @@ class SuggestedPackagesReporterTest extends TestCase
         $package2 = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
 
         $package1->expects($this->once())
+            ->method('getName')
+            ->will($this->returnValue('vendor/package1'));
+        $package1->expects($this->once())
             ->method('getNames')
             ->will($this->returnValue(['x', 'y']));
 
+        $package2->expects($this->once())
+            ->method('getName')
+            ->will($this->returnValue('vendor/package2'));
         $package2->expects($this->once())
             ->method('getNames')
             ->will($this->returnValue(['b']));
@@ -234,6 +240,36 @@ class SuggestedPackagesReporterTest extends TestCase
         $this->io->expects([
             ['text' => 'source package suggests:'],
             ['text' => ' - target: because reasons'],
+            ['text' => ''],
+        ], true);
+
+        $this->suggestedPackagesReporter->output(SuggestedPackagesReporter::MODE_BY_PACKAGE, $repository);
+    }
+
+    /**
+     * @covers ::output
+     */
+    public function testOutputShowsSuggestionProvidedBySuggestingPackageItself(): void
+    {
+        $repository = $this->getMockBuilder('Composer\Repository\InstalledRepository')->disableOriginalConstructor()->getMock();
+        $package = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
+
+        $package->expects($this->once())
+            ->method('getName')
+            ->will($this->returnValue('acme/polyfill-foo'));
+        $package->expects($this->once())
+            ->method('getNames')
+            ->will($this->returnValue(['acme/polyfill-foo', 'ext-foo']));
+
+        $repository->expects($this->once())
+            ->method('getPackages')
+            ->will($this->returnValue([$package]));
+
+        $this->suggestedPackagesReporter->addPackage('acme/polyfill-foo', 'ext-foo', 'install the native extension for better performance');
+
+        $this->io->expects([
+            ['text' => 'acme/polyfill-foo suggests:'],
+            ['text' => ' - ext-foo: install the native extension for better performance'],
             ['text' => ''],
         ], true);
 

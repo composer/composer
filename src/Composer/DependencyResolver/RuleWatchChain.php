@@ -39,13 +39,21 @@ class RuleWatchChain extends \SplDoublyLinkedList
      *
      * As SplDoublyLinkedList only allows deleting a particular offset and
      * incorrectly sets the internal iterator if you delete the current value
-     * this method sets the internal iterator back to the following element
-     * using the seek method.
+     * this method moves the iterator to the previous element before deleting,
+     * then advances it to the following element.
      */
     public function remove(): void
     {
         $offset = $this->key();
+        if ($offset === 0) {
+            $this->offsetUnset(0);
+            $this->rewind();
+
+            return;
+        }
+
+        $this->prev();
         $this->offsetUnset($offset);
-        $this->seek($offset);
+        $this->next();
     }
 }

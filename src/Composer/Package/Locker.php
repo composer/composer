@@ -18,6 +18,7 @@ use Composer\Pcre\Preg;
 use Composer\Repository\InstalledRepository;
 use Composer\Repository\LockArrayRepository;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositoryManager;
 use Composer\Repository\RootPackageRepository;
 use Composer\Util\ProcessExecutor;
 use Composer\Package\Dumper\ArrayDumper;
@@ -36,6 +37,8 @@ use Seld\JsonLint\ParsingException;
  */
 class Locker
 {
+    /** @var IOInterface */
+    private $io;
     /** @var JsonFile */
     private $lockFile;
     /** @var InstallationManager */
@@ -54,6 +57,8 @@ class Locker
     private $lockDataCache = null;
     /** @var bool */
     private $virtualFileWritten = false;
+    /** @var ?RepositoryManager */
+    private $repositoryManager = null;
 
     /**
      * Initializes packages locker.
@@ -64,6 +69,7 @@ class Locker
      */
     public function __construct(IOInterface $io, JsonFile $lockFile, InstallationManager $installationManager, string $composerFileContents, ?ProcessExecutor $process = null)
     {
+        $this->io = $io;
         $this->lockFile = $lockFile;
         $this->installationManager = $installationManager;
         $this->hash = hash('md5', $composerFileContents);
@@ -71,6 +77,16 @@ class Locker
         $this->loader = new ArrayLoader(null, true);
         $this->dumper = new ArrayDumper();
         $this->process = $process ?? new ProcessExecutor($io);
+    }
+
+    /**
+     * Enables keeping http headers out of the lock file, they are restored from the repository config when loading it
+     *
+     * @internal
+     */
+    public function setRepositoryManager(RepositoryManager $repositoryManager): void
+    {
+        $this->repositoryManager = $repositoryManager;
     }
 
     /**
@@ -91,26 +107,26 @@ class Locker
         $content = JsonFile::parseJson($composerFileContents, 'composer.json');
 
         $relevantKeys = [
-            'name',
-            'version',
-            'require',
-            'require-dev',
-            'conflict',
-            'replace',
-            'provide',
-            'minimum-stability',
-            'prefer-stable',
-            'repositories',
-            'extra',
+            'name' => true,
+            'version' => true,
+            'require' => true,
+            'require-dev' => true,
+            'conflict' => true,
+            'replace' => true,
+            'provide' => true,
+            'minimum-stability' => true,
+            'prefer-stable' => true,
+            'repositories' => true,
+            'extra' => true,
         ];
 
-        $relevantContent = [];
-
-        foreach (array_intersect($relevantKeys, array_keys($content)) as $key) {
-            $relevantContent[$key] = $content[$key];
-        }
+        $relevantContent = array_intersect_key($content, $relevantKeys);
         if (isset($content['config']['platform'])) {
             $relevantContent['config']['platform'] = $content['config']['platform'];
+        }
+        // policy changes which versions an update may pick, so changing it should flag the lock as outdated
+        if (isset($content['config']['policy'])) {
+            $relevantContent['config']['policy'] = $content['config']['policy'];
         }
 
         ksort($relevantContent);
@@ -181,6 +197,9 @@ class Locker
             $packageByName = [];
             foreach ($lockedPackages as $info) {
                 $package = $this->loader->load($info);
+                if ($this->repositoryManager !== null) {
+                    $this->repositoryManager->restoreHttpHeaders($package);
+                }
                 $packages->addPackage($package);
                 $packageByName[$package->getName()] = $package;
 
@@ -479,6 +498,7 @@ class Locker
     private function lockPackages(array $packages): array
     {
         $locked = [];
+        $packagesWithHeaders = [];
 
         foreach ($packages as $package) {
             if ($package instanceof AliasPackage) {
@@ -498,9 +518,10 @@ class Locker
             $spec = $this->dumper->dump($package);
             unset($spec['version_normalized']);
 
-            // always move time to the end of the package definition
+            // always move time and published-time to the end of the package definition
             $time = $spec['time'] ?? null;
-            unset($spec['time']);
+            $publishedTime = $spec['published-time'] ?? null;
+            unset($spec['time'], $spec['published-time']);
             if ($package->isDev() && $package->getInstallationSource() === 'source') {
                 // use the exact commit time of the current reference if it's a dev package
                 $time = $this->getPackageTime($package) ?: $time;
@@ -508,10 +529,24 @@ class Locker
             if (null !== $time) {
                 $spec['time'] = $time;
             }
+            if (null !== $publishedTime) {
+                $spec['published-time'] = $publishedTime;
+            }
 
             unset($spec['installation-source']);
 
+            if ($this->repositoryManager !== null) {
+                $spec = $this->repositoryManager->removeRestorableHttpHeaders($package, $spec);
+            }
+            if (isset($spec['transport-options']['http']['header'])) {
+                $packagesWithHeaders[] = $name;
+            }
+
             $locked[] = $spec;
+        }
+
+        if (\count($packagesWithHeaders) > 0) {
+            $this->io->writeError('<warning>The transport options of '.implode(', ', $packagesWithHeaders).' contain http headers which will be stored in composer.lock. If they contain credentials, configure them in auth.json or on a composer repository\'s options instead.</warning>');
         }
 
         usort($locked, static function ($a, $b) {
@@ -625,7 +660,7 @@ class Locker
         if ($missingRequirements) {
             $missingRequirementInfo[] = 'This usually happens when composer files are incorrectly merged or the composer.json file is manually edited.';
             $missingRequirementInfo[] = 'Read more about correctly resolving merge conflicts https://getcomposer.org/doc/articles/resolving-merge-conflicts.md';
-            $missingRequirementInfo[] = 'and prefer using the "require" command over editing the composer.json file directly https://getcomposer.org/doc/03-cli.md#require-r';
+            $missingRequirementInfo[] = 'and prefer using the "require" command over editing the composer.json file directly https://getcomposer.org/doc/03-cli.md#require--r';
         }
 
         return $missingRequirementInfo;

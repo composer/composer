@@ -9,7 +9,7 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
 ## General
 
 1. When facing any kind of problems using Composer, be sure to **work with the
-   latest version**. See [self-update](../03-cli.md#self-update) for details.
+   latest version**. See [self-update](../03-cli.md#self-update--selfupdate) for details.
 
 2. Before asking anyone, run [`composer diagnose`](../03-cli.md#diagnose) to check
    for common problems. If it all checks out, proceed to the next steps.
@@ -31,7 +31,7 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
    branches and tag names.
 
 2. Be sure to **set the right
-   [minimum-stability](../04-schema.md#minimum-stability)**. To get started or be
+   [minimum-stability](../04-schema.md#minimum-stability-root-only)**. To get started or be
    sure this is no issue, set `minimum-stability` to "dev".
 
 3. Packages **not coming from [Packagist](https://packagist.org/)** should
@@ -121,6 +121,17 @@ It means your network is probably so slow that a request took over 300seconds to
 minimum timeout Composer will use, but you can increase it by increasing the `default_socket_timeout`
 value in your php.ini to something higher.
 
+If instead you see something like:
+
+```
+Failed to download * curl error 28 while downloading * Operation too slow. Less than 1 bytes/sec transferred the last 30 seconds
+```
+
+It means the server accepted the request but did not send anything back for 30 seconds, so Composer
+gave up on it. If the server is merely slow to start responding, you can raise this limit by setting the
+[`COMPOSER_HTTP_STALL_TIMEOUT`](../03-cli.md#composer-http-stall-timeout) env var to a higher number of
+seconds, or to `0` to disable it.
+
 
 ## Package not found in a Jenkins-build
 
@@ -137,7 +148,7 @@ value in your php.ini to something higher.
 
 ## I have a dependency which contains a "repositories" definition in its composer.json, but it seems to be ignored.
 
-The [`repositories`](../04-schema.md#repositories) configuration property is defined as [root-only](../04-schema.md#root-package). It is not inherited. You can read more about the reasons behind this in the "[why can't
+The [`repositories`](../04-schema.md#repositories-root-only) configuration property is defined as [root-only](../04-schema.md#root-package). It is not inherited. You can read more about the reasons behind this in the "[why can't
 Composer load repositories recursively?](../faqs/why-cant-composer-load-repositories-recursively.md)" article.
 The simplest work-around to this limitation, is moving or duplicating the `repositories` definition into your root
 composer.json.
@@ -350,7 +361,7 @@ following workarounds:
 
 **Generic Workaround:**
 
-Set the [`COMPOSER_IPRESOLVE=4`](../03-cli.md#composer-ipresolve) environment variable which will force curl to resolve
+Set the [`COMPOSER_IPRESOLVE=4`](../03-cli.md#composer_ipresolve) environment variable which will force curl to resolve
 domains using IPv4. This only works when the curl extension is used for downloads.
 
 **Workaround Linux:**

@@ -1,0 +1,856 @@
+<?php declare(strict_types=1);
+
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace Composer\Test\Util\Http;
+
+use Composer\Downloader\MaxFileSizeExceededException;
+use Composer\Downloader\TransportException;
+use Composer\IO\BufferIO;
+use Composer\IO\IOInterface;
+use Composer\Test\TestCase;
+use Composer\Util\Http\CurlDownloader;
+use Composer\Util\Http\Response;
+use Composer\Util\Platform;
+use Symfony\Component\Console\Output\OutputInterface;
+
+class CurlDownloaderTest extends TestCase
+{
+    /** @var list<resource> */
+    private $sockets = [];
+
+    protected function setUp(): void
+    {
+        if (!extension_loaded('curl')) {
+            self::markTestSkipped('curl extension is required');
+        }
+    }
+
+    protected function tearDown(): void
+    {
+        foreach ($this->sockets as $socket) {
+            if (is_resource($socket)) {
+                fclose($socket);
+            }
+        }
+        $this->sockets = [];
+
+        parent::tearDown();
+    }
+
+    public function testRetryAfterIsReadAsDelaySeconds(): void
+    {
+        self::assertSame(42, self::parseRetryAfter($this->createResponse(429, ['Retry-After: 42'])));
+    }
+
+    public function testRetryAfterIsReadAsHttpDate(): void
+    {
+        $delay = self::parseRetryAfter($this->createResponse(429, ['Retry-After: '.gmdate('D, d M Y H:i:s \G\M\T', time() + 120)]));
+
+        self::assertIsInt($delay);
+        self::assertGreaterThan(115, $delay);
+        self::assertLessThanOrEqual(120, $delay);
+
+        // the obsolete RFC 850 format must be accepted too
+        self::assertSame(0, self::parseRetryAfter($this->createResponse(429, ['Retry-After: Sunday, 06-Nov-94 08:49:37 GMT'])));
+    }
+
+    public function testRetryAfterInThePastMeansNoWait(): void
+    {
+        self::assertSame(0, self::parseRetryAfter($this->createResponse(429, ['Retry-After: '.gmdate('D, d M Y H:i:s \G\M\T', time() - 120)])));
+    }
+
+    public function testMalformedRetryAfterIsIgnored(): void
+    {
+        self::assertNull(self::parseRetryAfter($this->createResponse(429, ['Retry-After: not a date'])));
+        self::assertNull(self::parseRetryAfter($this->createResponse(429, ['Retry-After: 99999999999999999999'])));
+        self::assertNull(self::parseRetryAfter($this->createResponse(429, ['Retry-After: '])));
+        self::assertNull(self::parseRetryAfter($this->createResponse(429, [])));
+    }
+
+    public function testRateLimitedResponseIsRetriedAfterTheInterval(): void
+    {
+        self::assertSame(
+            ['retry' => true, 'delay' => 5.0],
+            $this->decideRetry($this->createJob(), $this->createResponse(429, ['Retry-After: 5']))
+        );
+    }
+
+    public function testZeroRetryAfterUsesTheDefaultBackoff(): void
+    {
+        self::assertSame(
+            ['retry' => true, 'delay' => null],
+            $this->decideRetry($this->createJob(), $this->createResponse(429, ['Retry-After: 0']))
+        );
+    }
+
+    public function testRateLimitedResponseWithoutRetryAfterIsNotRetried(): void
+    {
+        self::assertSame(
+            ['retry' => false, 'delay' => null],
+            $this->decideRetry($this->createJob(), $this->createResponse(429, []))
+        );
+    }
+
+    public function testRetryableStatusCodeHonorsRetryAfter(): void
+    {
+        self::assertSame(
+            ['retry' => true, 'delay' => 30.0],
+            $this->decideRetry($this->createJob(), $this->createResponse(503, ['Retry-After: 30']))
+        );
+    }
+
+    public function testRetryableStatusCodeWithoutRetryAfterUsesTheDefaultBackoff(): void
+    {
+        self::assertSame(
+            ['retry' => true, 'delay' => null],
+            $this->decideRetry($this->createJob(), $this->createResponse(503, []))
+        );
+
+        self::assertSame(
+            ['retry' => true, 'delay' => null],
+            $this->decideRetry($this->createJob(), $this->createResponse(503, ['Retry-After: whenever']))
+        );
+    }
+
+    public function testRetryAfterBeyondTheCapIsNotWaitedOut(): void
+    {
+        // 429 is only retryable because the header says when to come back, so an interval we will
+        // not wait for leaves nothing to act on
+        self::assertSame(
+            ['retry' => false, 'delay' => null],
+            $this->decideRetry($this->createJob(), $this->createResponse(429, ['Retry-After: 3600']))
+        );
+
+        // a status code which was retryable before this header was read must stay retryable, on the
+        // default backoff, so the cap cannot turn a retry we would have made anyway into a failure
+        self::assertSame(
+            ['retry' => true, 'delay' => null],
+            $this->decideRetry($this->createJob(), $this->createResponse(503, ['Retry-After: 3600']))
+        );
+    }
+
+    public function testRetryAfterDoesNotDefeatMaxRetries(): void
+    {
+        self::assertSame(
+            ['retry' => false, 'delay' => null],
+            $this->decideRetry($this->createJob(3), $this->createResponse(429, ['Retry-After: 5']))
+        );
+    }
+
+    public function testNonGetRequestsAreNotRetried(): void
+    {
+        $job = $this->createJob();
+        $job['options'] = ['http' => ['method' => 'POST']];
+
+        self::assertSame(
+            ['retry' => false, 'delay' => null],
+            $this->decideRetry($job, $this->createResponse(429, ['Retry-After: 5']))
+        );
+    }
+
+    public function testDelayedRetryDoesNotBlockTheDownloadLoop(): void
+    {
+        $downloader = $this->createDownloader();
+
+        // tick() drives every transfer which is in flight, so a delay which is waited out rather
+        // than scheduled stalls all of them, not just the request which is being retried
+        $start = microtime(true);
+        $this->scheduleRetry($downloader, $this->createJob(), 30.0);
+        $downloader->tick();
+        $elapsed = microtime(true) - $start;
+
+        self::assertLessThan(1.0, $elapsed);
+        self::assertCount(1, $this->readDelayedJobs($downloader));
+    }
+
+    public function testSelectTimeoutIsShortenedToTheNextDueRetry(): void
+    {
+        $downloader = $this->createDownloader();
+        $this->scheduleRetry($downloader, $this->createJob(), 0.25);
+
+        $timeout = self::callPrivate($downloader, 'getSelectTimeout');
+
+        self::assertIsFloat($timeout);
+        self::assertGreaterThan(0.0, $timeout);
+        self::assertLessThanOrEqual(0.25, $timeout);
+    }
+
+    public function testDueRetryIsStartedWhileALaterOneKeepsWaiting(): void
+    {
+        $downloader = $this->createDownloader();
+        $this->scheduleRetry($downloader, $this->createJob(0, 'other.org'), 30.0);
+        $this->scheduleRetry($downloader, $this->createJob(), 0.0001);
+        usleep(1000);
+
+        self::callPrivate($downloader, 'restartDueJobs');
+
+        self::assertCount(1, $this->readDelayedJobs($downloader), 'the retry which is not due yet must still be waiting');
+
+        $jobs = $this->readProperty($downloader, 'jobs');
+        self::assertIsArray($jobs);
+        self::assertCount(1, $jobs, 'the due retry must have been started');
+
+        foreach (array_keys($jobs) as $id) {
+            $downloader->abortRequest((int) $id);
+        }
+    }
+
+    public function testAbortedRequestIsNotRetried(): void
+    {
+        $downloader = $this->createDownloader();
+        $job = $this->createJob();
+        $this->scheduleRetry($downloader, $job, 30.0);
+
+        // a request is cancelled by the id of the handle it was first sent on
+        $downloader->abortRequest((int) $job['curlHandle']);
+        self::assertSame([], $this->readDelayedJobs($downloader));
+
+        $this->letWaitsRunOut($downloader);
+        self::callPrivate($downloader, 'restartDueJobs');
+        self::assertSame([], $this->readProperty($downloader, 'jobs'), 'a cancelled request must not be sent again');
+    }
+
+    public function testUnauthorizedRequestWhichWasOnlyRetriedForNetworkErrorsGetsCredentialsFromAnotherRequest(): void
+    {
+        // e.g. it timed out while another request to the same origin prompted for credentials
+        $job = $this->createJob(1);
+        $job['attributes']['retryAuthFailure'] = true;
+
+        self::assertSame(
+            ['retry' => true, 'storeAuth' => false],
+            self::callPrivate($this->createDownloader($this->createAuthenticatedIO()), 'isAuthenticatedRetryNeeded', $job, $this->createResponse(401, []))
+        );
+    }
+
+    public function testUnauthorizedRequestWhichWasAlreadyRetriedWithCredentialsFails(): void
+    {
+        $job = $this->createJob();
+        $job['attributes']['retryAuthFailure'] = true;
+        $job['attributes']['authRetries'] = 1;
+
+        self::expectException('Composer\Downloader\TransportException');
+        self::expectExceptionMessage('Invalid credentials (HTTP 401)');
+        self::callPrivate($this->createDownloader($this->createAuthenticatedIO()), 'isAuthenticatedRetryNeeded', $job, $this->createResponse(401, []));
+    }
+
+    public function testRetryWaitsForTheLatestRetryAfterOfItsOrigin(): void
+    {
+        $io = new BufferIO();
+        $downloader = $this->createDownloader($io);
+        // another request to example.org was told to come back in 30s, which holds for the next ones too
+        $this->scheduleRetry($downloader, $this->createJob(), 30.0);
+        $this->scheduleRetry($downloader, $this->createJob(), 0.0001);
+        $this->scheduleRetry($downloader, $this->createJob(3), null);
+        $this->scheduleRetry($downloader, $this->createJob(0, 'other.org'), 0.0001);
+        usleep(1000);
+
+        self::callPrivate($downloader, 'restartDueJobs');
+
+        $delayedJobs = $this->readDelayedJobs($downloader);
+        self::assertCount(3, $delayedJobs, 'retries to example.org must wait for its deadline, whether or not they got a Retry-After');
+        foreach ($delayedJobs as $delayedJob) {
+            self::assertSame('example.org', $delayedJob['job']['origin']);
+        }
+
+        $jobs = $this->readProperty($downloader, 'jobs');
+        self::assertIsArray($jobs);
+        self::assertCount(1, $jobs, 'a retry to another origin must not be held up');
+        foreach (array_keys($jobs) as $id) {
+            $downloader->abortRequest((int) $id);
+        }
+
+        $this->announceRetryAfterWaits($downloader);
+        self::assertStringContainsString('(3 pending), waiting 30s before retrying', $io->getOutput());
+    }
+
+    public function testFirstRetryToABlockedOriginIsNotStartedStraightAway(): void
+    {
+        $downloader = $this->createDownloader();
+        $this->scheduleRetry($downloader, $this->createJob(), 30.0);
+
+        // the first retry has no backoff of its own
+        $this->scheduleRetry($downloader, $this->createJob(0), null);
+
+        self::assertCount(2, $this->readDelayedJobs($downloader));
+        self::assertSame([], $this->readProperty($downloader, 'jobs'));
+    }
+
+    public function testRetryAfterWaitIsAnnouncedOncePerOrigin(): void
+    {
+        $io = new BufferIO();
+        $downloader = $this->createDownloader($io);
+        $this->scheduleRetry($downloader, $this->createJob(), 10.0);
+        $this->scheduleRetry($downloader, $this->createJob(), 30.0);
+        $this->scheduleRetry($downloader, $this->createJob(0, 'other.org'), 30.0);
+
+        $this->announceRetryAfterWaits($downloader);
+        $this->announceRetryAfterWaits($downloader);
+
+        self::assertSame(
+            '<warning>example.org is rate limiting requests (2 pending), waiting 30s before retrying</warning>'.PHP_EOL
+            .'<warning>other.org is rate limiting requests (1 pending), waiting 30s before retrying</warning>'.PHP_EOL,
+            $io->getOutput()
+        );
+    }
+
+    public function testRetryAfterWaitIsAnnouncedWhileRequestsToTheOriginAreStillInFlight(): void
+    {
+        $io = new BufferIO();
+        $downloader = $this->createDownloader($io);
+
+        // a long transfer to the origin can outlast the whole wait, so the notice must not wait for it
+        $this->scheduleRetry($downloader, $this->createJob(), 30.0);
+        $this->writeProperty($downloader, 'jobs', [1 => ['origin' => 'example.org']]);
+        $this->announceRetryAfterWaits($downloader);
+
+        self::assertSame('<warning>example.org is rate limiting requests (1 pending), waiting 30s before retrying</warning>'.PHP_EOL, $io->getOutput());
+    }
+
+    public function testRetryAfterWaitIsAnnouncedAgainOnceTheOriginTurnsRequestsAwayAnew(): void
+    {
+        $io = new BufferIO();
+        $downloader = $this->createDownloader($io);
+        $this->scheduleRetry($downloader, $this->createJob(), 1.0, 503);
+        $this->announceRetryAfterWaits($downloader);
+
+        // the wait runs out and the retry is started, which ends the episode
+        $this->letWaitsRunOut($downloader);
+        self::callPrivate($downloader, 'restartDueJobs');
+        $this->announceRetryAfterWaits($downloader);
+        $jobs = $this->readProperty($downloader, 'jobs');
+        self::assertIsArray($jobs);
+        foreach (array_keys($jobs) as $id) {
+            $downloader->abortRequest((int) $id);
+        }
+
+        $this->scheduleRetry($downloader, $this->createJob(1), 5.0);
+        $this->announceRetryAfterWaits($downloader);
+
+        self::assertSame(
+            '<warning>example.org responded with status code 503 (1 pending), waiting 1s before retrying</warning>'.PHP_EOL
+            .'<warning>example.org is rate limiting requests (1 pending), waiting 5s before retrying</warning>'.PHP_EOL,
+            $io->getOutput()
+        );
+    }
+
+    public function testDefaultBackoffIsNotAnnounced(): void
+    {
+        $io = new BufferIO();
+        $downloader = $this->createDownloader($io);
+        $this->scheduleRetry($downloader, $this->createJob(3), null);
+
+        $this->announceRetryAfterWaits($downloader);
+
+        self::assertCount(1, $this->readDelayedJobs($downloader));
+        self::assertSame('', $io->getOutput());
+    }
+
+    public function testJsonResponseIsRecognisedWithCharset(): void
+    {
+        self::assertTrue(self::callPrivate(CurlDownloader::class, 'isJsonResponse', $this->createResponse(429, ['Content-Type: application/json'])));
+        self::assertTrue(self::callPrivate(CurlDownloader::class, 'isJsonResponse', $this->createResponse(429, ['Content-Type: application/json; charset=utf-8'])));
+        self::assertTrue(self::callPrivate(CurlDownloader::class, 'isJsonResponse', $this->createResponse(429, ['Content-Type: Application/JSON; charset=UTF-8'])));
+        self::assertFalse(self::callPrivate(CurlDownloader::class, 'isJsonResponse', $this->createResponse(429, ['Content-Type: text/html'])));
+        self::assertFalse(self::callPrivate(CurlDownloader::class, 'isJsonResponse', $this->createResponse(429, [])));
+    }
+
+    public function testFailureReportsARetryAfterWhichWasNotWaitedOut(): void
+    {
+        self::assertSame(
+            'HTTP/1.1 429 Status, the server asked to retry in 3600s which is longer than the 60s Composer is willing to wait, try again later',
+            self::callPrivate(CurlDownloader::class, 'getStatusFailureMessage', $this->createResponse(429, ['Retry-After: 3600']))
+        );
+
+        // an interval which was waited out, or no interval at all, has nothing to add
+        self::assertSame('HTTP/1.1 429 Status', self::callPrivate(CurlDownloader::class, 'getStatusFailureMessage', $this->createResponse(429, ['Retry-After: 5'])));
+        self::assertSame('HTTP/1.1 429 Status', self::callPrivate(CurlDownloader::class, 'getStatusFailureMessage', $this->createResponse(429, [])));
+    }
+
+    public function testCurlErrorForAUrlCurlCannotParseNamesTheRequestedUrl(): void
+    {
+        $downloader = $this->createDownloader();
+        // the space makes curl reject the URL before any DNS lookup, so no network access happens
+        $url = 'https://example.invalid/foo bar';
+
+        // curl_getinfo() omits the url key when curl cannot parse the URL
+        $error = null;
+        $downloader->download(
+            static function (): void {
+                self::fail('The download of a malformed URL should not succeed');
+            },
+            static function (\Throwable $e) use (&$error): void {
+                $error = $e;
+            },
+            'example.invalid',
+            $url,
+            []
+        );
+
+        for ($i = 0; $i < 100 && null === $error; $i++) {
+            $downloader->tick();
+        }
+
+        self::assertInstanceOf(TransportException::class, $error);
+        self::assertStringContainsString('while downloading '.$url.':', $error->getMessage());
+    }
+
+    public function testRequestToABlockedIpIsRemovedFromTheTransfersInFlight(): void
+    {
+        $server = $this->createLocalServer();
+        $downloader = $this->createDownloader();
+        $errors = [];
+        $downloader->download(
+            static function (): void {
+            },
+            static function (\Throwable $e) use (&$errors): void {
+                $errors[] = $e;
+            },
+            'localhost',
+            'http://'.stream_socket_get_name($server, false).'/',
+            ['prevent_ip_access_callable' => static function (): bool {
+                return true;
+            }]
+        );
+
+        $this->tickUntil($downloader, function () use ($server, &$errors): bool {
+            // accepted so the test does not depend on the OS completing the connection from the backlog
+            $this->acceptClient($server);
+
+            return count($errors) > 0;
+        });
+
+        self::assertCount(1, $errors);
+        self::assertStringContainsString('is blocked for', $errors[0]->getMessage());
+        self::assertSame([], $this->readProperty($downloader, 'jobs'), 'a rejected request must not keep transferring');
+    }
+
+    public function testRequestToABlockedIpIsNotSent(): void
+    {
+        if (!\defined('CURLOPT_PREREQFUNCTION')) {
+            self::markTestSkipped('Requires CURLOPT_PREREQFUNCTION (PHP 8.4+) to check the IP before sending');
+        }
+
+        $server = $this->createLocalServer();
+        $downloader = $this->createDownloader();
+        $errors = [];
+        $downloader->download(
+            static function (): void {
+            },
+            static function (\Throwable $e) use (&$errors): void {
+                $errors[] = $e;
+            },
+            'localhost',
+            'http://'.stream_socket_get_name($server, false).'/',
+            ['prevent_ip_access_callable' => static function (string $ip): bool {
+                return $ip === '127.0.0.1';
+            }]
+        );
+
+        $client = null;
+        $this->tickUntil($downloader, function () use ($server, &$client, &$errors): bool {
+            $client = $client ?? $this->acceptClient($server);
+
+            return count($errors) > 0;
+        });
+        $client = $client ?? $this->acceptClient($server);
+
+        self::assertCount(1, $errors);
+        self::assertInstanceOf(TransportException::class, $errors[0]);
+        self::assertSame('IP "127.0.0.1" is blocked for "http://'.stream_socket_get_name($server, false).'/".', $errors[0]->getMessage());
+        self::assertNotNull($client);
+        // curl closed the aborted connection, so this reads everything it sent up to EOF
+        stream_set_timeout($client, 5);
+        self::assertSame('', stream_get_contents($client), 'nothing must be sent to a blocked IP');
+        self::assertFalse(stream_get_meta_data($client)['timed_out'], 'the connection must have been closed');
+    }
+
+    public function testExceptionFromThePreventIpAccessCallableRejectsTheRequest(): void
+    {
+        if (!\defined('CURLOPT_PREREQFUNCTION')) {
+            self::markTestSkipped('Requires CURLOPT_PREREQFUNCTION (PHP 8.4+) to check the IP before sending');
+        }
+
+        $server = $this->createLocalServer();
+        $downloader = $this->createDownloader();
+        $exception = new \RuntimeException('Could not check the IP');
+        $errors = [];
+        $downloader->download(
+            static function (): void {
+            },
+            static function (\Throwable $e) use (&$errors): void {
+                $errors[] = $e;
+            },
+            'localhost',
+            'http://'.stream_socket_get_name($server, false).'/',
+            ['prevent_ip_access_callable' => static function () use ($exception): bool {
+                throw $exception;
+            }]
+        );
+
+        $this->tickUntil($downloader, function () use ($server, &$errors): bool {
+            $this->acceptClient($server);
+
+            return count($errors) > 0;
+        });
+
+        self::assertSame([$exception], $errors);
+        self::assertSame([], $this->readProperty($downloader, 'jobs'));
+    }
+
+    public function testRequestExceedingTheMaxFileSizeIsRejectedOnceAndRemovedFromTheTransfersInFlight(): void
+    {
+        $server = $this->createLocalServer();
+        $downloader = $this->createDownloader();
+        $errors = [];
+        $downloader->download(
+            static function (): void {
+            },
+            static function (\Throwable $e) use (&$errors): void {
+                $errors[] = $e;
+            },
+            'localhost',
+            'http://'.stream_socket_get_name($server, false).'/',
+            ['max_file_size' => 10]
+        );
+
+        $this->tickUntil($downloader, function () use ($server, &$errors): bool {
+            if (null !== ($client = $this->acceptClient($server))) {
+                // only part of the body is sent so the transfer stays in flight, with both the announced and the received size over the limit
+                fwrite($client, "HTTP/1.1 200 OK\r\nContent-Length: 1000\r\n\r\n".str_repeat('a', 500));
+            }
+
+            return count($errors) > 0;
+        });
+
+        self::assertCount(1, $errors);
+        self::assertInstanceOf(MaxFileSizeExceededException::class, $errors[0]);
+        self::assertSame([], $this->readProperty($downloader, 'jobs'), 'a rejected request must not keep transferring');
+    }
+
+    public function testRejectionWhichAbortsAnotherTransferDoesNotBreakTheProgressLoop(): void
+    {
+        $server = $this->createLocalServer();
+        $downloader = $this->createDownloader();
+        $errors = [];
+        $reject = function (\Throwable $e) use ($downloader, &$errors): void {
+            $errors[] = $e;
+            // e.g. a failed download aborting the rest of the batch
+            foreach (array_keys($this->readProperty($downloader, 'jobs')) as $id) {
+                $downloader->abortRequest((int) $id);
+            }
+        };
+        $url = 'http://'.stream_socket_get_name($server, false).'/';
+        $downloader->download(static function (): void {
+        }, $reject, 'localhost', $url, ['max_file_size' => 10]);
+        $downloader->download(static function (): void {
+        }, $reject, 'localhost', $url, ['max_file_size' => 10]);
+
+        $clients = [];
+        $sent = false;
+        $this->tickUntil($downloader, function () use ($server, &$clients, &$sent, &$errors): bool {
+            while (count($clients) < 2 && null !== ($client = $this->acceptClient($server))) {
+                $clients[] = $client;
+            }
+            // both responses are sent at once so both transfers go over the limit in the same tick
+            if (!$sent && count($clients) === 2) {
+                foreach ($clients as $client) {
+                    fwrite($client, "HTTP/1.1 200 OK\r\nContent-Length: 1000\r\n\r\n");
+                }
+                $sent = true;
+            }
+
+            return count($errors) > 0;
+        });
+
+        self::assertCount(1, $errors);
+        self::assertSame([], $this->readProperty($downloader, 'jobs'));
+    }
+
+    public function testStallTimeoutCanBeConfiguredViaEnv(): void
+    {
+        Platform::putEnv('COMPOSER_HTTP_STALL_TIMEOUT', '0');
+        try {
+            self::assertSame(0, $this->readProperty($this->createDownloader(), 'stallTimeout'));
+            Platform::putEnv('COMPOSER_HTTP_STALL_TIMEOUT', 'garbage');
+            self::assertSame(30, $this->readProperty($this->createDownloader(), 'stallTimeout'));
+        } finally {
+            Platform::clearEnv('COMPOSER_HTTP_STALL_TIMEOUT');
+        }
+    }
+
+    public function testServerWhichNeverAnswersIsGivenUpOnBeforeTheTransferTimeout(): void
+    {
+        // nothing ever accepts on this socket, but the kernel completes the TCP handshake and buffers the request
+        // anyway, so curl sees a server which took the request and never answers
+        $server = stream_socket_server('tcp://127.0.0.1:0', $errno, $errstr);
+        if (false === $server) {
+            self::fail('Could not listen on a local port: '.$errstr);
+        }
+        $port = (int) parse_url('tcp://'.stream_socket_get_name($server, false), PHP_URL_PORT);
+        $io = new BufferIO('', OutputInterface::VERBOSITY_DEBUG);
+        $downloader = $this->createDownloader($io);
+        // give up after 1s without data instead of the default 30s, to keep the test short
+        $this->writeProperty($downloader, 'stallTimeout', 1);
+
+        $url = 'http://127.0.0.1:'.$port.'/packages.json';
+        $downloader->download(
+            static function (): void {
+            },
+            static function (): void {
+            },
+            '127.0.0.1:'.$port,
+            $url,
+            []
+        );
+
+        // the request must be given up on once nothing arrived for the stall timeout, not held for the whole
+        // 300s transfer timeout
+        $deadline = microtime(true) + 10;
+        while (microtime(true) < $deadline && false === strpos($io->getOutput(), 'Retrying (1)')) {
+            $downloader->tick();
+        }
+        // the retry runs under a new job id, so abort whatever is still in flight
+        foreach (array_keys($this->readProperty($downloader, 'jobs')) as $jobId) {
+            $downloader->abortRequest((int) $jobId);
+        }
+        fclose($server);
+
+        self::assertStringContainsString('Retrying (1) '.$url.' due to curl error 28', $io->getOutput());
+    }
+
+    /**
+     * @dataProvider provideAccessCallableOptions
+     */
+    public function testAccessCallableOptionWhichIsNotAClosureIsRejected(string $option): void
+    {
+        $downloader = $this->createDownloader();
+
+        self::expectException(\InvalidArgumentException::class);
+        self::expectExceptionMessage('The "'.$option.'" transport option must be a Closure, got string.');
+
+        $downloader->download(static function (): void {
+        }, static function (): void {
+        }, 'example.org', 'https://example.org/packages.json', [$option => 'is_string']);
+    }
+
+    /**
+     * @return iterable<array{string}>
+     */
+    public static function provideAccessCallableOptions(): iterable
+    {
+        yield ['prevent_url_access_callable'];
+        yield ['prevent_ip_access_callable'];
+    }
+
+    /**
+     * @param list<string> $headers
+     */
+    private function createResponse(int $statusCode, array $headers): Response
+    {
+        array_unshift($headers, 'HTTP/1.1 '.$statusCode.' Status');
+
+        return new Response(['url' => 'https://example.org/packages.json'], $statusCode, $headers, '');
+    }
+
+    /**
+     * @return mixed[]
+     */
+    private function createJob(int $retries = 0, string $origin = 'example.org'): array
+    {
+        return [
+            'url' => 'https://'.$origin.'/packages.json',
+            'origin' => $origin,
+            'attributes' => ['retryAuthFailure' => false, 'redirects' => 0, 'retries' => $retries, 'authRetries' => 0, 'storeAuth' => false, 'ipResolve' => null],
+            'options' => [],
+            'filename' => null,
+            'curlHandle' => curl_init(),
+            'resolve' => static function (): void {
+            },
+            'reject' => static function (): void {
+            },
+        ];
+    }
+
+    private function createDownloader(?IOInterface $io = null): CurlDownloader
+    {
+        $config = $this->getMockBuilder('Composer\Config')->getMock();
+        $config->expects($this->any())
+            ->method('get')
+            ->will($this->returnCallback(static function ($key) {
+                if ($key === 'github-domains' || $key === 'gitlab-domains') {
+                    return [];
+                }
+
+                return null;
+            }));
+
+        return new CurlDownloader($io ?? $this->getMockBuilder('Composer\IO\IOInterface')->getMock(), $config);
+    }
+
+    private function createAuthenticatedIO(): IOInterface
+    {
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $io->method('isInteractive')->willReturn(true);
+        $io->method('hasAuthentication')->willReturn(true);
+
+        return $io;
+    }
+
+    /**
+     * @param mixed[] $job
+     */
+    private function scheduleRetry(CurlDownloader $downloader, array $job, ?float $delay, int $statusCode = 429): void
+    {
+        self::callPrivate($downloader, 'restartJobWithDelay', $job, $job['url'], $job['attributes'], $delay, $statusCode);
+    }
+
+    private function announceRetryAfterWaits(CurlDownloader $downloader): void
+    {
+        self::callPrivate($downloader, 'announceRetryAfterWaits');
+    }
+
+    /**
+     * @param  mixed[] $job
+     * @return mixed
+     */
+    private function decideRetry(array $job, Response $response)
+    {
+        return self::callPrivate($this->createDownloader(), 'isStatusCodeRetryNeeded', $job, $response);
+    }
+
+    /**
+     * @return mixed
+     */
+    private static function parseRetryAfter(Response $response)
+    {
+        return self::callPrivate(CurlDownloader::class, 'getRetryAfterDelay', $response);
+    }
+
+    /**
+     * @param  object|class-string $target
+     * @param  mixed               ...$args
+     * @return mixed
+     */
+    private static function callPrivate($target, string $method, ...$args)
+    {
+        $reflection = new \ReflectionMethod($target, $method);
+        if (\PHP_VERSION_ID < 80100) {
+            $reflection->setAccessible(true);
+        }
+
+        return $reflection->invoke(is_object($target) ? $target : null, ...$args);
+    }
+
+    /**
+     * @return mixed[]
+     */
+    private function readDelayedJobs(CurlDownloader $downloader): array
+    {
+        $delayedJobs = $this->readProperty($downloader, 'delayedJobs');
+        self::assertIsArray($delayedJobs);
+
+        return $delayedJobs;
+    }
+
+    /**
+     * @return mixed
+     */
+    private function readProperty(CurlDownloader $downloader, string $name)
+    {
+        $property = new \ReflectionProperty($downloader, $name);
+        if (\PHP_VERSION_ID < 80100) {
+            $property->setAccessible(true);
+        }
+
+        return $property->getValue($downloader);
+    }
+
+    /**
+     * Moves every delayed retry and origin hold into the past, as if their wait had run out
+     */
+    private function letWaitsRunOut(CurlDownloader $downloader): void
+    {
+        $delayedJobs = $this->readDelayedJobs($downloader);
+        foreach (array_keys($delayedJobs) as $i) {
+            $delayedJobs[$i]['at'] = 0.0;
+        }
+        $this->writeProperty($downloader, 'delayedJobs', $delayedJobs);
+
+        $origins = $this->readProperty($downloader, 'retryAfterOrigins');
+        self::assertIsArray($origins);
+        foreach (array_keys($origins) as $origin) {
+            $origins[$origin]['until'] = 0.0;
+        }
+        $this->writeProperty($downloader, 'retryAfterOrigins', $origins);
+    }
+
+    /**
+     * @param mixed $value
+     */
+    private function writeProperty(CurlDownloader $downloader, string $name, $value): void
+    {
+        $property = new \ReflectionProperty($downloader, $name);
+        if (\PHP_VERSION_ID < 80100) {
+            $property->setAccessible(true);
+        }
+        $property->setValue($downloader, $value);
+    }
+
+    /**
+     * @return resource
+     */
+    private function createLocalServer()
+    {
+        $server = @stream_socket_server('tcp://127.0.0.1:0', $errno, $errstr);
+        if (false === $server) {
+            self::markTestSkipped('Could not open a local socket: '.$errstr);
+        }
+        $this->sockets[] = $server;
+
+        return $server;
+    }
+
+    /**
+     * @param  resource      $server
+     * @return resource|null the connection which was waiting, if any
+     */
+    private function acceptClient($server)
+    {
+        $client = @stream_socket_accept($server, 0);
+        if (false === $client) {
+            return null;
+        }
+        $this->sockets[] = $client;
+
+        return $client;
+    }
+
+    /**
+     * @param callable(): bool $condition
+     */
+    private function tickUntil(CurlDownloader $downloader, callable $condition): void
+    {
+        // the local server never finishes its responses, so do not let curl_multi_select() wait for them
+        $this->writeProperty($downloader, 'selectTimeout', 0.01);
+        $deadline = microtime(true) + 5;
+        while (!$condition()) {
+            if (microtime(true) > $deadline) {
+                self::fail('Timed out waiting for the transfer');
+            }
+            $downloader->tick();
+        }
+        // let any further progress of the rejected transfer surface
+        for ($i = 0; $i < 10; $i++) {
+            $downloader->tick();
+        }
+    }
+}

@@ -12,16 +12,32 @@
 
 namespace Composer\Test\Advisory;
 
-use Composer\Advisory\AuditConfig;
+use Composer\Advisory\CooldownAuditor;
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
+use Composer\FilterList\FilterListEntry;
+use Composer\FilterList\FilterListProvider\FilterListProviderSet;
 use Composer\IO\BufferIO;
+use Composer\Package\CompleteAliasPackage;
 use Composer\Package\CompletePackage;
 use Composer\Package\Package;
 use Composer\Package\Version\VersionParser;
+use Composer\Policy\AbandonedPolicyConfig;
+use Composer\Policy\CooldownPolicyConfig;
+use Composer\Policy\AdvisoriesPolicyConfig;
+use Composer\Policy\CustomListPolicyConfig;
+use Composer\Policy\ListPolicyConfig;
+use Composer\Policy\IgnoreIdRule;
+use Composer\Policy\IgnorePackageRule;
+use Composer\Policy\IgnoreSeverityRule;
+use Composer\Policy\IgnoreUnreachable;
+use Composer\Policy\MalwarePolicyConfig;
+use Composer\Policy\PolicyConfig;
 use Composer\Repository\ComposerRepository;
+use Composer\Repository\PackageRepository;
 use Composer\Repository\RepositorySet;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Test\TestCase;
 use Composer\Advisory\Auditor;
 use DateTimeImmutable;
@@ -53,7 +69,7 @@ class AuditorTest extends TestCase
                 ],
                 'warningOnly' => true,
             ],
-            'expected' => Auditor::STATUS_VULNERABLE,
+            'expected' => Auditor::STATUS_FAILED,
             'output' => '<warning>Found 2 security vulnerability advisories affecting 1 package:</warning>
 Package: vendor1/package1
 Severity: high
@@ -86,7 +102,7 @@ Reported at: 2022-05-25T13:21:00+00:00',
                     $abandonedNoReplacement,
                 ],
                 'warningOnly' => false,
-                'abandoned' => Auditor::ABANDONED_IGNORE,
+                'abandoned' => ListPolicyConfig::AUDIT_IGNORE,
             ],
             'expected' => Auditor::STATUS_OK,
             'output' => 'No security vulnerability advisories found.',
@@ -99,7 +115,7 @@ Reported at: 2022-05-25T13:21:00+00:00',
                     $abandonedNoReplacement,
                 ],
                 'warningOnly' => false,
-                'abandoned' => Auditor::ABANDONED_FAIL,
+                'abandoned' => ListPolicyConfig::AUDIT_FAIL,
                 'ignore-abandoned' => ['vendor/*' => null],
             ],
             'expected' => Auditor::STATUS_OK,
@@ -113,7 +129,7 @@ Reported at: 2022-05-25T13:21:00+00:00',
                     $abandonedNoReplacement,
                 ],
                 'warningOnly' => false,
-                'abandoned' => Auditor::ABANDONED_FAIL,
+                'abandoned' => ListPolicyConfig::AUDIT_FAIL,
                 'ignore-abandoned' => [$abandonedWithReplacement->getName() => null, $abandonedNoReplacement->getName() => null],
             ],
             'expected' => Auditor::STATUS_OK,
@@ -127,10 +143,10 @@ Reported at: 2022-05-25T13:21:00+00:00',
                     $abandonedNoReplacement,
                 ],
                 'warningOnly' => false,
-                'abandoned' => Auditor::ABANDONED_FAIL,
+                'abandoned' => ListPolicyConfig::AUDIT_FAIL,
                 'ignore-abandoned' => ['acme/test' => 'ignoring because yolo'],
             ],
-            'expected' => Auditor::STATUS_ABANDONED,
+            'expected' => Auditor::STATUS_FAILED,
             'output' => 'No security vulnerability advisories found.
 Found 2 abandoned packages:
 vendor/abandoned is abandoned. Use foo/bar instead.
@@ -144,7 +160,7 @@ vendor/abandoned2 is abandoned. No replacement was suggested.',
                     $abandonedNoReplacement,
                 ],
                 'warningOnly' => true,
-                'abandoned' => Auditor::ABANDONED_REPORT,
+                'abandoned' => ListPolicyConfig::AUDIT_REPORT,
             ],
             'expected' => Auditor::STATUS_OK,
             'output' => 'No security vulnerability advisories found.
@@ -160,10 +176,10 @@ vendor/abandoned2 is abandoned. No replacement was suggested.',
                     $abandonedNoReplacement,
                 ],
                 'warningOnly' => false,
-                'abandoned' => Auditor::ABANDONED_FAIL,
+                'abandoned' => ListPolicyConfig::AUDIT_FAIL,
                 'format' => Auditor::FORMAT_TABLE,
             ],
-            'expected' => Auditor::STATUS_ABANDONED,
+            'expected' => Auditor::STATUS_FAILED,
             'output' => 'No security vulnerability advisories found.
 Found 2 abandoned packages:
 +-------------------+----------------------------------------------------------------------------------+
@@ -182,10 +198,10 @@ Found 2 abandoned packages:
                     $abandonedNoReplacement,
                 ],
                 'warningOnly' => false,
-                'abandoned' => Auditor::ABANDONED_FAIL,
+                'abandoned' => ListPolicyConfig::AUDIT_FAIL,
                 'format' => Auditor::FORMAT_TABLE,
             ],
-            'expected' => Auditor::STATUS_VULNERABLE | Auditor::STATUS_ABANDONED,
+            'expected' => Auditor::STATUS_FAILED,
             'output' => 'Found 2 security vulnerability advisories affecting 1 package:
 +-------------------+----------------------------------------------------------------------------------+
 | Package           | vendor1/package1                                                                 |
@@ -223,16 +239,18 @@ Found 2 abandoned packages:
                     $abandonedNoReplacement,
                 ],
                 'warningOnly' => false,
-                'abandoned' => Auditor::ABANDONED_FAIL,
+                'abandoned' => ListPolicyConfig::AUDIT_FAIL,
                 'format' => Auditor::FORMAT_JSON,
             ],
-            'expected' => Auditor::STATUS_ABANDONED,
+            'expected' => Auditor::STATUS_FAILED,
             'output' => '{
     "advisories": [],
     "abandoned": {
         "vendor/abandoned": "foo/bar",
         "vendor/abandoned2": null
-    }
+    },
+    "filter": [],
+    "cooldown": []
 }',
         ];
     }
@@ -246,8 +264,17 @@ Found 2 abandoned packages:
         if (count($data['packages']) === 0) {
             $this->expectException(InvalidArgumentException::class);
         }
+        $policyConfig = $this->createPolicyConfig(
+            $data['abandoned'] ?? ListPolicyConfig::AUDIT_IGNORE,
+            false,
+            null,
+            'test-list',
+            [],
+            [],
+            $data['ignore-abandoned'] ?? []
+        );
         $auditor = new Auditor();
-        $result = $auditor->audit($io = new BufferIO(), $this->getRepoSet(), $data['packages'], $data['format'] ?? Auditor::FORMAT_PLAIN, $data['warningOnly'], [], $data['abandoned'] ?? Auditor::ABANDONED_IGNORE, [], false, $data['ignore-abandoned'] ?? []);
+        $result = $auditor->audit($io = new BufferIO(), $this->getRepoSet(), $policyConfig, $data['packages'], $data['format'] ?? Auditor::FORMAT_PLAIN, $data['warningOnly']);
         self::assertSame($expected, $result);
         self::assertSame($output, trim(str_replace("\r", '', $io->getOutput())));
     }
@@ -445,8 +472,15 @@ Found 2 abandoned packages:
      */
     public function testAuditWithIgnore($packages, $ignoredIds, $exitCode, $expectedOutput): void
     {
+        $policyConfig = $this->createPolicyConfig(
+            ListPolicyConfig::AUDIT_IGNORE,
+            false,
+            null,
+            'test-list',
+            $ignoredIds
+        );
         $auditor = new Auditor();
-        $result = $auditor->audit($io = $this->getIOMock(), $this->getRepoSet(), $packages, Auditor::FORMAT_PLAIN, false, $ignoredIds);
+        $result = $auditor->audit($io = $this->getIOMock(), $this->getRepoSet(), $policyConfig, $packages, Auditor::FORMAT_PLAIN, false);
         $io->expects($expectedOutput, true);
         self::assertSame($exitCode, $result);
     }
@@ -513,10 +547,10 @@ Found 2 abandoned packages:
                             new SecurityAdvisory(
                                 'vendor1/package1',
                                 'CVE-2023-12345',
-                                new \Composer\Semver\Constraint\Constraint('=', '3.0.0.0'),
+                                new Constraint('=', '3.0.0.0'),
                                 'First repo advisory',
                                 [['name' => 'test', 'remoteId' => '1']],
-                                new \DateTimeImmutable('2023-01-01', new \DateTimeZone('UTC')),
+                                new DateTimeImmutable('2023-01-01', new \DateTimeZone('UTC')),
                                 'CVE-2023-12345',
                                 'https://example.com/advisory/1',
                                 'medium'
@@ -524,10 +558,10 @@ Found 2 abandoned packages:
                             new SecurityAdvisory(
                                 'vendor1/package1',
                                 'CVE-2023-67890',
-                                new \Composer\Semver\Constraint\Constraint('=', '3.0.0.0'),
+                                new Constraint('=', '3.0.0.0'),
                                 'Third repo advisory',
                                 [['name' => 'test', 'remoteId' => '3']],
-                                new \DateTimeImmutable('2023-01-01', new \DateTimeZone('UTC')),
+                                new DateTimeImmutable('2023-01-01', new \DateTimeZone('UTC')),
                                 'CVE-2023-67890',
                                 'https://example.com/advisory/3',
                                 'high'
@@ -542,7 +576,7 @@ Found 2 abandoned packages:
 
         // Test without ignoreUnreachable flag
         try {
-            $auditor->audit(new BufferIO(), $repoSet, $packages, Auditor::FORMAT_PLAIN, false);
+            $auditor->audit(new BufferIO(), $repoSet, $this->createPolicyConfig(), $packages, Auditor::FORMAT_PLAIN, false);
             self::fail('Expected TransportException was not thrown');
         } catch (\Composer\Downloader\TransportException $e) {
             self::assertStringContainsString('HTTP/1.1 404 Not Found', $e->getMessage());
@@ -550,10 +584,10 @@ Found 2 abandoned packages:
 
         // Test with ignoreUnreachable flag
         $io = new BufferIO();
-        $result = $auditor->audit($io, $repoSet, $packages, Auditor::FORMAT_PLAIN, false, [], Auditor::ABANDONED_IGNORE, [], true);
+        $result = $auditor->audit($io, $repoSet, $this->createPolicyConfig(ListPolicyConfig::AUDIT_IGNORE, true), $packages, Auditor::FORMAT_PLAIN, false);
 
         // Should find advisories from the reachable repositories
-        self::assertSame(Auditor::STATUS_VULNERABLE, $result);
+        self::assertSame(Auditor::STATUS_FAILED, $result);
 
         $output = $io->getOutput();
         self::assertStringContainsString('The following repositories were unreachable:', $output);
@@ -567,8 +601,8 @@ Found 2 abandoned packages:
 
         // Test with JSON format
         $io = new BufferIO();
-        $result = $auditor->audit($io, $repoSet, $packages, Auditor::FORMAT_JSON, false, [], Auditor::ABANDONED_IGNORE, [], true);
-        self::assertSame(Auditor::STATUS_VULNERABLE, $result);
+        $result = $auditor->audit($io, $repoSet, $this->createPolicyConfig(ListPolicyConfig::AUDIT_IGNORE, true), $packages, Auditor::FORMAT_JSON, false);
+        self::assertSame(Auditor::STATUS_FAILED, $result);
 
         $json = json_decode($io->getOutput(), true);
         self::assertArrayHasKey('unreachable-repositories', $json);
@@ -598,10 +632,490 @@ Found 2 abandoned packages:
      */
     public function testAuditWithIgnoreSeverity($packages, $ignoredSeverities, $exitCode, $expectedOutput): void
     {
+        $policyConfig = $this->createPolicyConfig(
+            ListPolicyConfig::AUDIT_IGNORE,
+            false,
+            null,
+            'test-list',
+            [],
+            array_keys($ignoredSeverities)
+        );
         $auditor = new Auditor();
-        $result = $auditor->audit($io = $this->getIOMock(), $this->getRepoSet(), $packages, Auditor::FORMAT_PLAIN, false, [], Auditor::ABANDONED_IGNORE, $ignoredSeverities);
+        $result = $auditor->audit($io = $this->getIOMock(), $this->getRepoSet(), $policyConfig, $packages, Auditor::FORMAT_PLAIN, false);
         $io->expects($expectedOutput, true);
         self::assertSame($exitCode, $result);
+    }
+
+    public static function filteredProvider(): \Generator
+    {
+        $matchingEntry = new FilterListEntry(
+            'vendor/package',
+            new Constraint('>=', '8.0.0.0'),
+            'test-list',
+            null,
+            'internal',
+            'ID-test-1'
+        );
+        $matchingEntryWithDetails = new FilterListEntry(
+            'vendor/package',
+            new Constraint('>=', '8.0.0.0'),
+            'test-list',
+            'https://example.com/filtered',
+            'internal',
+            'ID-test-1'
+        );
+        $nonMatchingEntry = new FilterListEntry(
+            'vendor/package',
+            new Constraint('>=', '10.0.0.0'),
+            'test-list',
+            null,
+            'internal',
+            'ID-test-1'
+        );
+        $matchingEntryWithSource = new FilterListEntry(
+            'vendor/package',
+            new Constraint('>=', '8.0.0.0'),
+            'test-list',
+            'https://example.com/filtered',
+            'internal',
+            'ID-test-1',
+            'aikido'
+        );
+
+        yield 'AUDIT_IGNORE skips filter processing' => [
+            'packages' => [new Package('vendor/package', '9.0.0', '9.0.0')],
+            'filterEntriesByList' => ['test-list' => [$matchingEntry]],
+            'filtered' => ListPolicyConfig::AUDIT_IGNORE,
+            'format' => Auditor::FORMAT_PLAIN,
+            'expected' => Auditor::STATUS_OK,
+            'output' => 'No security vulnerability advisories found.',
+        ];
+
+        yield 'AUDIT_FAIL with no matching entry returns STATUS_OK' => [
+            'packages' => [new Package('vendor/package', '9.0.0', '9.0.0')],
+            'filterEntriesByList' => ['test-list' => [$nonMatchingEntry]],
+            'filtered' => ListPolicyConfig::AUDIT_FAIL,
+            'format' => Auditor::FORMAT_PLAIN,
+            'expected' => Auditor::STATUS_OK,
+            'output' => 'No security vulnerability advisories found.',
+        ];
+
+        yield 'AUDIT_FAIL with matching entry returns STATUS_FAILED (plain)' => [
+            'packages' => [new Package('vendor/package', '9.0.0', '9.0.0')],
+            'filterEntriesByList' => ['test-list' => [$matchingEntry]],
+            'filtered' => ListPolicyConfig::AUDIT_FAIL,
+            'format' => Auditor::FORMAT_PLAIN,
+            'expected' => Auditor::STATUS_FAILED,
+            'output' => 'No security vulnerability advisories found.
+Found 1 package matching filters:
+vendor/package matched dependency policy "test-list". Reason: internal.',
+        ];
+
+        yield 'AUDIT_FAIL with matching entry shows url and reason (plain)' => [
+            'packages' => [new Package('vendor/package', '9.0.0', '9.0.0')],
+            'filterEntriesByList' => ['test-list' => [$matchingEntryWithDetails]],
+            'filtered' => ListPolicyConfig::AUDIT_FAIL,
+            'format' => Auditor::FORMAT_PLAIN,
+            'expected' => Auditor::STATUS_FAILED,
+            'output' => 'No security vulnerability advisories found.
+Found 1 package matching filters:
+vendor/package matched dependency policy "test-list". Reason: internal. URL: https://example.com/filtered.',
+        ];
+
+        yield 'AUDIT_FAIL with matching entry shows source (plain)' => [
+            'packages' => [new Package('vendor/package', '9.0.0', '9.0.0')],
+            'filterEntriesByList' => ['test-list' => [$matchingEntryWithSource]],
+            'filtered' => ListPolicyConfig::AUDIT_FAIL,
+            'format' => Auditor::FORMAT_PLAIN,
+            'expected' => Auditor::STATUS_FAILED,
+            'output' => 'No security vulnerability advisories found.
+Found 1 package matching filters:
+vendor/package matched dependency policy "test-list". Reason: internal. URL: https://example.com/filtered. Source: aikido.',
+        ];
+
+        yield 'AUDIT_REPORT with matching entry returns STATUS_OK' => [
+            'packages' => [new Package('vendor/package', '9.0.0', '9.0.0')],
+            'filterEntriesByList' => ['test-list' => [$matchingEntry]],
+            'filtered' => ListPolicyConfig::AUDIT_REPORT,
+            'format' => Auditor::FORMAT_PLAIN,
+            'expected' => Auditor::STATUS_OK,
+            'output' => 'No security vulnerability advisories found.
+<warning>Found 1 package matching filters:</warning>
+vendor/package matched dependency policy "test-list". Reason: internal.',
+        ];
+
+        yield 'AUDIT_FAIL with matching entry shows summary line only (summary format)' => [
+            'packages' => [new Package('vendor/package', '9.0.0', '9.0.0')],
+            'filterEntriesByList' => ['test-list' => [$matchingEntry]],
+            'filtered' => ListPolicyConfig::AUDIT_FAIL,
+            'format' => Auditor::FORMAT_SUMMARY,
+            'expected' => Auditor::STATUS_FAILED,
+            'output' => 'No security vulnerability advisories found.
+Found 1 package matching filters.',
+        ];
+
+        yield 'AUDIT_FAIL with multiple matching packages shows plural form' => [
+            'packages' => [
+                new Package('vendor/package', '9.0.0.0', '9.0.0'),
+                new Package('vendor/other', '1.0.0.0', '10.0.0'),
+            ],
+            'filterEntriesByList' => [
+                'test-list' => [
+                    $matchingEntry,
+                    new FilterListEntry('vendor/other', new Constraint('>=', '1.0.0.0'), 'test-list', null, 'internal', 'ID-TEST'),
+                ],
+            ],
+            'filtered' => ListPolicyConfig::AUDIT_FAIL,
+            'format' => Auditor::FORMAT_PLAIN,
+            'expected' => Auditor::STATUS_FAILED,
+            'output' => 'No security vulnerability advisories found.
+Found 2 packages matching filters:
+vendor/package matched dependency policy "test-list". Reason: internal.
+vendor/other matched dependency policy "test-list". Reason: internal.',
+        ];
+    }
+
+    /**
+     * @dataProvider filteredProvider
+     * @param array<Package> $packages
+     * @param array<string, list<FilterListEntry>> $filterEntriesByList
+     * @param ListPolicyConfig::AUDIT_* $filtered
+     * @param 'json'|'plain'|'summary'|'table' $format
+     */
+    public function testAuditWithFilter(array $packages, array $filterEntriesByList, string $filtered, string $format, int $expected, string $output): void
+    {
+        $providerSet = $this->getMockBuilder(FilterListProviderSet::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getMatchingFilterLists'])
+            ->getMock();
+
+        $providerSet
+            ->method('getMatchingFilterLists')
+            ->willReturn(['filter' => $filterEntriesByList, 'unreachableRepos' => []]);
+
+        $policyConfig = $this->createPolicyConfig(ListPolicyConfig::AUDIT_IGNORE, false, $filtered);
+
+        $auditor = new Auditor();
+        $result = $auditor->audit(
+            $io = new BufferIO(),
+            $this->getRepoSet(),
+            $policyConfig,
+            $packages,
+            $format,
+            true,
+            $providerSet
+        );
+
+        self::assertSame($expected, $result);
+        self::assertSame($output, trim(str_replace("\r", '', $io->getOutput())));
+    }
+
+    public function testAuditWithFilterJson(): void
+    {
+        $matchingEntry = new FilterListEntry(
+            'vendor/package',
+            new Constraint('>=', '8.0.0.0'),
+            'test-list',
+            'https://example.com/filtered',
+            'Some reason',
+            'ID-test'
+        );
+
+        $providerSet = $this->getMockBuilder(FilterListProviderSet::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getMatchingFilterLists'])
+            ->getMock();
+
+        $providerSet->expects($this->once())
+            ->method('getMatchingFilterLists')
+            ->willReturn(['filter' => ['test-list' => [$matchingEntry]], 'unreachableRepos' => []]);
+
+        $policyConfig = $this->createPolicyConfig(ListPolicyConfig::AUDIT_IGNORE, false, ListPolicyConfig::AUDIT_FAIL);
+
+        $auditor = new Auditor();
+        $result = $auditor->audit(
+            $io = new BufferIO(),
+            $this->getRepoSet(),
+            $policyConfig,
+            [new Package('vendor/package', '9.0.0', '9.0.0')],
+            Auditor::FORMAT_JSON,
+            true,
+            $providerSet
+        );
+
+        self::assertSame(Auditor::STATUS_FAILED, $result);
+
+        $json = json_decode($io->getOutput(), true);
+        self::assertIsArray($json);
+        self::assertArrayHasKey('filter', $json);
+        self::assertArrayHasKey('vendor/package', $json['filter']);
+        self::assertCount(1, $json['filter']['vendor/package']);
+
+        $entry = $json['filter']['vendor/package'][0];
+        self::assertSame('vendor/package', $entry['packageName']);
+        self::assertSame('test-list', $entry['listName']);
+        self::assertSame('https://example.com/filtered', $entry['url']);
+        self::assertSame('Some reason', $entry['reason']);
+        self::assertIsString($entry['constraint']);
+    }
+
+    public function testAuditWithFilterReportsAliasedPackageOnce(): void
+    {
+        $matchingEntry = new FilterListEntry(
+            'vendor/package',
+            new MatchAllConstraint(),
+            'test-list',
+            'https://example.com/filtered',
+            'Some reason',
+            'ID-test'
+        );
+
+        $providerSet = $this->getMockBuilder(FilterListProviderSet::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getMatchingFilterLists'])
+            ->getMock();
+
+        $providerSet->method('getMatchingFilterLists')
+            ->willReturn(['filter' => ['test-list' => [$matchingEntry]], 'unreachableRepos' => []]);
+
+        $package = new CompletePackage('vendor/package', 'dev-main', 'dev-main');
+        $branchAlias = new CompleteAliasPackage($package, '9.1.9999999.9999999-dev', '9.1.x-dev');
+
+        $auditor = new Auditor();
+        $auditor->audit(
+            $io = new BufferIO(),
+            $this->getRepoSet(),
+            $this->createPolicyConfig(ListPolicyConfig::AUDIT_IGNORE, false, ListPolicyConfig::AUDIT_FAIL),
+            [$package, $branchAlias],
+            Auditor::FORMAT_JSON,
+            true,
+            $providerSet
+        );
+
+        $json = json_decode($io->getOutput(), true);
+        self::assertCount(1, $json['filter']['vendor/package']);
+    }
+
+    public function testAuditWithFilterAndVulnerabilities(): void
+    {
+        $matchingEntry = new FilterListEntry(
+            'vendor1/package2',
+            new Constraint('>=', '8.0.0.0'),
+            'test-list',
+            null,
+            'internal',
+            'ID-test'
+        );
+
+        $providerSet = $this->getMockBuilder(FilterListProviderSet::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getMatchingFilterLists'])
+            ->getMock();
+
+        $providerSet->expects($this->once())
+            ->method('getMatchingFilterLists')
+            ->willReturn(['filter' => ['test-list' => [$matchingEntry]], 'unreachableRepos' => []]);
+
+        $policyConfig = $this->createPolicyConfig(ListPolicyConfig::AUDIT_IGNORE, false, ListPolicyConfig::AUDIT_FAIL);
+
+        $auditor = new Auditor();
+        // vendor1/package1 at 8.2.1 is vulnerable; vendor1/package2 at 9.0.0 matches the filter
+        $result = $auditor->audit(
+            $io = new BufferIO(),
+            $this->getRepoSet(),
+            $policyConfig,
+            [
+                new Package('vendor1/package1', '8.2.1', '8.2.1'),
+                new Package('vendor1/package2', '9.0.0', '9.0.0'),
+            ],
+            Auditor::FORMAT_PLAIN,
+            false,
+            $providerSet
+        );
+
+        self::assertSame(Auditor::STATUS_FAILED, $result);
+        $output = trim(str_replace("\r", '', $io->getOutput()));
+        self::assertStringContainsString('Found 2 security vulnerability advisories affecting 1 package:', $output);
+        self::assertStringContainsString('Found 1 package matching filters:', $output);
+        self::assertStringContainsString('vendor1/package2 matched dependency policy "test-list". Reason: internal', $output);
+    }
+
+    public function testCooldownAuditWiring(): void
+    {
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $recent = new Package('vendor/recent', '2.0.0.0', '2.0.0');
+        $recent->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00')); // 1 day old, within a 7-day cooldown
+        $packages = [$recent];
+
+        // fail -> non-zero exit, JSON carries the cooldown entry
+        $result = (new Auditor(new CooldownAuditor($now)))->audit(
+            $io = new BufferIO(),
+            $this->getRepoSet(),
+            $this->policyConfigWithCooldown(ListPolicyConfig::AUDIT_FAIL),
+            $packages,
+            Auditor::FORMAT_JSON,
+            false
+        );
+        self::assertSame(Auditor::STATUS_FAILED, $result);
+        self::assertStringContainsString('"cooldown"', $io->getOutput());
+        self::assertStringContainsString('vendor/recent', $io->getOutput());
+
+        // report -> listed but does not fail the audit
+        $result = (new Auditor(new CooldownAuditor($now)))->audit(
+            $io = new BufferIO(),
+            $this->getRepoSet(),
+            $this->policyConfigWithCooldown(ListPolicyConfig::AUDIT_REPORT),
+            $packages,
+            Auditor::FORMAT_PLAIN,
+            false
+        );
+        self::assertSame(Auditor::STATUS_OK, $result);
+        self::assertStringContainsString('still in the cooldown period', $io->getOutput());
+
+        // ignore -> not evaluated at all
+        $result = (new Auditor(new CooldownAuditor($now)))->audit(
+            $io = new BufferIO(),
+            $this->getRepoSet(),
+            $this->policyConfigWithCooldown(ListPolicyConfig::AUDIT_IGNORE),
+            $packages,
+            Auditor::FORMAT_PLAIN,
+            false
+        );
+        self::assertSame(Auditor::STATUS_OK, $result);
+        self::assertStringNotContainsString('still in the cooldown period', $io->getOutput());
+    }
+
+    /**
+     * @param ListPolicyConfig::AUDIT_* $audit
+     */
+    private function policyConfigWithCooldown(string $audit): PolicyConfig
+    {
+        return new PolicyConfig(
+            true,
+            AdvisoriesPolicyConfig::disabled(),
+            MalwarePolicyConfig::disabled(),
+            AbandonedPolicyConfig::disabled(),
+            new CooldownPolicyConfig(true, $audit, [], 7 * 24 * 3600),
+            [],
+            IgnoreUnreachable::default()
+        );
+    }
+
+    public function testAuditSkipsDevBranchesButMatchesTheirBranchAliases(): void
+    {
+        $advisory = static function (string $packageName, string $id, string $affectedVersions): array {
+            return [
+                'advisoryId' => $id,
+                'packageName' => $packageName,
+                'remoteId' => $id,
+                'title' => 'advisory',
+                'link' => null,
+                'cve' => null,
+                'affectedVersions' => $affectedVersions,
+                'source' => 'test',
+                'reportedAt' => '2024-04-31 12:37:47',
+                'composerRepository' => 'Package Repository',
+                'severity' => 'high',
+                'sources' => [['name' => 'test', 'remoteId' => $id]],
+            ];
+        };
+        $repoSet = new RepositorySet();
+        $repoSet->addRepository(new PackageRepository([
+            'package' => [],
+            'security-advisories' => [
+                'acme/dev-only' => [$advisory('acme/dev-only', 'ID-DEV', '*')],
+                'acme/aliased' => [$advisory('acme/aliased', 'ID-ALIAS', '<3.5')],
+            ],
+        ]));
+
+        $devOnly = new CompletePackage('acme/dev-only', 'dev-main', 'dev-main');
+        $aliased = new CompletePackage('acme/aliased', 'dev-main', 'dev-main');
+        $aliased->setAbandoned(true);
+        $branchAlias = new CompleteAliasPackage($aliased, '3.3.9999999.9999999-dev', '3.3.x-dev');
+
+        $auditor = new Auditor();
+        $result = $auditor->audit($io = new BufferIO(), $repoSet, $this->createPolicyConfig(ListPolicyConfig::AUDIT_FAIL), [$devOnly, $aliased, $branchAlias], Auditor::FORMAT_JSON, false);
+
+        self::assertSame(Auditor::STATUS_FAILED, $result);
+        $json = json_decode($io->getOutput(), true);
+        self::assertSame(['acme/aliased'], array_keys($json['advisories']));
+        self::assertSame('ID-ALIAS', $json['advisories']['acme/aliased'][0]['advisoryId']);
+        self::assertSame(['acme/aliased' => null], $json['abandoned']);
+
+        $auditor->audit($io = new BufferIO(), $repoSet, $this->createPolicyConfig(ListPolicyConfig::AUDIT_FAIL), [$devOnly, $aliased, $branchAlias], Auditor::FORMAT_PLAIN, false);
+        self::assertStringContainsString('Found 1 abandoned package:', $io->getOutput());
+    }
+
+    public function testAuditOutputsPartialAdvisories(): void
+    {
+        $repoSet = new RepositorySet();
+        $repoSet->addRepository(new PackageRepository([
+            'package' => [],
+            'security-advisories' => [
+                'acme/lib' => [['advisoryId' => 'ACME-2026-001', 'affectedVersions' => '<1.0.1']],
+            ],
+        ]));
+
+        $auditor = new Auditor();
+        $result = $auditor->audit($io = new BufferIO(), $repoSet, $this->createPolicyConfig(), [new Package('acme/lib', '1.0.0.0', '1.0.0')], Auditor::FORMAT_PLAIN, false);
+
+        self::assertSame(Auditor::STATUS_FAILED, $result);
+        self::assertSame('Found 1 security vulnerability advisory affecting 1 package:
+Package: acme/lib
+Advisory ID: ACME-2026-001
+Affected versions: <1.0.1', trim(str_replace("\r", '', $io->getOutput())));
+    }
+
+    /**
+     * @param Auditor::ABANDONED_* $abandoned
+     * @param ListPolicyConfig::AUDIT_*|null $filteredAudit
+     * @param array<string, string|null> $ignoreAdvisories Mixed flat map of advisory IDs and package names => reason.
+     * @param list<string> $ignoreSeverities
+     * @param array<string, string|null> $ignoreAbandoned Package name => reason; package name may be a wildcard pattern.
+     */
+    private function createPolicyConfig(
+        string $abandoned = ListPolicyConfig::AUDIT_IGNORE,
+        bool $ignoreUnreachableAudit = false,
+        ?string $filteredAudit = null,
+        string $filteredListName = 'test-list',
+        array $ignoreAdvisories = [],
+        array $ignoreSeverities = [],
+        array $ignoreAbandoned = []
+    ): PolicyConfig {
+        $customLists = [];
+        if ($filteredAudit !== null) {
+            $customLists[$filteredListName] = new CustomListPolicyConfig($filteredListName, false, $filteredAudit, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [], []);
+        }
+
+        $packageRules = [];
+        $idRules = [];
+        foreach ($ignoreAdvisories as $key => $reason) {
+            if (strpos($key, '/') !== false) {
+                $packageRules[$key][] = new IgnorePackageRule($key, new \Composer\Semver\Constraint\MatchAllConstraint(), $reason);
+            } else {
+                $idRules[$key] = new IgnoreIdRule($key, $reason);
+            }
+        }
+        $severityRules = [];
+        foreach ($ignoreSeverities as $severity) {
+            $severityRules[$severity] = new IgnoreSeverityRule($severity);
+        }
+        $advisories = new AdvisoriesPolicyConfig(false, AdvisoriesPolicyConfig::AUDIT_FAIL, $packageRules, $idRules, $severityRules);
+
+        $abandonedIgnore = [];
+        foreach ($ignoreAbandoned as $packageName => $reason) {
+            $abandonedIgnore[$packageName][] = new IgnorePackageRule($packageName, new \Composer\Semver\Constraint\MatchAllConstraint(), $reason);
+        }
+
+        return new PolicyConfig(
+            true,
+            $advisories,
+            MalwarePolicyConfig::disabled(),
+            new AbandonedPolicyConfig(false, $abandoned, $abandonedIgnore),
+            CooldownPolicyConfig::disabled(),
+            $customLists,
+            $ignoreUnreachableAudit ? IgnoreUnreachable::all() : IgnoreUnreachable::default()
+        );
     }
 
     private function getRepoSet(): RepositorySet
@@ -861,7 +1375,7 @@ Found 2 abandoned packages:
                     new PartialSecurityAdvisory('foo/bar', '1234', new Constraint('=', '1.0.0.0')),
                 ]],
                 ['PKSA-foo-bar' => 'this is fine 🔥'],
-                false
+                false,
             ],
             'no advisories no need to load any further' => [[], ['CVE-2025-1234' => null], false],
             'no advisories no need to load any further/2' => [['vendor1/package1' => []], ['CVE-2025-1234' => null], false],
@@ -880,7 +1394,7 @@ Found 2 abandoned packages:
                     ],
                     'vendor1/package2' => [
                         new SecurityAdvisory('foo/bar', '1234', new Constraint('=', '1.0.0.0'), 'test', [['name' => 'foo', 'remoteId' => 'remoteID']], new DateTimeImmutable()),
-                    ]
+                    ],
                 ],
                 ['CVE-2025-1234' => null],
                 false,

@@ -27,6 +27,7 @@ use Composer\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Package\BasePackage;
 use Composer\Advisory\Auditor;
+use Composer\Util\Filesystem;
 
 /**
  * @author Pierre du Plessis <pdples@gmail.com>
@@ -51,7 +52,9 @@ class RemoveCommand extends BaseCommand
                 new InputOption('no-install', null, InputOption::VALUE_NONE, 'Skip the install step after updating the composer.lock file.'),
                 new InputOption('no-audit', null, InputOption::VALUE_NONE, 'Skip the audit step after updating the composer.lock file (can also be set via the COMPOSER_NO_AUDIT=1 env var).'),
                 new InputOption('audit-format', null, InputOption::VALUE_REQUIRED, 'Audit output format. Must be "table", "plain", "json", or "summary".', Auditor::FORMAT_SUMMARY, Auditor::FORMATS),
-                new InputOption('no-security-blocking', null, InputOption::VALUE_NONE, 'Allows installing packages with security advisories or that are abandoned (can also be set via the COMPOSER_NO_SECURITY_BLOCKING=1 env var).'),
+                new InputOption('no-security-blocking', null, InputOption::VALUE_NONE, 'DEPRECATED: use --no-blocking instead. Allows installing packages with security advisories, that are abandoned or that are still in the cooldown period (can also be set via the COMPOSER_NO_SECURITY_BLOCKING=1 env var).'),
+                new InputOption('no-blocking', null, InputOption::VALUE_NONE, 'Disables all policy blocking during this command, including the cooldown period (can also be set via the COMPOSER_NO_BLOCKING=1 env var).'),
+                new InputOption('no-cooldown', null, InputOption::VALUE_NONE, 'Disables the cooldown policy blocking during this command, other policies still apply.'),
                 new InputOption('update-no-dev', null, InputOption::VALUE_NONE, 'Run the dependency update with the --no-dev option.'),
                 new InputOption('update-with-dependencies', 'w', InputOption::VALUE_NONE, 'Allows inherited dependencies to be updated with explicit dependencies (can also be set via the COMPOSER_WITH_DEPENDENCIES=1 env var). (Deprecated, is now default behavior)'),
                 new InputOption('update-with-all-dependencies', 'W', InputOption::VALUE_NONE, 'Allows all inherited dependencies to be updated, including those that are root requirements (can also be set via the COMPOSER_WITH_ALL_DEPENDENCIES=1 env var).'),
@@ -73,7 +76,7 @@ list of installed packages
 
 <info>php composer.phar remove</info>
 
-Read more at https://getcomposer.org/doc/03-cli.md#remove-rm
+Read more at https://getcomposer.org/doc/03-cli.md#remove--rm--uninstall
 EOT
             )
         ;
@@ -139,7 +142,7 @@ EOT
         $jsonFile = new JsonFile($file);
         /** @var array{require?: array<string, string>, require-dev?: array<string, string>} $composer */
         $composer = $jsonFile->read();
-        $composerBackup = file_get_contents($jsonFile->getPath());
+        $composerBackup = (string) file_get_contents($jsonFile->getPath());
 
         $json = new JsonConfigSource($jsonFile);
 
@@ -284,7 +287,8 @@ EOT
             ->setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
             ->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input))
             ->setDryRun($dryRun)
-            ->setAuditConfig($this->createAuditConfig($composer->getConfig(), $input))
+            ->setPolicyConfig($this->createPolicyConfig($composer->getConfig(), $input))
+            ->setAuditConfig($this->createAuditConfig($input))
             ->setMinimalUpdate($minimalChanges)
         ;
 
@@ -297,7 +301,7 @@ EOT
         $status = $install->run();
         if ($status !== 0) {
             $io->writeError("\n".'<error>Removal failed, reverting '.$file.' to its original content.</error>');
-            file_put_contents($jsonFile->getPath(), $composerBackup);
+            Filesystem::safeFilePutContents($jsonFile->getPath(), $composerBackup);
         }
 
         if (!$dryRun) {

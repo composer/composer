@@ -95,6 +95,10 @@ class ArrayDumper
             $data['time'] = $package->getReleaseDate()->format(DATE_RFC3339);
         }
 
+        if ($package->getPublishedDate() instanceof \DateTimeInterface) {
+            $data['published-time'] = $package->getPublishedDate()->format(DATE_RFC3339);
+        }
+
         if ($package->isDefaultBranch()) {
             $data['default-branch'] = true;
         }

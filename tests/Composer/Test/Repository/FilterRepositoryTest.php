@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Repository;
 
+use Composer\FilterList\FilterListProviderConfig;
 use Composer\Test\TestCase;
 use Composer\Repository\FilterRepository;
 use Composer\Repository\ArrayRepository;
@@ -81,6 +82,15 @@ class FilterRepositoryTest extends TestCase
 
         self::assertFalse($repo->hasSecurityAdvisories());
         self::assertSame(['namesFound' => [], 'advisories' => []], $repo->getSecurityAdvisories(['foo/aaa' => new MatchAllConstraint()], true));
+    }
+
+    public function testFiltersDisabledInChild(): void
+    {
+        $repo = new FilterRepository($this->arrayRepo, ['only' => ['foo/*']]);
+
+        self::assertFalse($repo->hasFilter());
+        self::assertSame(['filter' => []], $repo->getFilter(['foo/aaa' => new MatchAllConstraint()], []));
+        self::assertSame([], $repo->getFilterLists());
     }
 
     public function testCanonicalDefaultTrue(): void

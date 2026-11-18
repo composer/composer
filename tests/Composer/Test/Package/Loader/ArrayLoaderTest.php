@@ -30,6 +30,34 @@ class ArrayLoaderTest extends TestCase
         $this->loader = new ArrayLoader(null);
     }
 
+    public function testLoadPackagesSharesLinksWithoutSharingSelfVersionLinks(): void
+    {
+        $config = ['name' => 'vendor/package', 'version' => '1.0.0'];
+        foreach (['require', 'require-dev', 'conflict', 'provide', 'replace'] as $type) {
+            $config[$type] = ['VENDOR/dep' => '^1.0', 'vendor/self' => 'self.version'];
+        }
+        $nextConfig = $config;
+        $nextConfig['version'] = '2.0.0';
+
+        [$first, $second] = $this->loader->loadPackages([$config, $nextConfig]);
+
+        foreach ([
+            [$first->getRequires(), $second->getRequires()],
+            [$first->getDevRequires(), $second->getDevRequires()],
+            [$first->getConflicts(), $second->getConflicts()],
+            [$first->getProvides(), $second->getProvides()],
+            [$first->getReplaces(), $second->getReplaces()],
+        ] as [$firstLinks, $secondLinks]) {
+            self::assertSame($firstLinks['vendor/dep'], $secondLinks['vendor/dep']);
+            self::assertSame('vendor/dep', $firstLinks['vendor/dep']->getTarget());
+            self::assertNotSame($firstLinks['vendor/self'], $secondLinks['vendor/self']);
+            self::assertSame('1.0.0', $firstLinks['vendor/self']->getConstraint()->getPrettyString());
+            self::assertSame('2.0.0', $secondLinks['vendor/self']->getConstraint()->getPrettyString());
+        }
+
+        self::assertNotSame($first->getRequires()['vendor/dep'], $first->getProvides()['vendor/dep']);
+    }
+
     public function testSelfVersion(): void
     {
         $config = [
@@ -43,6 +71,99 @@ class ArrayLoaderTest extends TestCase
         $package = $this->loader->load($config);
         $replaces = $package->getReplaces();
         self::assertEquals('== 1.2.3.4', (string) $replaces['foo']->getConstraint());
+    }
+
+    public function testReleaseAndPublishedDates(): void
+    {
+        $package = $this->loader->load([
+            'name' => 'a/b',
+            'version' => '1.0',
+            'time' => '2025-01-15T10:00:00+00:00',
+            'published-time' => '2026-05-19T20:20:25+00:00',
+        ]);
+
+        self::assertInstanceOf(\DateTimeInterface::class, $package->getReleaseDate());
+        self::assertSame('2025-01-15T10:00:00+00:00', $package->getReleaseDate()->format(\DateTimeInterface::ATOM));
+        self::assertInstanceOf(\DateTimeInterface::class, $package->getPublishedDate());
+        self::assertSame('2026-05-19T20:20:25+00:00', $package->getPublishedDate()->format(\DateTimeInterface::ATOM));
+    }
+
+    public function testPublishedTimeAbsentLeavesPublishedDateNull(): void
+    {
+        $package = $this->loader->load([
+            'name' => 'a/b',
+            'version' => '1.0',
+            'time' => '2025-01-15T10:00:00+00:00',
+        ]);
+
+        self::assertNotNull($package->getReleaseDate());
+        self::assertNull($package->getPublishedDate());
+    }
+
+    public function testPublishedTimeFromUnixTimestamp(): void
+    {
+        $package = $this->loader->load([
+            'name' => 'a/b',
+            'version' => '1.0',
+            'published-time' => '1747685025',
+        ]);
+
+        self::assertInstanceOf(\DateTimeInterface::class, $package->getPublishedDate());
+        self::assertSame(1747685025, $package->getPublishedDate()->getTimestamp());
+    }
+
+    public function testTimesFromNonStringValues(): void
+    {
+        $package = $this->loader->load(['name' => 'a/b', 'version' => '1.0', 'time' => 1747685025]);
+        self::assertInstanceOf(\DateTimeInterface::class, $package->getReleaseDate());
+        self::assertSame(1747685025, $package->getReleaseDate()->getTimestamp());
+
+        $package = $this->loader->load(['name' => 'a/b', 'version' => '1.0', 'time' => ['2026-05-19']]);
+        self::assertNull($package->getReleaseDate());
+
+        $package = $this->loader->load(['name' => 'a/b', 'version' => '1.0', 'published-time' => 1747685025]);
+        self::assertInstanceOf(\DateTimeInterface::class, $package->getPublishedDate());
+        self::assertSame(1747685025, $package->getPublishedDate()->getTimestamp());
+
+        $package = $this->loader->load(['name' => 'a/b', 'version' => '1.0', 'published-time' => ['2026-05-19']]);
+        self::assertNull($package->getPublishedDate());
+    }
+
+    public function testMalformedPublishedTimeIsIgnored(): void
+    {
+        $package = $this->loader->load([
+            'name' => 'a/b',
+            'version' => '1.0',
+            'published-time' => 'not a date',
+        ]);
+
+        self::assertNull($package->getPublishedDate());
+    }
+
+    public function testMalformedTimeIsIgnored(): void
+    {
+        $package = $this->loader->load([
+            'name' => 'a/b',
+            'version' => '1.0',
+            'time' => 'not a date',
+        ]);
+
+        self::assertNull($package->getReleaseDate());
+    }
+
+    public function testDatesAreParsedInUtc(): void
+    {
+        $package = $this->loader->load([
+            'name' => 'a/b',
+            'version' => '1.0',
+            'time' => '2025-01-15 10:00:00',
+            'published-time' => '2026-05-19 20:20:25',
+        ]);
+
+        self::assertInstanceOf(\DateTime::class, $package->getReleaseDate());
+        self::assertSame('2025-01-15T10:00:00+00:00', $package->getReleaseDate()->format(\DateTimeInterface::ATOM));
+        self::assertInstanceOf(\DateTimeImmutable::class, $package->getPublishedDate());
+        self::assertSame('2026-05-19T20:20:25+00:00', $package->getPublishedDate()->format(\DateTimeInterface::ATOM));
     }
 
     public function testTypeDefault(): void
@@ -190,6 +311,23 @@ class ArrayLoaderTest extends TestCase
         $dumper = new ArrayDumper;
         $expectedConfig = $this->fixConfigWhenLoadConfigIsFalse($config);
         self::assertEquals($expectedConfig, $dumper->dump($package));
+    }
+
+    public function testTransportOptionCallablesAreNotLoadedFromPackageData(): void
+    {
+        $loader = new ArrayLoader(null, true);
+        $package = $loader->load([
+            'name' => 'a/b',
+            'version' => '1.0.0',
+            'transport-options' => [
+                'ssl' => ['verify_peer' => true],
+                'prevent_url_access_callable' => 'system',
+                'prevent_ip_access_callable' => 'system',
+            ],
+        ]);
+
+        // the callable options must be dropped so externally provided data cannot cause a call
+        self::assertSame(['ssl' => ['verify_peer' => true]], $package->getTransportOptions());
     }
 
     public function testPackageWithBranchAlias(): void
@@ -372,6 +510,14 @@ class ArrayLoaderTest extends TestCase
         self::assertArrayHasKey('1', $links);
     }
 
+    public function testParseLinksInvalidVersion(): void
+    {
+        $this->expectException(\UnexpectedValueException::class);
+        $this->expectExceptionMessage('Link constraint in Plugin requires > composer-plugin-api should be a valid version constraint, got "^^^"');
+
+        $this->loader->parseLinks('Plugin', '9.9.9', Link::TYPE_REQUIRE, ['composer-plugin-api' => '^^^']);
+    }
+
     public function testNoneStringVersion(): void
     {
         $config = [
@@ -492,5 +638,17 @@ class ArrayLoaderTest extends TestCase
 
         $package = $this->loader->load($config);
         self::assertSame([], $package->getSupport());
+    }
+
+    public function testInvalidVersion(): void
+    {
+        $config = [
+            'name' => 'acme/package',
+            'version' => 'AA',
+        ];
+
+        $this->expectException(\UnexpectedValueException::class);
+        $this->expectExceptionMessage('Failed to normalize version for package "acme/package": Invalid version string "AA"');
+        $this->loader->load($config);
     }
 }

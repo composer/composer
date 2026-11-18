@@ -14,13 +14,22 @@ namespace Composer\Test\Package\Version;
 
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\IO\BufferIO;
+use Composer\IO\NullIO;
+use Composer\Repository\ComposerRepository;
+use Composer\Test\Mock\FactoryMock;
+use Composer\Util\HttpDownloader;
 use Composer\Package\Version\VersionSelector;
 use Composer\Package\Package;
 use Composer\Package\Link;
 use Composer\Package\AliasPackage;
 use Composer\Repository\PlatformRepository;
 use Composer\Package\Version\VersionParser;
+use Composer\Policy\CooldownPolicyConfig;
+use Composer\Policy\IgnorePackageRule;
+use Composer\Policy\ListPolicyConfig;
+use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Test\TestCase;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 
 class VersionSelectorTest extends TestCase
@@ -88,9 +97,11 @@ class VersionSelectorTest extends TestCase
             ."<warning>Cannot use foo/bar 2.0.0 as it requires php >=5.6 which is not satisfied by your platform.".PHP_EOL,
             $io->getOutput()
         );
+        self::assertSame([$package3, $package2], $versionSelector->getPlatformRejectedCandidates());
 
         $best = $versionSelector->findBestCandidate($packageName, null, 'stable', PlatformRequirementFilterFactory::ignoreAll());
         self::assertSame((string) $package3, (string) $best, 'Latest version should be returned when ignoring platform reqs (2.1.0)');
+        self::assertSame([], $versionSelector->getPlatformRejectedCandidates());
     }
 
     public function testLatestVersionIsReturnedThatMatchesExtRequirements(): void
@@ -373,6 +384,139 @@ class VersionSelectorTest extends TestCase
         ];
     }
 
+    public function testLatestVersionWithinCooldownIsSkipped(): void
+    {
+        $old = self::getPackage('foo/bar', '1.2.1');
+        $old->setReleaseDate(new \DateTimeImmutable('-30 days'));
+        $new = self::getPackage('foo/bar', '1.2.2');
+        $new->setPublishedDate(new \DateTimeImmutable('-23 hours'));
+
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->expects($this->once())
+            ->method('findPackages')
+            ->with('foo/bar', null)
+            ->will($this->returnValue([$old, $new]));
+
+        $io = new BufferIO();
+        $versionSelector = new VersionSelector($repositorySet, null, self::cooldown(7 * 24 * 3600));
+        $best = $versionSelector->findBestCandidate('foo/bar', null, 'stable', null, 0, $io);
+
+        self::assertSame($old, $best);
+        self::assertStringContainsString('Cannot use foo/bar\'s latest version 1.2.2 as it is still in the cooldown period configured in "policy.cooldown" (available in 6 days).', $io->getOutput());
+    }
+
+    public function testWithheldVersionBelowTheSelectedOneIsNotReported(): void
+    {
+        $major = self::getPackage('foo/bar', '2.0.0');
+        $major->setReleaseDate(new \DateTimeImmutable('-30 days'));
+        $backport = self::getPackage('foo/bar', '1.9.5');
+        $backport->setPublishedDate(new \DateTimeImmutable('-23 hours'));
+
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->expects($this->once())
+            ->method('findPackages')
+            ->with('foo/bar', null)
+            ->will($this->returnValue([$backport, $major]));
+
+        $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE);
+        $versionSelector = new VersionSelector($repositorySet, null, self::cooldown(7 * 24 * 3600));
+        $best = $versionSelector->findBestCandidate('foo/bar', null, 'stable', null, 0, $io);
+
+        self::assertSame($major, $best);
+        self::assertSame('', $io->getOutput());
+    }
+
+    public function testDevAndIgnoredVersionsAreNotSubjectToCooldown(): void
+    {
+        $dev = self::getPackage('foo/bar', 'dev-main');
+        $dev->setReleaseDate(new \DateTimeImmutable('-1 hour'));
+        $ignored = self::getPackage('foo/baz', '2.0.0');
+        $ignored->setPublishedDate(new \DateTimeImmutable('-1 hour'));
+
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->method('findPackages')->willReturnMap([
+            ['foo/bar', null, 0, [$dev]],
+            ['foo/baz', null, 0, [$ignored]],
+        ]);
+
+        $cooldown = self::cooldown(7 * 24 * 3600, true, ['foo/baz' => [new IgnorePackageRule('foo/baz', new MatchAllConstraint(), 'trusted')]]);
+        $versionSelector = new VersionSelector($repositorySet, null, $cooldown);
+
+        self::assertSame($dev, $versionSelector->findBestCandidate('foo/bar', null, 'dev'));
+        self::assertSame($ignored, $versionSelector->findBestCandidate('foo/baz'));
+    }
+
+    public function testAllVersionsWithinCooldownYieldNoCandidate(): void
+    {
+        $new = self::getPackage('foo/bar', '1.2.2');
+        $new->setPublishedDate(new \DateTimeImmutable('-1 hour'));
+
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->method('findPackages')->will($this->returnValue([$new]));
+
+        $versionSelector = new VersionSelector($repositorySet, null, self::cooldown(7 * 24 * 3600));
+
+        self::assertFalse($versionSelector->findBestCandidate('foo/bar'));
+    }
+
+    public function testFirstClearingWithheldCandidateIsTheOldest(): void
+    {
+        $older = self::getPackage('foo/bar', '1.2.1');
+        $older->setPublishedDate(new \DateTimeImmutable('-5 days'));
+        $newer = self::getPackage('foo/bar', '1.2.2');
+        $newer->setPublishedDate(new \DateTimeImmutable('-1 hour'));
+
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->method('findPackages')->will($this->returnValue([$older, $newer]));
+
+        $versionSelector = new VersionSelector($repositorySet, null, self::cooldown(7 * 24 * 3600));
+
+        self::assertFalse($versionSelector->findBestCandidate('foo/bar'));
+        $withheld = $versionSelector->getFirstClearingWithheldCandidate();
+        self::assertNotNull($withheld);
+        self::assertSame($older, $withheld['package']);
+    }
+
+    public function testCooldownIsNotAppliedWhenBlockingIsDisabled(): void
+    {
+        $new = self::getPackage('foo/bar', '1.2.2');
+        $new->setPublishedDate(new \DateTimeImmutable('-1 hour'));
+
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->method('findPackages')->will($this->returnValue([$new]));
+
+        $versionSelector = new VersionSelector($repositorySet, null, self::cooldown(7 * 24 * 3600, false));
+
+        self::assertSame($new, $versionSelector->findBestCandidate('foo/bar'));
+    }
+
+    public function testEveryWithheldCandidateIsReported(): void
+    {
+        $old = self::getPackage('foo/bar', '1.2.1');
+        $old->setPublishedDate(new \DateTimeImmutable('-30 days'));
+        $recent = self::getPackage('foo/bar', '1.2.2');
+        $recent->setPublishedDate(new \DateTimeImmutable('-2 days'));
+        $newest = self::getPackage('foo/bar', '1.3.0');
+        $newest->setPublishedDate(new \DateTimeImmutable('-1 day'));
+
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->method('findPackages')->will($this->returnValue([$old, $recent, $newest]));
+
+        $versionSelector = new VersionSelector($repositorySet, null, self::cooldown(7 * 24 * 3600));
+
+        self::assertSame($old, $versionSelector->findBestCandidate('foo/bar'));
+        self::assertSame([$newest, $recent], array_column($versionSelector->getWithheldCandidates(), 'package'));
+        self::assertSame($recent, $versionSelector->getFirstClearingWithheldCandidate()['package'] ?? null);
+    }
+
+    /**
+     * @param array<string, list<IgnorePackageRule>> $ignore
+     */
+    private static function cooldown(int $period, bool $block = true, array $ignore = []): CooldownPolicyConfig
+    {
+        return new CooldownPolicyConfig($block, ListPolicyConfig::AUDIT_IGNORE, $ignore, $period);
+    }
+
     /**
      * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Repository\RepositorySet
      */
@@ -381,5 +525,22 @@ class VersionSelectorTest extends TestCase
         return $this->getMockBuilder('Composer\Repository\RepositorySet')
             ->disableOriginalConstructor()
             ->getMock();
+    }
+
+    public function testComposerRepositoryVersionWithoutPublishedTimeIsRejected(): void
+    {
+        $pkg = self::getPackage('foo/bar', '1.2.2');
+        $pkg->setReleaseDate(new \DateTimeImmutable('-30 days'));
+        $httpDownloader = $this->getMockBuilder(HttpDownloader::class)->disableOriginalConstructor()->getMock();
+        $pkg->setRepository(new ComposerRepository(['url' => 'https://repo.example.org'], new NullIO(), FactoryMock::createConfig(), $httpDownloader));
+
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->method('findPackages')->will($this->returnValue([$pkg]));
+
+        $versionSelector = new VersionSelector($repositorySet, null, self::cooldown(7 * 24 * 3600));
+
+        self::expectException(\RuntimeException::class);
+        self::expectExceptionMessage('foo/bar 1.2.2 from composer repo (https://repo.example.org) has no published-time');
+        $versionSelector->findBestCandidate('foo/bar');
     }
 }

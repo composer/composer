@@ -21,7 +21,6 @@ use Composer\Config;
 use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
-use Composer\Repository\ArrayRepository;
 use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\RepositoryManager;
 use Composer\Test\Mock\HttpDownloaderMock;
@@ -133,7 +132,7 @@ class EventDispatcherTest extends TestCase
     }
 
     /**
-     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Autoload\AutoloadGenerator
+     * @return \PHPUnit\Framework\MockObject\MockObject&AutoloadGenerator
      */
     private function getGeneratorMockForDevModePassingTest()
     {
@@ -160,7 +159,7 @@ class EventDispatcherTest extends TestCase
     }
 
     /**
-     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Repository\RepositoryManager
+     * @return \PHPUnit\Framework\MockObject\MockObject&RepositoryManager
      */
     private function getRepositoryManagerMockForDevModePassingTest()
     {
@@ -367,6 +366,146 @@ class EventDispatcherTest extends TestCase
             '> post-install-cmd: @php foo.php '.$args.' then the rest'.PHP_EOL.
             '> post-install-cmd: echo -n bar '.$args.PHP_EOL;
         self::assertEquals($expected, $io->getOutput());
+    }
+
+    public function testDispatcherEscapesAdditionalArgsForComposerScripts(): void
+    {
+        $process = $this->getProcessExecutorMock();
+        $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
+            ->setConstructorArgs([
+                $this->createComposerInstance(),
+                $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
+                $process,
+            ])
+            ->onlyMethods([
+                'getListeners',
+            ])
+            ->getMock();
+
+        $reflMethod = new \ReflectionMethod($dispatcher, 'getPhpExecCommand');
+        if (PHP_VERSION_ID < 80100) {
+            $reflMethod->setAccessible(true);
+        }
+        $composerBinaryBkp = Platform::getEnv('COMPOSER_BINARY');
+        Platform::putEnv('COMPOSER_BINARY', '/path/to/composer');
+        $composerCmd = $reflMethod->invoke($dispatcher).' '.ProcessExecutor::escape('/path/to/composer');
+
+        $args = ProcessExecutor::escape('; echo foo').' '.ProcessExecutor::escape('$(echo bar)');
+        $process->expects([
+            $composerCmd.' show --format=json '.$args,
+            $composerCmd.' show '.$args.' --format=json',
+            $composerCmd.' show '.$args.' && echo '.$args,
+        ], true);
+
+        $listeners = [
+            '@composer show --format=json',
+            '@composer show @additional_args --format=json',
+            '@composer show @additional_args && echo @additional_args',
+        ];
+
+        $dispatcher->expects($this->atLeastOnce())
+            ->method('getListeners')
+            ->will($this->returnValue($listeners));
+
+        try {
+            $dispatcher->dispatchScript('foo', false, ['; echo foo', '$(echo bar)']);
+        } finally {
+            if (false !== $composerBinaryBkp) {
+                Platform::putEnv('COMPOSER_BINARY', $composerBinaryBkp);
+            } else {
+                Platform::clearEnv('COMPOSER_BINARY');
+            }
+        }
+    }
+
+    public function testDispatcherPassesScriptReferenceArgsToComposerScripts(): void
+    {
+        $process = $this->getProcessExecutorMock();
+        $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
+            ->setConstructorArgs([
+                $composer = $this->createComposerInstance(),
+                $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
+                $process,
+            ])
+            ->onlyMethods([
+                'getListeners',
+            ])
+            ->getMock();
+
+        $reflMethod = new \ReflectionMethod($dispatcher, 'getPhpExecCommand');
+        if (PHP_VERSION_ID < 80100) {
+            $reflMethod->setAccessible(true);
+        }
+        $composerBinaryBkp = Platform::getEnv('COMPOSER_BINARY');
+        Platform::putEnv('COMPOSER_BINARY', '/path/to/composer');
+        $composerCmd = $reflMethod->invoke($dispatcher).' '.ProcessExecutor::escape('/path/to/composer');
+
+        $process->expects([
+            $composerCmd.' validate '.implode(' ', array_map([ProcessExecutor::class, 'escape'], ['--working-dir', 'my project', '--opt=a b', "it's", 'ARG'])),
+        ], true);
+
+        $dispatcher->expects($this->atLeastOnce())
+            ->method('getListeners')
+            ->will($this->returnCallback(static function (Event $event): array {
+                if ($event->getName() === 'outer') {
+                    return ['@inner --working-dir "my project" --opt="a b" "it\'s"'];
+                }
+
+                if ($event->getName() === 'inner') {
+                    return ['@composer validate'];
+                }
+
+                return [];
+            }));
+
+        try {
+            $dispatcher->dispatch('outer', new ScriptEvent('outer', $composer, $io, false, ['ARG']));
+        } finally {
+            if (false !== $composerBinaryBkp) {
+                Platform::putEnv('COMPOSER_BINARY', $composerBinaryBkp);
+            } else {
+                Platform::clearEnv('COMPOSER_BINARY');
+            }
+        }
+    }
+
+    public function testDispatcherSupportsAdditionalArgsInScriptReferences(): void
+    {
+        $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
+            ->setConstructorArgs([
+                $composer = $this->createComposerInstance(),
+                $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
+                $this->getProcessExecutorMock(),
+            ])
+            ->onlyMethods([
+                'getListeners',
+            ])
+            ->getMock();
+
+        $innerEvents = [];
+        $dispatcher->expects($this->atLeastOnce())
+            ->method('getListeners')
+            ->will($this->returnCallback(static function (Event $event) use (&$innerEvents): array {
+                if ($event->getName() === 'outer') {
+                    return ['@inner @additional_args --x @additional_args', '@inner --y'];
+                }
+
+                if ($event->getName() === 'inner') {
+                    return [static function (Event $event) use (&$innerEvents): void {
+                        $innerEvents[] = $event;
+                    }];
+                }
+
+                return [];
+            }));
+
+        $dispatcher->dispatch('outer', new ScriptEvent('outer', $composer, $io, false, ['ARG', 'ARG 2'], ['script-alias-input' => "ARG 'ARG 2'"]));
+
+        self::assertCount(2, $innerEvents);
+        self::assertSame(['ARG', 'ARG 2', '--x', 'ARG', 'ARG 2'], $innerEvents[0]->getArguments());
+        self::assertSame("ARG 'ARG 2' ".ProcessExecutor::escape('--x')." ARG 'ARG 2'", $innerEvents[0]->getFlags()['script-alias-input']);
+        self::assertSame(['--y', 'ARG', 'ARG 2'], $innerEvents[1]->getArguments());
+        self::assertSame(ProcessExecutor::escape('--y')." ARG 'ARG 2'", $innerEvents[1]->getFlags()['script-alias-input']);
     }
 
     public static function createsVendorBinFolderChecksEnvDoesNotContainsBin(): void
@@ -644,6 +783,53 @@ class EventDispatcherTest extends TestCase
         $event->method('getName')->will($this->returnValue('scriptName'));
 
         $this->assertFalse($dispatcher->hasEventListeners($event));
+    }
+
+    public function testDispatcherSkipsEmptyStringScript(): void
+    {
+        $process = $this->getProcessExecutorMock();
+        $process->expects([
+            'echo BEFORE',
+            'echo AFTER',
+        ], true);
+
+        $composer = new Composer();
+        $config = new Config();
+        $composer->setConfig($config);
+
+        $package = $this->getMockBuilder('Composer\Package\RootPackageInterface')->getMock();
+        $package->method('getBinaries')->willReturn(['hello', 'world']);
+        $composer->setPackage($package);
+
+        $composer->setRepositoryManager($rm = new RepositoryManager(new NullIO(), $config, new HttpDownloaderMock()));
+        $rm->setLocalRepository(new InstalledArrayRepository([]));
+        $composer->setAutoloadGenerator(new AutoloadGenerator(new EventDispatcher($composer, new NullIO())));
+        $composer->setInstallationManager(new InstallationManagerMock());
+
+        $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
+            ->setConstructorArgs([
+                $composer,
+                $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
+                $process,
+            ])
+            ->onlyMethods(['getListeners'])
+            ->getMock();
+
+        $listeners = [
+            'echo BEFORE',
+            '',
+            'echo AFTER',
+        ];
+
+        $dispatcher->expects($this->atLeastOnce())
+            ->method('getListeners')
+            ->will($this->returnValue($listeners));
+
+        $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
+
+        $expected = '> post-install-cmd: echo BEFORE' . PHP_EOL .
+            '> post-install-cmd: echo AFTER' . PHP_EOL;
+        self::assertEquals($expected, $io->getOutput());
     }
 
     public static function call(): void

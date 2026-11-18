@@ -123,7 +123,7 @@ If there are packages that are required but not installed, you should get output
 - Required package "vendor/package-name" is not present in the lock file.
 This usually happens when composer files are incorrectly merged or the composer.json file is manually edited.
 Read more about correctly resolving merge conflicts https://getcomposer.org/doc/articles/resolving-merge-conflicts.md
-and prefer using the "require" command over editing the composer.json file directly https://getcomposer.org/doc/03-cli.md#require
+and prefer using the "require" command over editing the composer.json file directly https://getcomposer.org/doc/03-cli.md#require-r
 ```
 
 To recover from this, simply run `composer update vendor/package-name` for each package listed here. After doing this for each package listed here, running `composer validate` again should result in no lock file errors:

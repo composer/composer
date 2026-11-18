@@ -23,7 +23,7 @@ use Composer\Repository\RepositoryInterface;
  *
  * @phpstan-type AutoloadRules    array{psr-0?: array<string, string|string[]>, psr-4?: array<string, string|string[]>, classmap?: list<string>, files?: list<string>, exclude-from-classmap?: list<string>}
  * @phpstan-type DevAutoloadRules array{psr-0?: array<string, string|string[]>, psr-4?: array<string, string|string[]>, classmap?: list<string>, files?: list<string>}
- * @phpstan-type PhpExtConfig     array{extension-name?: string, priority?: int, support-zts?: bool, support-nts?: bool, build-path?: string|null, download-url-method?: string, os-families?: non-empty-list<non-empty-string>, os-families-exclude?: non-empty-list<non-empty-string>, configure-options?: list<array{name: string, description?: string}>}
+ * @phpstan-type PhpExtConfig     array{extension-name?: string, priority?: int, support-zts?: bool, support-nts?: bool, build-path?: string|null, download-url-method?: string|list<string>, os-families?: non-empty-list<non-empty-string>, os-families-exclude?: non-empty-list<non-empty-string>, configure-options?: list<array{name: string, description?: string}>}
  */
 interface PackageInterface
 {
@@ -227,6 +227,15 @@ interface PackageInterface
      * Returns the release date of the package
      */
     public function getReleaseDate(): ?\DateTimeInterface;
+
+    /**
+     * Returns the publication date of the package as set by the repository.
+     *
+     * Unlike getReleaseDate() (which comes from the author-controlled `time`
+     * field), this is a server-set timestamp the package author cannot
+     * influence, or null if the repository did not provide one.
+     */
+    public function getPublishedDate(): ?\DateTimeImmutable;
 
     /**
      * Returns the stability of this package: one of (dev, alpha, beta, RC, stable)

@@ -658,4 +658,26 @@ JSON;
         (\PHP_VERSION_ID < 80100) and $attr->setAccessible(true);
         $attr->setValue($object, $value);
     }
+
+    public function testGitFallbackCanBeDisabled(): void
+    {
+        $this->httpDownloader->expects(
+            [['url' => 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject', 'status' => 404]],
+            true
+        );
+
+        $process = $this->getProcessExecutorMock();
+        $process->expects([], false, ['return' => 1]);
+
+        $driver = new GitLabDriver(['url' => 'https://gitlab.com/mygroup/myproject', 'allow-git-fallback' => false], $this->io, $this->config, $this->httpDownloader, $process);
+
+        try {
+            $driver->initialize();
+            self::fail('Expected the disabled git fallback to throw');
+        } catch (\RuntimeException $e) {
+            self::assertSame('Fallback to git driver disabled', $e->getMessage());
+            self::assertInstanceOf('Composer\Downloader\TransportException', $e->getPrevious());
+            self::assertSame(404, $e->getPrevious()->getCode());
+        }
+    }
 }

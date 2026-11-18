@@ -108,4 +108,27 @@ class RuleTest extends TestCase
 
         self::assertEquals('baz 1.1 relates to foo * -> satisfiable by foo[2.1].', $rule->getPrettyString($repositorySetMock, $requestMock, $pool, false));
     }
+
+    public function testGetRequiredPackageForLockedFilterListRemovedRule(): void
+    {
+        $package = self::getPackage('vendor/malware', '1.0');
+        $rule = new GenericRule([], Rule::RULE_LOCKED_FILTER_LIST_REMOVED, ['package' => $package]);
+
+        self::assertSame('vendor/malware', $rule->getRequiredPackage());
+    }
+
+    public function testPrettyStringForLockedFilterListRemovedRule(): void
+    {
+        $package = self::getPackage('vendor/malware', '1.0');
+        $pool = new Pool([$package]);
+        $repositorySetMock = $this->getMockBuilder('Composer\Repository\RepositorySet')->disableOriginalConstructor()->getMock();
+        $requestMock = $this->getMockBuilder('Composer\DependencyResolver\Request')->disableOriginalConstructor()->getMock();
+
+        $rule = new GenericRule([], Rule::RULE_LOCKED_FILTER_LIST_REMOVED, ['package' => $package]);
+
+        self::assertEquals(
+            'vendor/malware 1.0 was removed by a dependency policy (e.g. malware) and cannot be installed.',
+            $rule->getPrettyString($repositorySetMock, $requestMock, $pool, false)
+        );
+    }
 }

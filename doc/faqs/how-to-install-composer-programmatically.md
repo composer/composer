@@ -40,3 +40,14 @@ wget https://raw.githubusercontent.com/composer/getcomposer.org/f3108f64b4e1c1ce
 
 You may replace the commit hash by whatever the last commit hash is on
 https://github.com/composer/getcomposer.org/commits/main
+
+## Using the GitHub CLI util (`gh`)
+
+You can download and verify a `composer.phar` using the gh CLI utility as such:
+
+```shell
+gh release --repo composer/composer download --pattern composer.phar
+gh attestation verify --repo composer/composer composer.phar
+```
+
+Use the composer.phar as is or move it where needed afterwards.

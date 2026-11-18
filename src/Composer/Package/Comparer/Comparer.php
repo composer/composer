@@ -68,14 +68,14 @@ class Comparer
             return '';
         }
 
-        $strings = [];
-        foreach ($changed as $sectionKey => $itemSection) {
-            foreach ($itemSection as $itemKey => $item) {
-                $strings[] = $item."\r\n";
+        $string = '';
+        foreach ($changed as $itemSection) {
+            foreach ($itemSection as $item) {
+                $string .= $item . "\r\n\r\n";
             }
         }
 
-        return trim(implode("\r\n", $strings));
+        return trim($string);
     }
 
     public function doCompare(): void

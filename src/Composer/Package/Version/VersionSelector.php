@@ -24,6 +24,8 @@ use Composer\Composer;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Pcre\Preg;
+use Composer\Policy\CooldownPolicyConfig;
+use Composer\DependencyResolver\PolicyRemovalReason;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\PlatformRepository;
 use Composer\Semver\Constraint\Constraint;
@@ -46,12 +48,26 @@ class VersionSelector
     /** @var VersionParser */
     private $parser;
 
+    /** @var ?CooldownPolicyConfig */
+    private $cooldown;
+
+    /** @var ?array{package: PackageInterface, releaseDate: \DateTimeInterface} */
+    private $firstClearingWithheldCandidate = null;
+
+    /** @var list<array{package: PackageInterface, releaseDate: \DateTimeInterface}> */
+    private $withheldCandidates = [];
+
+    /** @var list<PackageInterface> */
+    private $platformRejectedCandidates = [];
+
     /**
-     * @param PlatformRepository $platformRepo If passed in, the versions found will be filtered against their requirements to eliminate any not matching the current platform packages
+     * @param PlatformRepository   $platformRepo If passed in, the versions found will be filtered against their requirements to eliminate any not matching the current platform packages
+     * @param CooldownPolicyConfig $cooldown     If passed in, versions still within the configured cooldown are skipped
      */
-    public function __construct(RepositorySet $repositorySet, ?PlatformRepository $platformRepo = null)
+    public function __construct(RepositorySet $repositorySet, ?PlatformRepository $platformRepo = null, ?CooldownPolicyConfig $cooldown = null)
     {
         $this->repositorySet = $repositorySet;
+        $this->cooldown = $cooldown;
         if ($platformRepo) {
             foreach ($platformRepo->getPackages() as $package) {
                 $this->platformConstraints[$package->getName()][] = new Constraint('==', $package->getVersion());
@@ -112,6 +128,13 @@ class VersionSelector
             return version_compare($b->getVersion(), $a->getVersion());
         });
 
+        $this->firstClearingWithheldCandidate = null;
+        $this->withheldCandidates = [];
+        $this->platformRejectedCandidates = [];
+        if ($this->cooldown !== null && $this->cooldown->hasCooldown() && $this->cooldown->block) {
+            $candidates = $this->filterCooldownCandidates($this->cooldown, $candidates, $io, $showWarnings);
+        }
+
         if (count($this->platformConstraints) > 0 && !($platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter)) {
             /** @var array<string, true> $alreadyWarnedNames */
             $alreadyWarnedNames = [];
@@ -166,6 +189,7 @@ class VersionSelector
                 }
 
                 if ($skip) {
+                    $this->platformRejectedCandidates[] = $pkg;
                     continue;
                 }
 
@@ -186,6 +210,103 @@ class VersionSelector
         }
 
         return $package;
+    }
+
+    /**
+     * Returns the candidate withheld by the cooldown in the last findBestCandidate() call that becomes available first
+     *
+     * @return ?array{package: PackageInterface, releaseDate: \DateTimeInterface}
+     * @internal
+     */
+    public function getFirstClearingWithheldCandidate(): ?array
+    {
+        return $this->firstClearingWithheldCandidate;
+    }
+
+    /**
+     * Returns every candidate withheld by the cooldown in the last findBestCandidate() call, in candidate order
+     *
+     * @return list<array{package: PackageInterface, releaseDate: \DateTimeInterface}>
+     * @internal
+     */
+    public function getWithheldCandidates(): array
+    {
+        return $this->withheldCandidates;
+    }
+
+    /**
+     * Returns every candidate skipped for its platform requirements in the last findBestCandidate() call, in candidate order
+     *
+     * @return list<PackageInterface>
+     * @internal
+     */
+    public function getPlatformRejectedCandidates(): array
+    {
+        return $this->platformRejectedCandidates;
+    }
+
+    /**
+     * Drops candidates still inside the cooldown so the selected version is one the solver will accept
+     *
+     * @param PackageInterface[] $candidates
+     * @param callable(PackageInterface):bool|bool $showWarnings
+     * @return PackageInterface[]
+     */
+    private function filterCooldownCandidates(CooldownPolicyConfig $cooldown, array $candidates, ?IOInterface $io, $showWarnings): array
+    {
+        $now = new \DateTimeImmutable();
+        /** @var array<string, true> $alreadySeenNames */
+        $alreadySeenNames = [];
+        /** @var array<string, true> $acceptedNames */
+        $acceptedNames = [];
+        $result = [];
+
+        foreach ($candidates as $pkg) {
+            // decide on the aliased package, as the pool filter does
+            $target = $pkg instanceof AliasPackage ? $pkg->getAliasOf() : $pkg;
+            if ($target->isDev() || $cooldown->isIgnored($target, 'block')) {
+                $result[] = $pkg;
+                $acceptedNames[$pkg->getName()] = true;
+                continue;
+            }
+
+            $cooldown->assertPublishedTimeProvided($target);
+            $releaseDate = $cooldown->getEffectiveDate($target);
+            if ($releaseDate === null || !$cooldown->isWithinCooldown($releaseDate, $now)) {
+                $result[] = $pkg;
+                $acceptedNames[$pkg->getName()] = true;
+                continue;
+            }
+
+            if ($this->firstClearingWithheldCandidate === null || $releaseDate < $this->firstClearingWithheldCandidate['releaseDate']) {
+                $this->firstClearingWithheldCandidate = ['package' => $pkg, 'releaseDate' => $releaseDate];
+            }
+            $this->withheldCandidates[] = ['package' => $pkg, 'releaseDate' => $releaseDate];
+
+            // ranked below a usable candidate (e.g. an LTS backport), so withholding it does not affect the pick
+            if (isset($acceptedNames[$pkg->getName()])) {
+                continue;
+            }
+
+            $isLatestVersion = !isset($alreadySeenNames[$pkg->getName()]);
+            $alreadySeenNames[$pkg->getName()] = true;
+            if ($io !== null && ($showWarnings === true || (is_callable($showWarnings) && $showWarnings($pkg)))) {
+                $reason = PolicyRemovalReason::cooldown(
+                    $pkg->getName(),
+                    $pkg->getPrettyVersion(),
+                    $releaseDate->format(\DateTimeInterface::ATOM),
+                    $cooldown->formatTimeUntilAvailable($releaseDate, $now),
+                    $target->getPublishedDate() !== null ? 'published-time' : 'time'
+                );
+                $io->writeError(
+                    '<warning>Cannot use '.$pkg->getPrettyName().($isLatestVersion ? "'s latest version" : '').' '.$pkg->getPrettyVersion().' as it '.$reason->getVerb(false).' '.$reason->getDescription().'.</>',
+                    true,
+                    $isLatestVersion ? IOInterface::NORMAL : IOInterface::VERBOSE
+                );
+            }
+        }
+
+        return $result;
     }
 
     /**

@@ -20,9 +20,12 @@ use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface
 use Composer\Installer;
 use Composer\Installer\ProjectInstaller;
 use Composer\Installer\SuggestedPackagesReporter;
+use Composer\Console\ProgramStatus;
+use Composer\IO\ConsoleIO;
 use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
 use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\PolicyRemovalReason;
 use Composer\Package\Version\VersionSelector;
 use Composer\Package\AliasPackage;
 use Composer\Pcre\Preg;
@@ -80,6 +83,7 @@ class CreateProjectCommand extends BaseCommand
                 new InputOption('repository', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Add custom repositories to look the package up, either by URL or using JSON arrays'),
                 new InputOption('repository-url', null, InputOption::VALUE_REQUIRED, 'DEPRECATED: Use --repository instead.'),
                 new InputOption('add-repository', null, InputOption::VALUE_NONE, 'Add the custom repository in the composer.json. If a lock file is present it will be deleted and an update will be run instead of install.'),
+                new InputOption('require', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Require additional package(s) to composer.json after installing the project. If a lock file is present it will be deleted and an update will be run instead of install.'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables installation of require-dev packages (enabled by default, only present for BC).'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables installation of require-dev packages.'),
                 new InputOption('no-custom-installers', null, InputOption::VALUE_NONE, 'DEPRECATED: Use no-plugins instead.'),
@@ -91,7 +95,9 @@ class CreateProjectCommand extends BaseCommand
                 new InputOption('no-install', null, InputOption::VALUE_NONE, 'Whether to skip installation of the package dependencies.'),
                 new InputOption('no-audit', null, InputOption::VALUE_NONE, 'Whether to skip auditing of the installed package dependencies (can also be set via the COMPOSER_NO_AUDIT=1 env var).'),
                 new InputOption('audit-format', null, InputOption::VALUE_REQUIRED, 'Audit output format. Must be "table", "plain", "json" or "summary".', Auditor::FORMAT_SUMMARY, Auditor::FORMATS),
-                new InputOption('no-security-blocking', null, InputOption::VALUE_NONE, 'Allows installing packages with security advisories or that are abandoned (can also be set via the COMPOSER_NO_SECURITY_BLOCKING=1 env var).'),
+                new InputOption('no-security-blocking', null, InputOption::VALUE_NONE, 'DEPRECATED: use --no-blocking instead. Allows installing packages with security advisories, that are abandoned or that are still in the cooldown period (can also be set via the COMPOSER_NO_SECURITY_BLOCKING=1 env var).'),
+                new InputOption('no-blocking', null, InputOption::VALUE_NONE, 'Disables all policy blocking during this command, including the cooldown period (can also be set via the COMPOSER_NO_BLOCKING=1 env var).'),
+                new InputOption('no-cooldown', null, InputOption::VALUE_NONE, 'Disables the cooldown policy blocking during this command, other policies still apply.'),
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
                 new InputOption('ask', null, InputOption::VALUE_NONE, 'Whether to ask for project directory.'),
@@ -168,16 +174,18 @@ EOT
             $input->getOption('no-install'),
             $this->getPlatformRequirementFilter($input),
             !$input->getOption('no-secure-http'),
-            $input->getOption('add-repository')
+            $input->getOption('add-repository'),
+            $input->getOption('require')
         );
     }
 
     /**
      * @param string|array<string>|null $repositories
+     * @param array<string> $requiredPackages
      *
      * @throws \Exception
      */
-    public function installProject(IOInterface $io, Config $config, InputInterface $input, ?string $packageName = null, ?string $directory = null, ?string $packageVersion = null, ?string $stability = 'stable', bool $preferSource = false, bool $preferDist = false, bool $installDevPackages = false, $repositories = null, bool $disablePlugins = false, bool $disableScripts = false, bool $noProgress = false, bool $noInstall = false, ?PlatformRequirementFilterInterface $platformRequirementFilter = null, bool $secureHttp = true, bool $addRepository = false): int
+    public function installProject(IOInterface $io, Config $config, InputInterface $input, ?string $packageName = null, ?string $directory = null, ?string $packageVersion = null, ?string $stability = 'stable', bool $preferSource = false, bool $preferDist = false, bool $installDevPackages = false, $repositories = null, bool $disablePlugins = false, bool $disableScripts = false, bool $noProgress = false, bool $noInstall = false, ?PlatformRequirementFilterInterface $platformRequirementFilter = null, bool $secureHttp = true, bool $addRepository = false, array $requiredPackages = []): int
     {
         $oldCwd = Platform::getCwd();
 
@@ -198,11 +206,8 @@ EOT
             $installedFromVcs = false;
         }
 
-        if ($repositories !== null && $addRepository && is_file('composer.lock')) {
-            unlink('composer.lock');
-        }
-
         $composer = $this->createComposerInstance($input, $io, null, $disablePlugins, $disableScripts);
+        $flushLockFile = false;
 
         // add the repository to the composer.json and use it for the install run later
         if ($repositories !== null && $addRepository) {
@@ -220,9 +225,33 @@ EOT
                 } else {
                     $configSource->addRepository($name, $repoConfig, false);
                 }
+                $flushLockFile = true;
 
                 $composer = $this->createComposerInstance($input, $io, null, $disablePlugins);
             }
+        }
+
+        // add packages to be installed in package.json
+        if (\count($requiredPackages) > 0) {
+            $configSource = new JsonConfigSource(new JsonFile('composer.json'));
+            $flushLockFile = true;
+
+            foreach ($requiredPackages as $nameColonConstraint) {
+                $nameColonConstraintExploded = explode(':', $nameColonConstraint);
+                $nameColonConstraintExploded[1] = $nameColonConstraintExploded[1] ?? '*';
+
+                $configSource->addLink(
+                    'require',
+                    $nameColonConstraintExploded[0],
+                    $nameColonConstraintExploded[1]
+                );
+            }
+
+            $composer = $this->createComposerInstance($input, $io, null, $disablePlugins);
+        }
+
+        if ($flushLockFile && is_file('composer.lock')) {
+            unlink('composer.lock');
         }
 
         $process = $composer->getLoop()->getProcessExecutor();
@@ -248,7 +277,8 @@ EOT
                 ->setOptimizeAutoloader($config->get('optimize-autoloader'))
                 ->setClassMapAuthoritative($config->get('classmap-authoritative'))
                 ->setApcuAutoloader($config->get('apcu-autoloader'))
-                ->setAuditConfig($this->createAuditConfig($config, $input));
+                ->setPolicyConfig($this->createPolicyConfig($config, $input))
+                ->setAuditConfig($this->createAuditConfig($input));
 
             if (!$composer->getLocker()->isLocked()) {
                 $installer->setUpdate(true);
@@ -416,14 +446,19 @@ EOT
         $platformOverrides = $config->get('platform');
         $platformRepo = new PlatformRepository([], $platformOverrides);
 
+        $cooldown = $this->getBlockingCooldownPolicy($config, $input);
+
         // find the latest version if there are multiple
-        $versionSelector = new VersionSelector($repositorySet, $platformRepo);
+        $versionSelector = new VersionSelector($repositorySet, $platformRepo, $cooldown);
         $package = $versionSelector->findBestCandidate($name, $packageVersion, $stability, $platformRequirementFilter, 0, $io);
 
         if (!$package) {
             $errorMessage = "Could not find package $name with " . ($packageVersion ? "version $packageVersion" : "stability $stability");
             if (!($platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter) && $versionSelector->findBestCandidate($name, $packageVersion, $stability, PlatformRequirementFilterFactory::ignoreAll())) {
                 throw new \InvalidArgumentException($errorMessage .' in a version installable using your PHP version, PHP extensions and Composer version.');
+            }
+            if ($cooldown !== null && false !== (new VersionSelector($repositorySet, $platformRepo))->findBestCandidate($name, $packageVersion, $stability, $platformRequirementFilter)) {
+                throw new \InvalidArgumentException($errorMessage .' that is past the cooldown period configured in "policy.cooldown". '.PolicyRemovalReason::COOLDOWN_REMEDY);
             }
 
             throw new \InvalidArgumentException($errorMessage .'.');
@@ -436,6 +471,10 @@ EOT
                 $this->getIO()->writeError('Received '.$signal.', aborting', true, IOInterface::DEBUG);
                 $fs = new Filesystem();
                 $fs->removeDirectory($realDir);
+                $io = $this->getIO();
+                if ($io instanceof ConsoleIO) {
+                    $io->writeProgramStatus(ProgramStatus::idle());
+                }
                 $handler->exitWithLastSignal();
             });
         }

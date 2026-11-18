@@ -17,6 +17,35 @@ use Generator;
 
 class StatusCommandTest extends TestCase
 {
+    public function testStatusForInstalledDistFiles(): void
+    {
+        $directory = $this->initTempComposer([
+            'require' => ['root/req' => '1.*'],
+            'repositories' => [],
+        ]);
+        file_put_contents('package.txt', 'original content');
+        $package = self::getPackage('root/req');
+        $package->setDistType('file');
+        $package->setDistUrl('file://'.$directory.'/package.txt');
+        $package->setInstallationSource('dist');
+        $this->createComposerLock([$package]);
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'install']);
+        $appTester->assertCommandIsSuccessful();
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'status', '--verbose' => true]);
+        $appTester->assertCommandIsSuccessful();
+        self::assertSame('No local changes', trim($appTester->getDisplay(true)));
+
+        file_put_contents('vendor/root/req/package.txt', 'modified content');
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'status', '--verbose' => true]);
+        self::assertSame(1, $appTester->getStatusCode());
+        self::assertStringContainsString('package.txt', $appTester->getDisplay(true));
+        self::assertStringNotContainsString('Failed to detect changes:', $appTester->getDisplay(true));
+    }
+
     public function testNoLocalChanges(): void
     {
         $this->initTempComposer(['require' => ['root/req' => '1.*']]);
@@ -93,15 +122,15 @@ class StatusCommandTest extends TestCase
         ];
 
         yield 'locally modified package from dist' => [
-            ['require' => ['smarty/smarty' => '^3.1']],
+            ['require' => ['composer/ca-bundle' => '^1.5']],
             ['--verbose' => true],
             [
-                'name' => 'smarty/smarty',
-                'version' => '3.1.7',
+                'name' => 'composer/ca-bundle',
+                'version' => '1.5.12',
                 'installation_source' => 'dist',
                 'type' => 'zip',
-                'url' => 'https://www.smarty.net/files/Smarty-3.1.7.zip',
-                'reference' => null,
+                'url' => 'https://api.github.com/repos/composer/ca-bundle/zipball/00a2f4201641d5c53f7fc0195e6c8d9fcc321a78',
+                'reference' => '00a2f4201641d5c53f7fc0195e6c8d9fcc321a78',
             ],
         ];
     }

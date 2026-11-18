@@ -12,11 +12,17 @@
 
 namespace Composer\Test\Repository;
 
+use Composer\IO\NullIO;
+use Composer\Package\Package;
 use Composer\Package\RootPackageInterface;
+use Composer\Repository\ComposerRepository;
 use Composer\Repository\FilesystemRepository;
+use Composer\Repository\RepositoryManager;
+use Composer\Test\Mock\FactoryMock;
 use Composer\Test\TestCase;
 use Composer\Json\JsonFile;
 use Composer\Util\Filesystem;
+use Composer\Util\HttpDownloader;
 
 class FilesystemRepositoryTest extends TestCase
 {
@@ -122,6 +128,42 @@ class FilesystemRepositoryTest extends TestCase
         $repository->addPackage(self::getPackage('mypkg2', '1.2.3'));
         $repository->addPackage(self::getPackage('mypkg', '0.1.10'));
         $repository->write(true, $im);
+    }
+
+    public function testRepositoryWriteRemovesRestorableHttpHeaders(): void
+    {
+        $dir = self::getUniqueTmpDirectory();
+        $file = $dir.'/vendor/composer/installed.json';
+
+        $io = new NullIO;
+        $config = FactoryMock::createConfig();
+        $httpDownloader = $this->getMockBuilder(HttpDownloader::class)->disableOriginalConstructor()->getMock();
+        $rm = new RepositoryManager($io, $config, $httpDownloader);
+        $options = ['http' => ['header' => ['API-TOKEN: secret']]];
+        $rm->addRepository(new ComposerRepository(['url' => 'https://example.org', 'options' => $options], $io, $config, $httpDownloader));
+
+        $im = $this->getMockBuilder('Composer\Installer\InstallationManager')->disableOriginalConstructor()->getMock();
+        $im->method('getInstallPath')->willReturn($dir.'/vendor/a/a');
+
+        $package = new Package('a/a', '1.0.0.0', '1.0.0');
+        $package->setDistType('zip');
+        $package->setDistUrl('https://example.org/dists/a.zip');
+        $package->setTransportOptions($options);
+
+        $repository = new FilesystemRepository(new JsonFile($file));
+        $repository->setRepositoryManager($rm);
+        $repository->addPackage($package);
+        $repository->write(true, $im);
+
+        $data = (new JsonFile($file))->read();
+        self::assertArrayNotHasKey('transport-options', $data['packages'][0]);
+
+        // e.g. composer reinstall downloads from the installed packages again so they need their headers
+        $repository = new FilesystemRepository(new JsonFile($file));
+        $repository->setRepositoryManager($rm);
+        self::assertSame($options, $repository->getPackages()[0]->getTransportOptions());
+
+        (new Filesystem())->removeDirectory($dir);
     }
 
     public function testRepositoryWritesInstalledPhp(): void

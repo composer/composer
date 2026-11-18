@@ -78,7 +78,7 @@ class PoolBuilder
     private $io;
     /**
      * @var array[]
-     * @phpstan-var array<string, AliasPackage[]>
+     * @phpstan-var array<int, AliasPackage[]>
      */
     private $aliasMap = [];
     /**
@@ -156,6 +156,12 @@ class PoolBuilder
     /** @var ?SecurityAdvisoryPoolFilter */
     private $securityAdvisoryPoolFilter;
 
+    /** @var ?FilterListPoolFilter */
+    private $filterListPoolFilter;
+
+    /** @var ?CooldownPoolFilter */
+    private $cooldownPoolFilter;
+
     /**
      * @param int[] $acceptableStabilities array of stability => BasePackage::STABILITY_* value
      * @phpstan-param array<key-of<BasePackage::STABILITIES>, BasePackage::STABILITY_*> $acceptableStabilities
@@ -167,7 +173,7 @@ class PoolBuilder
      * @phpstan-param array<string, string> $rootReferences
      * @param array<string, ConstraintInterface> $temporaryConstraints Runtime temporary constraints that will be used to filter packages
      */
-    public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, IOInterface $io, ?EventDispatcher $eventDispatcher = null, ?PoolOptimizer $poolOptimizer = null, array $temporaryConstraints = [], ?SecurityAdvisoryPoolFilter $securityAdvisoryPoolFilter = null)
+    public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, IOInterface $io, ?EventDispatcher $eventDispatcher = null, ?PoolOptimizer $poolOptimizer = null, array $temporaryConstraints = [], ?SecurityAdvisoryPoolFilter $securityAdvisoryPoolFilter = null, ?FilterListPoolFilter $filterListPoolFilter = null, ?CooldownPoolFilter $cooldownPoolFilter = null)
     {
         $this->acceptableStabilities = $acceptableStabilities;
         $this->stabilityFlags = $stabilityFlags;
@@ -178,6 +184,8 @@ class PoolBuilder
         $this->io = $io;
         $this->temporaryConstraints = $temporaryConstraints;
         $this->securityAdvisoryPoolFilter = $securityAdvisoryPoolFilter;
+        $this->filterListPoolFilter = $filterListPoolFilter;
+        $this->cooldownPoolFilter = $cooldownPoolFilter;
     }
 
     /**
@@ -205,6 +213,7 @@ class PoolBuilder
      */
     public function buildPool(array $repositories, Request $request): Pool
     {
+        $start = microtime(true);
         $this->restrictedPackagesList = $request->getRestrictedPackages() !== null ? array_flip($request->getRestrictedPackages()) : null;
 
         if (\count($request->getUpdateAllowList()) > 0) {
@@ -216,7 +225,7 @@ class PoolBuilder
             }
 
             foreach ($request->getLockedRepository()->getPackages() as $lockedPackage) {
-                if (!$this->isUpdateAllowed($lockedPackage)) {
+                if (!$request->isInUpdateAllowList($lockedPackage->getName())) {
                     // remember which packages we skipped loading remote content for in this partial update
                     $this->skippedLoad[$lockedPackage->getName()][] = $lockedPackage;
                     foreach ($lockedPackage->getReplaces() as $link) {
@@ -299,8 +308,8 @@ class PoolBuilder
 
                     $constraint = $this->temporaryConstraints[$packageName];
                     $packageAndAliases = [$i => $package];
-                    if (isset($this->aliasMap[spl_object_hash($package)])) {
-                        $packageAndAliases += $this->aliasMap[spl_object_hash($package)];
+                    if (isset($this->aliasMap[spl_object_id($package)])) {
+                        $packageAndAliases += $this->aliasMap[spl_object_id($package)];
                     }
 
                     $found = false;
@@ -348,11 +357,13 @@ class PoolBuilder
         $this->skippedLoad = [];
         $this->indexCounter = 0;
 
-        $this->io->debug('Built pool.');
+        $this->io->debug('Built pool in '.(microtime(true) - $start).'s');
 
         // filter vulnerable packages before optimizing the pool otherwise we may end up with inconsistent state where the optimizer took away versions
         // that were not vulnerable and now suddenly the vulnerable ones are removed and we are missing some versions to make it solvable
         $pool = $this->runSecurityAdvisoryFilter($pool, $repositories, $request);
+        $pool = $this->runFilterListFilter($pool, $request);
+        $pool = $this->runCooldownFilter($pool, $request);
         $pool = $this->runOptimizer($request, $pool);
 
         Intervals::clear();
@@ -473,7 +484,7 @@ class PoolBuilder
         $this->packages[$index] = $package;
 
         if ($package instanceof AliasPackage) {
-            $this->aliasMap[spl_object_hash($package->getAliasOf())][$index] = $package;
+            $this->aliasMap[spl_object_id($package->getAliasOf())][$index] = $package;
         }
 
         $name = $package->getName();
@@ -509,7 +520,7 @@ class PoolBuilder
 
             $newIndex = $this->indexCounter++;
             $this->packages[$newIndex] = $aliasPackage;
-            $this->aliasMap[spl_object_hash($aliasPackage->getAliasOf())][$newIndex] = $aliasPackage;
+            $this->aliasMap[spl_object_id($aliasPackage->getAliasOf())][$newIndex] = $aliasPackage;
         }
 
         foreach ($package->getRequires() as $link) {
@@ -621,21 +632,6 @@ class PoolBuilder
         }
 
         return $matches;
-    }
-
-    /**
-     * Checks whether the update allow list allows this package in the lock file to be updated
-     */
-    private function isUpdateAllowed(BasePackage $package): bool
-    {
-        foreach ($this->updateAllowList as $pattern) {
-            $patternRegexp = BasePackage::packageNameToRegexp($pattern);
-            if (Preg::isMatch($patternRegexp, $package->getName())) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private function warnAboutNonMatchingUpdateAllowList(Request $request): void
@@ -775,12 +771,12 @@ class PoolBuilder
 
         unset($this->loadedPerRepo[$repoIndex][$package->getName()][$package->getVersion()]);
         unset($this->packages[$index]);
-        if (isset($this->aliasMap[spl_object_hash($package)])) {
-            foreach ($this->aliasMap[spl_object_hash($package)] as $aliasIndex => $aliasPackage) {
+        if (isset($this->aliasMap[spl_object_id($package)])) {
+            foreach ($this->aliasMap[spl_object_id($package)] as $aliasIndex => $aliasPackage) {
                 unset($this->loadedPerRepo[$repoIndex][$aliasPackage->getName()][$aliasPackage->getVersion()]);
                 unset($this->packages[$aliasIndex]);
             }
-            unset($this->aliasMap[spl_object_hash($package)]);
+            unset($this->aliasMap[spl_object_id($package)]);
         }
     }
 
@@ -806,6 +802,36 @@ class PoolBuilder
         $this->io->write(sprintf('Pool optimizer completed in %.3f seconds', microtime(true) - $before), true, IOInterface::VERY_VERBOSE);
         $this->io->write(sprintf(
             '<info>Found %s package versions referenced in your dependency graph. %s (%d%%) were optimized away.</info>',
+            number_format($total),
+            number_format($filtered),
+            round(100 / $total * $filtered)
+        ), true, IOInterface::VERY_VERBOSE);
+
+        return $pool;
+    }
+
+    private function runFilterListFilter(Pool $pool, Request $request): Pool
+    {
+        if (null === $this->filterListPoolFilter) {
+            return $pool;
+        }
+
+        $this->io->debug('Running filter list pool filter.');
+
+        $before = microtime(true);
+        $total = \count($pool->getPackages());
+
+        $pool = $this->filterListPoolFilter->filter($pool, $request);
+
+        $filtered = $total - \count($pool->getPackages());
+
+        if (0 === $filtered) {
+            return $pool;
+        }
+
+        $this->io->write(sprintf('Filter list pool filter completed in %.3f seconds', microtime(true) - $before), true, IOInterface::VERY_VERBOSE);
+        $this->io->write(sprintf(
+            '<info>Found %s package versions referenced in your dependency graph. %s (%d%%) were filtered away by dependency policies.</info>',
             number_format($total),
             number_format($filtered),
             round(100 / $total * $filtered)
@@ -845,5 +871,79 @@ class PoolBuilder
         ), true, IOInterface::VERY_VERBOSE);
 
         return $pool;
+    }
+
+    private function runCooldownFilter(Pool $pool, Request $request): Pool
+    {
+        if (null === $this->cooldownPoolFilter) {
+            return $pool;
+        }
+
+        $this->io->debug('Running cooldown pool filter.');
+
+        $before = microtime(true);
+        $total = \count($pool->getPackages());
+
+        $pool = $this->cooldownPoolFilter->filter($pool, $request);
+        $this->writeCooldownUnverifiedVersions($this->cooldownPoolFilter);
+
+        $filtered = $total - \count($pool->getPackages());
+
+        if (0 === $filtered) {
+            return $pool;
+        }
+
+        $this->io->write(sprintf('Cooldown pool filter completed in %.3f seconds', microtime(true) - $before), true, IOInterface::VERY_VERBOSE);
+        $this->io->writeError(sprintf(
+            '<warning>%d package version(s) withheld by the cooldown policy%s</warning>',
+            $filtered,
+            $this->io->isVeryVerbose() ? ':' : ' (run with -vv to list them).'
+        ));
+        $this->writeCooldownRemovedVersions($pool);
+
+        return $pool;
+    }
+
+    private function writeCooldownRemovedVersions(Pool $pool): void
+    {
+        if (!$this->io->isVeryVerbose()) {
+            return;
+        }
+
+        foreach ($pool->getAllPolicyRemovedVersions() as $packageName => $versions) {
+            foreach ($versions as $reason) {
+                $info = $reason->getCooldownInfo();
+                // Withheld versions are also recorded under replaced names for problem reporting, list each package once
+                if ($info === null || $reason->getPackageName() !== $packageName) {
+                    continue;
+                }
+
+                $this->io->writeError(sprintf(
+                    '  - %s (%s) published %s, available in %s',
+                    $packageName,
+                    $reason->getPrettyVersion(),
+                    $info['releaseDate'],
+                    $info['availableIn']
+                ));
+            }
+        }
+    }
+
+    private function writeCooldownUnverifiedVersions(CooldownPoolFilter $filter): void
+    {
+        foreach ($filter->getUnverifiedVersions() as $repoName => $versions) {
+            $this->io->writeError(sprintf(
+                '<warning>The publication date of %d package version(s) from %s could not be verified, the cooldown policy relied on the time field set by the package authors%s</warning>',
+                \count($versions),
+                $repoName,
+                $this->io->isVeryVerbose() ? ':' : ' (run with -vv to list them).'
+            ));
+
+            if ($this->io->isVeryVerbose()) {
+                foreach ($versions as $version) {
+                    $this->io->writeError('  - '.$version);
+                }
+            }
+        }
     }
 }

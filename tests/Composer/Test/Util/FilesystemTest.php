@@ -196,6 +196,54 @@ class FilesystemTest extends TestCase
     }
 
     /**
+     * @dataProvider providePathsWithTrailingSlashes
+     */
+    public function testTrimTrailingSlash(string $expected, string $path): void
+    {
+        self::assertSame($expected, Filesystem::trimTrailingSlash($path));
+    }
+
+    public static function providePathsWithTrailingSlashes(): array
+    {
+        return [
+            ['', ''],
+            ['/', '/'],
+            ['//', '//'],
+            ['\\', '\\'],
+            ['/\\/', '/\\/'],
+            ['/foo', '/foo///'],
+            ['C:\\foo', 'C:\\foo\\'],
+            ['relative/path', 'relative/path'],
+            ['relative/path', 'relative/path/\\'],
+            ["/foo/\n", "/foo/\n"],
+        ];
+    }
+
+    /**
+     * @dataProvider providePlatformPaths
+     */
+    public function testGetPlatformPath(string $path, string $unixPath, string $windowsPath): void
+    {
+        self::assertSame(Platform::isWindows() ? $windowsPath : $unixPath, Filesystem::getPlatformPath($path));
+    }
+
+    public static function providePlatformPaths(): array
+    {
+        return [
+            ['', '', ''],
+            ['/foo', '/foo', '/foo'],
+            ['relative/path', 'relative/path', 'relative/path'],
+            ['file:///foo', '/foo', '/foo'],
+            ['FiLe:///foo', '/foo', '/foo'],
+            ['file:///c:/foo', '/c:/foo', 'c:/foo'],
+            ['file:///C/foo', '/C/foo', 'C:/foo'],
+            ['file://', '', ''],
+            ['file:/foo', 'file:/foo', 'file:/foo'],
+            ['http://example.org', 'http://example.org', 'http://example.org'],
+        ];
+    }
+
+    /**
      * @dataProvider provideNormalizedPaths
      */
     public function testNormalizePath(string $expected, string $actual): void
@@ -375,6 +423,138 @@ class FilesystemTest extends TestCase
         $result2 = $fs->copy($this->testFile, $this->workingDir . '/testfile.file');
         self::assertTrue($result2);
         self::assertFileExists($this->workingDir . '/testfile.file');
+    }
+
+    public function testSafeFilePutContentsReplacesTheFileInsteadOfRewritingItInPlace(): void
+    {
+        $this->fs->ensureDirectoryExists($this->workingDir);
+        $file = $this->workingDir.'/file';
+        $hardlink = $this->workingDir.'/hardlink';
+        file_put_contents($file, 'original');
+
+        if (!@link($file, $hardlink)) {
+            $this->markTestSkipped('Hardlinks are not supported here');
+        }
+
+        self::assertSame(3, Filesystem::safeFilePutContents($file, 'new'));
+
+        self::assertSame('new', file_get_contents($file));
+        // the hardlinked file shares the inode of the original file, it must not have been rewritten
+        self::assertSame('original', file_get_contents($hardlink));
+
+        clearstatcache();
+        self::assertNotSame(fileinode($hardlink), fileinode($file), 'The file should have been replaced by a new inode');
+    }
+
+    public function testSafeFilePutContentsLeavesNoTempFileBehind(): void
+    {
+        $this->fs->ensureDirectoryExists($this->workingDir);
+        $file = $this->workingDir.'/file';
+
+        self::assertSame(3, Filesystem::safeFilePutContents($file, 'new'));
+        self::assertSame(7, Filesystem::safeFilePutContents($file, 'updated'));
+
+        self::assertSame('updated', file_get_contents($file));
+        self::assertSame(['file'], array_values(array_diff((array) scandir($this->workingDir), ['.', '..'])));
+    }
+
+    public function testSafeFilePutContentsPreservesPermissions(): void
+    {
+        if (Platform::isWindows()) {
+            $this->markTestSkipped('Does not apply on Windows');
+        }
+
+        $this->fs->ensureDirectoryExists($this->workingDir);
+        $file = $this->workingDir.'/file';
+        file_put_contents($file, 'original');
+        chmod($file, 0640);
+
+        Filesystem::safeFilePutContents($file, 'new');
+
+        clearstatcache();
+        self::assertSame('640', decoct(fileperms($file) & 0777));
+    }
+
+    public function testSafeFilePutContentsPreservesGroup(): void
+    {
+        if (Platform::isWindows() || !\function_exists('posix_getgroups')) {
+            $this->markTestSkipped('Requires POSIX groups');
+        }
+
+        $groups = posix_getgroups();
+        $groups = false === $groups ? [] : array_values(array_diff($groups, [posix_getegid()]));
+        if ([] === $groups) {
+            $this->markTestSkipped('Requires the current user to be in a secondary group');
+        }
+
+        $this->fs->ensureDirectoryExists($this->workingDir);
+        $file = $this->workingDir.'/file';
+        file_put_contents($file, 'original');
+        if (!@chgrp($file, $groups[0])) {
+            $this->markTestSkipped('Could not change the file group');
+        }
+
+        Filesystem::safeFilePutContents($file, 'new');
+
+        clearstatcache();
+        self::assertSame('new', file_get_contents($file));
+        self::assertSame($groups[0], filegroup($file));
+    }
+
+    public function testSafeFilePutContentsWritesThroughSymlinks(): void
+    {
+        $this->fs->ensureDirectoryExists($this->workingDir);
+        $file = $this->workingDir.'/file';
+        $symlink = $this->workingDir.'/symlink';
+        file_put_contents($file, 'original');
+
+        if (!@symlink($file, $symlink)) {
+            $this->markTestSkipped('Symlinks are not supported here');
+        }
+
+        Filesystem::safeFilePutContents($symlink, 'new');
+
+        clearstatcache();
+        self::assertTrue(is_link($symlink), 'The symlink should not have been replaced by a regular file');
+        self::assertSame('new', file_get_contents($file));
+    }
+
+    public function testFilePutContentsIfModifiedLeavesUnmodifiedFilesAlone(): void
+    {
+        $this->fs->ensureDirectoryExists($this->workingDir);
+        $file = $this->workingDir.'/file';
+        $hardlink = $this->workingDir.'/hardlink';
+        file_put_contents($file, 'original');
+
+        if (!@link($file, $hardlink)) {
+            $this->markTestSkipped('Hardlinks are not supported here');
+        }
+
+        $inode = fileinode($file);
+        self::assertSame(0, $this->fs->filePutContentsIfModified($file, 'original'));
+
+        clearstatcache();
+        self::assertSame($inode, fileinode($file), 'The file should not have been touched at all');
+    }
+
+    public function testSafeCopyReplacesTheTargetInsteadOfRewritingItInPlace(): void
+    {
+        $this->fs->ensureDirectoryExists($this->workingDir);
+        $source = $this->workingDir.'/source';
+        $target = $this->workingDir.'/target';
+        $hardlink = $this->workingDir.'/hardlink';
+        file_put_contents($source, 'new');
+        file_put_contents($target, 'original');
+
+        if (!@link($target, $hardlink)) {
+            $this->markTestSkipped('Hardlinks are not supported here');
+        }
+
+        $this->fs->safeCopy($source, $target);
+
+        self::assertSame('new', file_get_contents($target));
+        self::assertSame('original', file_get_contents($hardlink));
+        self::assertSame(['hardlink', 'source', 'target'], array_values(array_diff((array) scandir($this->workingDir), ['.', '..'])));
     }
 
     public function testCopyThenRemove(): void

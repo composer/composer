@@ -26,6 +26,9 @@ require __DIR__.'/../vendor/composer/InstalledVersions.php';
 
 Platform::putEnv('COMPOSER_TESTS_ARE_RUNNING', '1');
 
+// allow the test suite to exercise the tar/phar code paths on PHP < 8.0 (no-op on PHP 8.0+)
+Platform::putEnv('COMPOSER_ALLOW_UNSAFE_PHAR_METADATA', '1');
+
 // ensure Windows color support detection does not attempt to use colors
 // as this is dependent on env vars and not actual stream capabilities, see
 // https://github.com/composer/composer/issues/11598
