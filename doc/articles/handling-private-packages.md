@@ -6,19 +6,40 @@
 
 # Private Packagist
 
-[Private Packagist](https://packagist.com) is a commercial package hosting product
-offering professional support and web based management of private and public packages,
-and granular access permissions. Private Packagist provides mirroring for packages' zip
-files which makes installs faster and independent from third party systems - e.g.
-you can deploy even if GitHub is down because your zip files are mirrored.
+[Private Packagist](https://packagist.com/?utm_source=getcomposer.org&utm_medium=docs&utm_campaign=privatepackages)
+is a commercial Composer repository service by the team behind Composer and
+Packagist.org. It hosts your private packages and mirrors your third-party
+dependencies, including their zip files, so installs are faster and you can deploy
+even when GitHub or another source is down.
 
-Private Packagist is available as a hosted SaaS solution or as an on-premise self-hosted
-package, providing an interactive set up experience.
+Private Packagist also:
 
-Some of Private Packagist's revenue is used to pay for Composer and Packagist.org
-development and hosting so using it is a good way to support the maintenance of
-these open source projects financially. You can find more information about how to
-set up your own package archive on [Packagist.com](https://packagist.com).
+- updates package information through webhooks from GitHub, GitLab and Bitbucket
+  as soon as you push, without waiting for a rebuild
+- gives every developer and CI environment its own authentication token, with
+  access control per team and package, synchronized with your GitHub, GitLab or
+  Bitbucket organization
+- offers suborganizations: separate repositories for clients or projects, each
+  with its own packages and access
+- monitors your projects' `composer.lock` files for security advisories and alerts
+  you by email, Slack or Microsoft Teams
+- blocks malware-flagged package versions on the server for every Composer version,
+  and can hold back new releases with a cooldown period
+- comments on pull requests with a summary of all dependency changes
+- shows which of your projects use a package, with install statistics and an
+  overview of licenses
+- lets you distribute packages to your customers, with a repository per customer
+  and access limited by version or expiration date
+
+Private Packagist is available as a cloud service or self-hosted on your own
+infrastructure.
+
+Part of Private Packagist's revenue funds the development and hosting of Composer
+and Packagist.org. See
+[packagist.com](https://packagist.com/?utm_source=getcomposer.org&utm_medium=docs&utm_campaign=privatepackagesmore)
+for features, pricing and a free trial, and the
+[Satis documentation](https://composer.github.io/satis/private-packagist) for a
+comparison of Satis and Private Packagist.
 
 # Satis
 
