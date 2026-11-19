@@ -454,12 +454,14 @@ class PoolBuilder
                 break;
             }
 
+            $namesFound = false;
             foreach ($packageBatches as $batchIndex => $packageBatch) {
                 $result = $repository->loadPackages($packageBatch, $this->acceptableStabilities, $this->stabilityFlags, $this->loadedPerRepo[$repoIndex] ?? []);
 
                 foreach ($result['namesFound'] as $name) {
                     // avoid loading the same package again from other repositories once it has been found
                     unset($packageBatches[$batchIndex][$name]);
+                    $namesFound = true;
                 }
                 foreach ($result['packages'] as $package) {
                     $this->loadedPerRepo[$repoIndex][$package->getName()][$package->getVersion()] = $package;
@@ -471,7 +473,9 @@ class PoolBuilder
                 }
             }
 
-            $packageBatches = array_chunk(array_merge(...$packageBatches), self::LOAD_BATCH_SIZE, true);
+            if ($namesFound) {
+                $packageBatches = array_chunk(array_merge(...$packageBatches), self::LOAD_BATCH_SIZE, true);
+            }
         }
     }
 

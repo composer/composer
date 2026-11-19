@@ -14,6 +14,7 @@ namespace Composer\Test\DependencyResolver;
 
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Pool;
+use Composer\DependencyResolver\PoolBuilder;
 use Composer\DependencyResolver\PoolOptimizer;
 use Composer\Config;
 use Composer\IO\NullIO;
@@ -34,6 +35,34 @@ use Composer\Util\Platform;
 
 class PoolBuilderTest extends TestCase
 {
+    public function testEmptyRepositoryPreservesPackageBatches(): void
+    {
+        $request = new Request();
+        $names = [];
+        for ($i = 0; $i < 101; $i++) {
+            $name = 'vendor/package-'.$i;
+            $names[] = $name;
+            $request->requireName($name);
+        }
+
+        $secondRepository = new class extends ArrayRepository {
+            /** @var array<int, array<string>> */
+            public $batchNames = [];
+
+            public function loadPackages(array $packageNameMap, array $acceptableStabilities, array $stabilityFlags, array $alreadyLoaded = [])
+            {
+                $this->batchNames[] = array_keys($packageNameMap);
+
+                return ['namesFound' => [], 'packages' => []];
+            }
+        };
+
+        $builder = new PoolBuilder(BasePackage::STABILITIES, [], [], [], new NullIO());
+        $builder->buildPool([new ArrayRepository(), $secondRepository], $request);
+
+        self::assertSame(array_chunk($names, 50), $secondRepository->batchNames);
+    }
+
     /**
      * @dataProvider getIntegrationTests
      * @param string[] $expect
