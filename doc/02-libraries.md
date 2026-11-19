@@ -243,9 +243,7 @@ possible.
 To add an advisory to the `friendsofphp/security-advisories`
 [repository](https://github.com/FriendsOfPHP/security-advisories),
 open a Pull Request using the guide in their README. Once this Pull Request is
-merged, the repository update will
-[automatically trigger a new security advisory sync](https://github.com/composer/packagist/blob/858c6b430cffa3f070cc2c868afc572caefb5244/src/Service/UpdaterWorker.php#L412)
-on packagist.org and the advisory will be available immediately there.
+merged, packagist.org syncs the new advisory shortly after.
 
 This will also eventually result in the advisory ending up in the
 `github/advisory-database` repository if it's not in there already.
