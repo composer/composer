@@ -191,4 +191,76 @@ git archive branchName --format zip -o file.zip
 > zip distribution. This only works for packages installed from
 > dist (i.e. tagged releases) coming from GitHub, GitLab or Bitbucket.
 
+## Security advisories
+
+When a vulnerability exists in a library you manage, you can fix the vulnerability
+and publish a new release. Users watching your repository may see the release, but
+most will not know they need to update to fix the underlying vulnerability.
+
+### How users get notified about advisories
+
+Composer retrieves security advisories for all dependencies from the configured
+repositories, which for most packages means the
+[packagist.org API](https://packagist.org/apidoc#list-security-advisories). This
+happens when users run `composer audit`, but also during `composer update`,
+`require` and `remove`, which by default refuse to install versions affected by
+an advisory (see the [policy](06-config.md#policy) config).
+
+Packagist aggregates security advisories from multiple sources:
+
+- [GitHub Security Advisories](#creating-and-publishing-an-advisory-on-github)
+- [FriendsOfPHP Security Advisories](#registering-an-advisory-with-friendsofphp)
+
+It doesn't retrieve published advisories from your repository itself.
+
+### Creating and publishing an advisory on GitHub
+
+If you are using GitHub to host the code for your library, you can
+[create a security advisory](https://docs.github.com/en/code-security/security-advisories/working-with-repository-security-advisories/creating-a-repository-security-advisory)
+from the repository's security tab.
+
+This will result in a unique url and GHSA-ID that can be used to reference
+this advisory. Please note it does NOT mean that users of your library will
+immediately get notified.
+
+### How GitHub Security Advisories are picked up
+
+Once you have [created and published](#creating-and-publishing-an-advisory-on-github)
+a security advisory on GitHub, it MIGHT automatically show up in the
+[GitHub advisory database](https://github.com/github/advisory-database). According
+to documentation, "GitHub will review each published security advisory", and mentions
+[this might take up to 72 hours](https://docs.github.com/en/code-security/concepts/vulnerability-reporting-and-management/repository-security-advisories#dependabot-alerts-for-published-security-advisories),
+but in practice this may take significantly longer given that these reports are
+reviewed manually.
+
+The `github/advisory-database` repository also includes advisories from the
+`friendsofphp/security-advisories` repository. As such, it is recommended to also add
+your advisory to that repository to make sure it is visible to users as soon as
+possible.
+
+### Registering an advisory with FriendsOfPHP
+
+To add an advisory to the `friendsofphp/security-advisories`
+[repository](https://github.com/FriendsOfPHP/security-advisories),
+open a Pull Request using the guide in their README. Once this Pull Request is
+merged, packagist.org syncs the new advisory shortly after.
+
+This will also eventually result in the advisory ending up in the
+`github/advisory-database` repository if it's not in there already.
+
+### Verifying advisory discoverability on packagist.org
+
+You can see if a security advisory is already known to Packagist.org by searching for
+the PKSA, CVE or GHSA IDs in the
+[Security Advisories search](https://packagist.org/security-advisories/).
+
+### Why is GitHub's Dependabot not notifying users of my library's advisory?
+
+Dependabot currently only uses the `github/advisory-database` repository as a
+source of advisories. If your published advisory is not in there, it won't trigger
+dependabot. To resolve this, publish your advisory to the
+[`friendsofphp/security-advisories`](#registering-an-advisory-with-friendsofphp)
+repository. That will at least ensure that Composer warns, and will also immediately
+be picked up by other alerting services like [Private Packagist](https://packagist.com).
+
 &larr; [Basic usage](01-basic-usage.md) |  [Command-line interface](03-cli.md) &rarr;
