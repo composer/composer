@@ -224,7 +224,8 @@ class GitHubDriver extends VcsDriver
             } catch (TransportException $e) {
                 continue;
             }
-            if (empty($response['content']) || $response['encoding'] !== 'base64' || !($funding = base64_decode($response['content']))) {
+            $funding = $this->decodeContentsResponse($response);
+            if (null === $funding || '' === $funding) {
                 continue;
             }
             break;
@@ -338,15 +339,33 @@ class GitHubDriver extends VcsDriver
 
         // The GitHub contents API only returns files up to 1MB as base64 encoded files
         // larger files either need be fetched with a raw accept header or by using the git blob endpoint
-        if ((!isset($resource['content']) || $resource['content'] === '') && $resource['encoding'] === 'none' && isset($resource['git_url'])) {
+        if ((!isset($resource['content']) || $resource['content'] === '') && ($resource['encoding'] ?? null) === 'none' && isset($resource['git_url'])) {
             $resource = $this->getContents($resource['git_url'])->decodeJson();
         }
 
-        if (!isset($resource['content']) || $resource['encoding'] !== 'base64' || false === ($content = base64_decode($resource['content']))) {
+        $content = $this->decodeContentsResponse($resource);
+        if (null === $content) {
             throw new \RuntimeException('Could not retrieve ' . $file . ' for '.$identifier);
         }
 
         return $content;
+    }
+
+    /**
+     * Returns the decoded file content of a contents API response, or null if it is not a base64 encoded file
+     * (e.g. a directory listing, a submodule or a symlink GitHub did not resolve)
+     *
+     * @param mixed $resource
+     */
+    private function decodeContentsResponse($resource): ?string
+    {
+        if (!isset($resource['content']) || ($resource['encoding'] ?? null) !== 'base64') {
+            return null;
+        }
+
+        $content = base64_decode($resource['content']);
+
+        return false === $content ? null : $content;
     }
 
     /**
