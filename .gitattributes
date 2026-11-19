@@ -10,6 +10,7 @@
 
 # Exclude non-essential files from dist
 /.github/ export-ignore
+/bin/solver-benchmark export-ignore
 /doc export-ignore
 /phpstan/* export-ignore
 /tests/ export-ignore
