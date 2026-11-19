@@ -301,6 +301,8 @@ class RepositorySet
                     continue;
                 }
                 $currentPackages[$index] = $repoPackage;
+                // non-canonical repos do not report namesFound, so stop at the first match to keep repo priority
+                unset($nameMap[$repoPackage->getName()]);
             }
 
             foreach ($result['namesFound'] as $name) {

@@ -17,6 +17,7 @@ use Composer\Package\CompletePackage;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\CompositeRepository;
+use Composer\Repository\FilterRepository;
 use Composer\Repository\RepositorySet;
 use Composer\Test\TestCase;
 
@@ -91,6 +92,17 @@ class RepositorySetTest extends TestCase
         $repositorySet->addRepository($this->getComposerRepositoryMock([$current]));
 
         self::assertSame([$current], $repositorySet->loadCurrentPackages([self::createPackage('foo/bar', '1.0.0')]));
+    }
+
+    public function testLoadCurrentPackagesKeepsFirstMatchFromNonCanonicalRepository(): void
+    {
+        $current = self::createPackage('foo/bar', '1.0.0');
+
+        $repositorySet = new RepositorySet();
+        $repositorySet->addRepository(new FilterRepository($this->getComposerRepositoryMock([$current]), ['canonical' => false]));
+        $repositorySet->addRepository($this->getComposerRepositoryMock([self::createPackage('foo/bar', '1.0.0', true)]));
+
+        self::assertSame([$current], $repositorySet->loadCurrentPackages([self::createPackage('foo/bar', '1.0.0', true)]));
     }
 
     /**
