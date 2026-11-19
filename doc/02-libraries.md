@@ -216,8 +216,9 @@ It doesn't retrieve published advisories from your repository itself.
 
 ### Creating and publishing an advisory on GitHub
 
-If you are using GitHub to host the code for your library, you can create a
-security advisory in the "Security and quality" tab.
+If you are using GitHub to host the code for your library, you can
+[create a security advisory](https://docs.github.com/en/code-security/security-advisories/working-with-repository-security-advisories/creating-a-repository-security-advisory)
+from the repository's security tab.
 
 This will result in a unique url and GHSA-ID that can be used to reference
 this advisory. Please note it does NOT mean that users of your library will
