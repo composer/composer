@@ -16,6 +16,7 @@ use Composer\Repository\Vcs\GitHubDriver;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Config;
+use Composer\IO\NullIO;
 
 class GitHubDriverTest extends TestCase
 {
@@ -666,6 +667,66 @@ FUNDING;
         $gitHubDriver->initialize();
 
         self::assertSame('', $gitHubDriver->getFileContent('composer.json', 'main'));
+    }
+
+    public function testGetLargeFileContentViaGitBlob(): void
+    {
+        $httpDownloader = $this->getHttpDownloaderMock(null, $this->config);
+        $httpDownloader->expects(
+            [
+                ['url' => 'https://api.github.com/repos/composer/packagist', 'body' => '{"master_branch": "test_master", "owner": {"login": "composer"}, "name": "packagist"}'],
+                ['url' => 'https://api.github.com/repos/composer/packagist/contents/composer.json?ref=main', 'body' => '{"type": "file", "encoding": "none", "content": "", "git_url": "https://api.github.com/repos/composer/packagist/git/blobs/abc123"}'],
+                ['url' => 'https://api.github.com/repos/composer/packagist/git/blobs/abc123', 'body' => '{"encoding": "base64", "content": "'.base64_encode('{"name": "composer/packagist"}').'"}'],
+            ],
+            true
+        );
+
+        $gitHubDriver = new GitHubDriver(['url' => 'http://github.com/composer/packagist'], new NullIO(), $this->config, $httpDownloader, $this->getProcessExecutorMock());
+        $gitHubDriver->initialize();
+
+        self::assertSame('{"name": "composer/packagist"}', $gitHubDriver->getFileContent('composer.json', 'main'));
+    }
+
+    /**
+     * @dataProvider nonFileContentsProvider
+     */
+    public function testGetFileContentForNonFileThrows(string $body): void
+    {
+        $httpDownloader = $this->getHttpDownloaderMock(null, $this->config);
+        $httpDownloader->expects(
+            [
+                ['url' => 'https://api.github.com/repos/composer/packagist', 'body' => '{"master_branch": "test_master", "owner": {"login": "composer"}, "name": "packagist"}'],
+                ['url' => 'https://api.github.com/repos/composer/packagist/contents/composer.json?ref=main', 'body' => $body],
+            ],
+            true
+        );
+
+        $gitHubDriver = new GitHubDriver(['url' => 'http://github.com/composer/packagist'], new NullIO(), $this->config, $httpDownloader, $this->getProcessExecutorMock());
+        $gitHubDriver->initialize();
+
+        self::expectException(\RuntimeException::class);
+        self::expectExceptionMessage('Could not retrieve composer.json for main');
+
+        $gitHubDriver->getFileContent('composer.json', 'main');
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function nonFileContentsProvider(): array
+    {
+        return [
+            // response shapes below are taken from real GitHub contents API responses
+            'symlink outside the repository' => [
+                '{"name": "composer.json", "path": "composer.json", "sha": "a49dac4bfab70b3b47eb16b1d5075beccf65f03b", "size": 9, "url": "https://api.github.com/repos/composer/packagist/contents/composer.json?ref=main", "html_url": "https://github.com/composer/packagist/blob/main/composer.json", "git_url": "https://api.github.com/repos/composer/packagist/git/blobs/a49dac4bfab70b3b47eb16b1d5075beccf65f03b", "download_url": "https://raw.githubusercontent.com/composer/packagist/main/composer.json", "type": "symlink", "target": "/tmp/derp", "_links": {"self": "https://api.github.com/repos/composer/packagist/contents/composer.json?ref=main", "git": "https://api.github.com/repos/composer/packagist/git/blobs/a49dac4bfab70b3b47eb16b1d5075beccf65f03b", "html": "https://github.com/composer/packagist/blob/main/composer.json"}}',
+            ],
+            'directory' => [
+                '[{"name": "packages.json", "path": "composer.json/packages.json", "sha": "3a3c2ef1e5a1b6a3b3c1e5f1f2d43c9b1d7b5a11", "size": 42, "url": "https://api.github.com/repos/composer/packagist/contents/composer.json/packages.json?ref=main", "html_url": "https://github.com/composer/packagist/blob/main/composer.json/packages.json", "git_url": "https://api.github.com/repos/composer/packagist/git/blobs/3a3c2ef1e5a1b6a3b3c1e5f1f2d43c9b1d7b5a11", "download_url": "https://raw.githubusercontent.com/composer/packagist/main/composer.json/packages.json", "type": "file", "_links": {"self": "https://api.github.com/repos/composer/packagist/contents/composer.json/packages.json?ref=main", "git": "https://api.github.com/repos/composer/packagist/git/blobs/3a3c2ef1e5a1b6a3b3c1e5f1f2d43c9b1d7b5a11", "html": "https://github.com/composer/packagist/blob/main/composer.json/packages.json"}}]',
+            ],
+            'submodule' => [
+                '{"name": "composer.json", "path": "composer.json", "sha": "5572168994a29266df6cbf12b46919498d3ece66", "size": 0, "url": "https://api.github.com/repos/composer/packagist/contents/composer.json?ref=main", "html_url": "https://github.com/composer/other/tree/5572168994a29266df6cbf12b46919498d3ece66", "git_url": "https://api.github.com/repos/composer/other/git/trees/5572168994a29266df6cbf12b46919498d3ece66", "download_url": null, "type": "submodule", "submodule_git_url": "https://github.com/composer/other.git", "_links": {"self": "https://api.github.com/repos/composer/packagist/contents/composer.json?ref=main", "git": "https://api.github.com/repos/composer/other/git/trees/5572168994a29266df6cbf12b46919498d3ece66", "html": "https://github.com/composer/other/tree/5572168994a29266df6cbf12b46919498d3ece66"}}',
+            ],
+        ];
     }
 
     /**
