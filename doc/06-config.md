@@ -487,7 +487,6 @@ takes effect once a period is set.
 
 The following are never withheld by the cooldown policy:
 
-- **Dev versions** (e.g. `dev-main`) — they represent mutable branch state
 - **Locked packages that are not being updated** — a partial update (`composer update vendor/pkg`,
   `composer require`) keeps the locked version of every other package. A full `composer update`
   re-evaluates all versions, so a locked version still inside the cooldown period will be replaced by
@@ -498,6 +497,13 @@ The following are never withheld by the cooldown policy:
   whose `composer.json` has none. Composer cannot tell how old such a version is and lets it through
   rather than blocking it forever. A Composer repository that omits `published-time` errors out
   instead, see above
+
+**Dev versions** (e.g. `dev-main`) represent mutable branch state and have no release of their own,
+so a requirement that only a dev version can satisfy keeps working, for example `dev-main`,
+`1.x-dev` or an inline alias. A dev version is withheld when it would stand in for releases the
+cooldown withheld: if the requirement matches releases and every matching one is still inside the
+cooldown period, the dev version is withheld too. The update then fails like it would with a
+stable-only requirement, rather than silently moving to unvetted branch code
 
 #### block
 
