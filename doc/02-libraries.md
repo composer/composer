@@ -256,7 +256,7 @@ You can see if a security advisory is already known by Packagist by searching fo
 the PKSA, CVE or GHSA IDs in the
 [Security Advisories search](https://packagist.org/security-advisories/).
 
-### Why is GitHub's Dependabot not notifying users of my libraries' advisory?
+### Why is GitHub's Dependabot not notifying users of my library's advisory?
 
 Dependabot currently only uses the `github/advisory-database` repository as a
 source of advisories. If your published advisory is not in there, it won't trigger
