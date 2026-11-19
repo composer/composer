@@ -200,9 +200,12 @@ that they'd have to update to fix the underlying vulnerability.
 
 ### How users get notified about advisories
 
-When users run `composer audit` or automated security advisory checks in their CI,
-security advisories of all their dependencies are retrieved via the
-[packagist.org API](https://packagist.org/apidoc#list-security-advisories).
+Composer retrieves security advisories for all dependencies from the configured
+repositories, which for most packages means the
+[packagist.org API](https://packagist.org/apidoc#list-security-advisories). This
+happens when users run `composer audit`, but also during `composer update`,
+`require` and `remove`, which by default refuse to install versions affected by
+an advisory (see the [policy](06-config.md#policy) config).
 
 Packagist aggregates security advisories from multiple sources:
 
