@@ -194,9 +194,8 @@ git archive branchName --format zip -o file.zip
 ## Security advisories
 
 When a vulnerability exists in a library you manage, you can fix the vulnerability
-and publish a new release. Maybe some users will be notified that you published a
-new release because they subscribe to your repository, but most users won't know
-that they'd have to update to fix the underlying vulnerability.
+and publish a new release. Users watching your repository may see the release, but
+most will not know they need to update to fix the underlying vulnerability.
 
 ### How users get notified about advisories
 
@@ -234,15 +233,15 @@ to documentation, "GitHub will review each published security advisory", and men
 but in practice this may take significantly longer given that these reports are
 reviewed manually.
 
-The `github/advisory-database` repository, where these are managed in, in turn also
-includes advisories from the `friendsofphp/security-advisories` repository. As such,
-it is recommended to also add your advisory to that repository to make sure it is
-visible to users as soon as possible.
+The `github/advisory-database` repository also includes advisories from the
+`friendsofphp/security-advisories` repository. As such, it is recommended to also add
+your advisory to that repository to make sure it is visible to users as soon as
+possible.
 
 ### Registering an advisory with FriendsOfPHP
 
 To add an advisory to the `friendsofphp/security-advisories`
-[repository](https://github.com/FriendsOfPHP/security-advisories), simply
+[repository](https://github.com/FriendsOfPHP/security-advisories),
 open a Pull Request using the guide in their README. Once this Pull Request is
 merged, the repository update will
 [automatically trigger a new security advisory sync](https://github.com/composer/packagist/blob/858c6b430cffa3f070cc2c868afc572caefb5244/src/Service/UpdaterWorker.php#L412)
