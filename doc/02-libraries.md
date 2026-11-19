@@ -232,8 +232,8 @@ reviewed manually.
 
 The `github/advisory-database` repository, where these are managed in, in turn also
 includes advisories from the `friendsofphp/security-advisories` repository. As such,
-it is recommended to add your advisory to that repository instead to make sure they
-are visible to users as soon as possible.
+it is recommended to also add your advisory to that repository to make sure it is
+visible to users as soon as possible.
 
 ### Registering an advisory with FriendsOfPHP
 
