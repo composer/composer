@@ -262,7 +262,7 @@ Dependabot currently only uses the `github/advisory-database` repository as a
 source of advisories. If your published advisory is not in there, it won't trigger
 dependabot. To resolve this, either publish your advisory to
 [`friendsofphp/security-advisories`](#registering-an-advisory-with-friendsofphp)
-or, if you've done that already wait, for it to be picked up by
-[`github/advisory-database`](#how-github-security-advisories-are-picked-up)
+or, if you've done that already, wait for it to be picked up by
+[`github/advisory-database`](#how-github-security-advisories-are-picked-up).
 
 &larr; [Basic usage](01-basic-usage.md) |  [Command-line interface](03-cli.md) &rarr;
