@@ -250,7 +250,7 @@ This will also eventually result in the advisory ending up in the
 
 ### Verifying advisory discoverability on packagist.org
 
-You can see if a security advisory is already known by Packagist by searching for
+You can see if a security advisory is already known to Packagist.org by searching for
 the PKSA, CVE or GHSA IDs in the
 [Security Advisories search](https://packagist.org/security-advisories/).
 
@@ -258,9 +258,9 @@ the PKSA, CVE or GHSA IDs in the
 
 Dependabot currently only uses the `github/advisory-database` repository as a
 source of advisories. If your published advisory is not in there, it won't trigger
-dependabot. To resolve this, either publish your advisory to
+dependabot. To resolve this, publish your advisory to the
 [`friendsofphp/security-advisories`](#registering-an-advisory-with-friendsofphp)
-or, if you've done that already, wait for it to be picked up by
-[`github/advisory-database`](#how-github-security-advisories-are-picked-up).
+repository. That will at least ensure that Composer warns, and will also immediately
+be picked up by other alerting services like [Private Packagist](https://packagist.com).
 
 &larr; [Basic usage](01-basic-usage.md) |  [Command-line interface](03-cli.md) &rarr;
