@@ -189,6 +189,68 @@ class PluginInstallerTest extends TestCase
         self::assertEquals('installer-v1', $plugins[0]->version);  // @phpstan-ignore property.notFound
     }
 
+    public function testInstallPluginSkipsAutoloadOfDependenciesMissingFromTheirInstallPath(): void
+    {
+        // e.g. a package installed outside of vendor/ by an installer which is not registered yet
+        $dependency = self::getPackage('dummy/not-at-install-path', '1.0.0');
+        $dependency->setAutoload(['classmap' => ['src/'], 'files' => ['bootstrap.php']]);
+        self::configureLinks($this->packages[0], ['require' => ['composer-plugin-api' => '^2.0', 'dummy/not-at-install-path' => '*']]);
+
+        $this->repository
+            ->expects($this->any())
+            ->method('getPackages')
+            ->will($this->returnValue([$dependency]));
+        $installer = new PluginInstaller($this->io, $this->composer);
+        $this->pm->loadInstalledPlugins();
+
+        $installer->install($this->repository, $this->packages[0]);
+
+        $plugins = $this->pm->getPlugins();
+        self::assertEquals('installer-v1', $plugins[0]->version);  // @phpstan-ignore property.notFound
+        self::assertEquals(
+            'activate v1'.PHP_EOL,
+            $this->io->getOutput()
+        );
+    }
+
+    public function testInstallPluginAutoloadsMissingDependenciesOnceInstallPathIsKnown(): void
+    {
+        $dependency = self::getPackage('dummy/installed-elsewhere', '1.0.0');
+        $dependency->setAutoload(['classmap' => ['src/']]);
+        self::configureLinks($this->packages[0], ['require' => ['composer-plugin-api' => '^2.0', 'dummy/installed-elsewhere' => '*']]);
+
+        $realPath = $this->directory.'/custom/installed-elsewhere';
+        mkdir($realPath.'/src', 0777, true);
+        file_put_contents($realPath.'/src/Foo.php', '<?php class PluginDependencyInstalledElsewhere {}');
+
+        // the real path is only returned on the second lookup, as if the plugin registered an installer for it
+        $calls = 0;
+        $im = $this->getMockBuilder('Composer\Installer\InstallationManager')->disableOriginalConstructor()->getMock();
+        $im->expects($this->any())
+            ->method('getInstallPath')
+            ->will($this->returnCallback(static function ($package) use (&$calls, $realPath): string {
+                if ($package->getName() === 'dummy/installed-elsewhere') {
+                    return $calls++ === 0 ? __DIR__.'/Fixtures/dummy/installed-elsewhere' : $realPath;
+                }
+
+                return __DIR__.'/Fixtures/'.$package->getPrettyName();
+            }));
+        $this->composer->setInstallationManager($im);
+
+        $this->repository
+            ->expects($this->any())
+            ->method('getPackages')
+            ->will($this->returnValue([$dependency]));
+        $installer = new PluginInstaller($this->io, $this->composer);
+        $this->pm->loadInstalledPlugins();
+
+        $installer->install($this->repository, $this->packages[0]);
+
+        self::assertSame('activate v1'.PHP_EOL, $this->io->getOutput());
+        self::assertSame(2, $calls);
+        self::assertTrue(class_exists('PluginDependencyInstalledElsewhere'));
+    }
+
     public function testInstallMultiplePlugins(): void
     {
         $this->repository
