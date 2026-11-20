@@ -96,6 +96,24 @@
         "plugin-api-version": {
             "type": "string",
             "description": "The composer-plugin-api version that was used to generate this lock file."
+        },
+        "linked-packages": {
+            "type": "object",
+            "description": "The linked packages used to generate this local lock file.",
+            "required": ["path"],
+            "properties": {
+                "path": {
+                    "type": "string",
+                    "description": "The directory holding the linked packages file."
+                },
+                "only": {
+                    "type": "array",
+                    "description": "The package name patterns the linked packages were filtered with.",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
         }
     }
 }

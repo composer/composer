@@ -1386,6 +1386,12 @@ configuration in the project's `composer.json` always wins.
 Defaults to `1`. If set to `0`, Composer will not create `.htaccess` files in the
 Composer home, cache, and data directories.
 
+### COMPOSER_LOCAL_LOCK
+
+By setting this var you can change the path of the local lock file. By default it is
+named after the lock file: `composer.local.lock`, or `composer-other.local.lock` if
+`COMPOSER` is set to `composer-other.json`. See [`link`](#link).
+
 ### COMPOSER_MEMORY_LIMIT
 
 If set, the value is used as php's memory_limit.

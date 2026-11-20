@@ -23,6 +23,7 @@ class FactoryTest extends TestCase
         parent::tearDown();
         Platform::clearEnv('COMPOSER');
         Platform::clearEnv('COMPOSER_AUTH');
+        Platform::clearEnv('COMPOSER_LOCAL_LOCK');
     }
 
     /**
@@ -64,6 +65,31 @@ class FactoryTest extends TestCase
     {
         Platform::putEnv('COMPOSER', ' foo.json ');
         self::assertSame('foo.json', Factory::getComposerFile());
+    }
+
+    public function testGetLocalLockFile(): void
+    {
+        self::assertSame('./composer.local.lock', Factory::getLocalLockFile('./composer.json'));
+        self::assertSame('foo.local.lock', Factory::getLocalLockFile('foo.json'));
+        self::assertSame('foo.local.lock', Factory::getLocalLockFile('foo'));
+    }
+
+    public function testGetLocalLockFileFromEnv(): void
+    {
+        Platform::putEnv('COMPOSER_LOCAL_LOCK', ' custom.lock ');
+        self::assertSame('custom.lock', Factory::getLocalLockFile('./composer.json'));
+    }
+
+    public function testCreateLocalLocker(): void
+    {
+        $this->initTempComposer();
+        $io = new BufferIO();
+        $composer = (new Factory())->createComposer($io, null, true);
+
+        self::assertSame('./composer.local.lock', Factory::createLocalLocker($io, $composer, './composer.json')->getJsonFile()->getPath());
+
+        $composer->getConfig()->merge(['config' => ['lock' => false]]);
+        self::assertSame(Platform::getDevNull(), Factory::createLocalLocker($io, $composer, './composer.json')->getJsonFile()->getPath());
     }
 
     public function testHomeCannotBeSetByComposerJson(): void
