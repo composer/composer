@@ -1,0 +1,64 @@
+--TEST--
+Failing test case for https://github.com/composer/composer/issues/9393
+
+--REQUEST--
+{
+    "require": {
+        "drupal/core-recommended": "^10.1.7",
+        "drupal/viewsreference": "^2.0@beta"
+    },
+    "locked": [
+        {"name": "drupal/spamaway", "version": "2.0.0", "require": {"drupal/core": "^8 || ^9 || ^10", "drupal/webform": "*"}, "id": 1},
+        {"name": "drupal/webform", "version": "6.1.8", "require": {"drupal/core": "^9.3"}, "id": 2},
+        {"name": "drupal/viewsreference", "version": "1.8.0", "require": {"drupal/core": "^9.3"}, "id": 3}
+    ],
+    "allowList": [
+        "drupal/core",
+        "drupal/viewsreference"
+    ],
+    "allowTransitiveDeps": true
+}
+
+--FIXED--
+[
+]
+
+--PACKAGE-REPOS--
+[
+    [
+        {"name":"drupal/core-recommended", "version": "10.1.7", "require": {"drupal/core": "10.1.7"}},
+        {"name":"drupal/core-recommended", "version": "10.2.0", "require": {"drupal/core": "10.2.0"}},
+        {"name":"drupal/viewsreference", "version": "2.0.0-beta2", "require": {"drupal/core": "^9.3 || ^10"}},
+        {"name":"drupal/viewsreference", "version": "2.0.0-beta1", "require": {"drupal/core": "^9.3 || ^10"}},
+        {"name":"drupal/spamaway", "version": "2.0.0", "require": {"drupal/core": "^8 || ^9 || ^10", "drupal/webform": "*"}},
+        {"name": "drupal/webform", "version": "6.1.8", "require": {"drupal/core": "^9.3"}},
+        {"name": "drupal/core", "version": "8.0.0"},
+        {"name": "drupal/core", "version": "9.0.0"},
+        {"name": "drupal/core", "version": "9.3.0"},
+        {"name": "drupal/core", "version": "9.3.1"},
+        {"name": "drupal/core", "version": "10.2.0"}
+    ]
+]
+
+--EXPECT--
+[
+    1,
+    2,
+    "drupal/core-8.0.0.0",
+    "drupal/core-9.0.0.0",
+    "drupal/core-9.3.0.0",
+    "drupal/core-9.3.1.0",
+    "drupal/core-10.2.0.0",
+    "drupal/core-recommended-10.1.7.0",
+    "drupal/core-recommended-10.2.0.0"
+]
+
+--EXPECT-OPTIMIZED--
+[
+    1,
+    2,
+    "drupal/core-9.3.1.0",
+    "drupal/core-10.2.0.0",
+    "drupal/core-recommended-10.1.7.0",
+    "drupal/core-recommended-10.2.0.0"
+]
