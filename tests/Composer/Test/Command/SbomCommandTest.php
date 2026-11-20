@@ -439,6 +439,23 @@ class SbomCommandTest extends TestCase
         self::assertSame(['pkg:composer/alias/pkg@dev-main'], self::dependenciesByRef($sbom)['pkg:composer/test/root@1.0.0']);
     }
 
+    public function testRootBranchAliasIsNotUsedAsVersion(): void
+    {
+        $this->initTempComposer([
+            'name' => 'test/root',
+            'version' => 'dev-main',
+            'extra' => ['branch-alias' => ['dev-main' => '2.x-dev']],
+        ]);
+        $this->createInstalledJson([]);
+
+        $sbom = $this->runSbom();
+        self::assertSame('dev-main', $sbom['metadata']['component']['version']);
+        self::assertSame('pkg:composer/test/root@dev-main', $sbom['metadata']['component']['purl']);
+
+        $sbom = $this->runSbom(['--format' => 'spdx']);
+        self::assertSame('dev-main', $sbom['packages'][0]['versionInfo']);
+    }
+
     public function testProvidedNamesResolveToTheProvidingPackage(): void
     {
         $this->initTempComposer([

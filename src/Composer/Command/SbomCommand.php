@@ -76,6 +76,9 @@ EOT
 
         $noDev = (bool) $input->getOption('no-dev');
         $root = $composer->getPackage();
+        if ($root instanceof AliasPackage) {
+            $root = $root->getAliasOf();
+        }
 
         if ($input->getOption('locked')) {
             $locker = $composer->getLocker();
