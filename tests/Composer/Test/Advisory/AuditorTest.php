@@ -485,6 +485,39 @@ Found 2 abandoned packages:
         self::assertSame($exitCode, $result);
     }
 
+    public function testAuditIgnoreRulesMatchVersionConstraintAndWildcard(): void
+    {
+        $policyConfig = new PolicyConfig(
+            true,
+            new AdvisoriesPolicyConfig(false, ListPolicyConfig::AUDIT_FAIL, IgnorePackageRule::parseIgnoreMap(['vendor1/package1' => ['constraint' => '^8.0'], 'vendor1/package2' => ['constraint' => '^3.0'], 'vendor2/*' => null]), [], []),
+            MalwarePolicyConfig::disabled(),
+            new AbandonedPolicyConfig(false, ListPolicyConfig::AUDIT_FAIL, IgnorePackageRule::parseIgnoreMap(['vendor4/package1' => ['constraint' => '^2.0']])),
+            CooldownPolicyConfig::disabled(),
+            [],
+            IgnoreUnreachable::default()
+        );
+        $abandoned1 = new CompletePackage('vendor4/package1', '1.0.0.0', '1.0.0');
+        $abandoned1->setAbandoned(true);
+        $abandoned2 = new CompletePackage('vendor4/package1', '2.0.0.0', '2.0.0');
+        $abandoned2->setAbandoned(true);
+        $packages = [
+            new Package('vendor1/package1', '3.0.0.0', '3.0.0'),
+            new Package('vendor1/package1', '8.2.1.0', '8.2.1'),
+            new Package('vendor1/package2', '2.0.0.0', '2.0.0'),
+            new Package('vendor1/package2', '3.0.0.0', '3.0.0'),
+            new Package('vendor2/package1', '3.0.0.0', '3.0.0'),
+            $abandoned1,
+            $abandoned2,
+        ];
+        $auditor = new Auditor();
+        $result = $auditor->audit($io = new BufferIO(), $this->getRepoSet(), $policyConfig, $packages, Auditor::FORMAT_PLAIN, false);
+
+        self::assertSame(Auditor::STATUS_FAILED, $result);
+        self::assertStringContainsString('Found 4 ignored security vulnerability advisories affecting 2 packages:', $io->getOutput());
+        self::assertStringContainsString('Found 2 security vulnerability advisories affecting 2 packages:', $io->getOutput());
+        self::assertStringContainsString('Found 1 abandoned package:', $io->getOutput());
+    }
+
     public function ignoreSeverityProvider(): \Generator
     {
         yield 'ignore medium' => [

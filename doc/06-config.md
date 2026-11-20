@@ -268,8 +268,8 @@ and scoping (`on-block`/`on-audit`) to limit where the ignore applies.
 
 ##### With scoping:
 
-`on-block: false` means the advisory no longer blocks updates but is still reported in audit.
-`on-audit: false` means the advisory still blocks updates but is no longer reported in audit.
+`on-block: false` ignores only for audit (the advisory still blocks updates but is no longer reported in audit).
+`on-audit: false` ignores only for blocking (the advisory no longer blocks updates but is still reported in audit).
 
 ```json
 {
@@ -382,7 +382,7 @@ abandoned state. See the [ignore format](#ignore-format) for all supported synta
             "abandoned": {
                 "ignore": {
                     "acme/*": "Scheduled for replacement next quarter.",
-                    "vendor/legacy": {"on-block": false, "reason": "Allow in updates but still report."}
+                    "vendor/legacy": {"on-audit": false, "reason": "Allow in updates but still report."}
                 }
             }
         }

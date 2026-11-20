@@ -135,8 +135,8 @@ class AdvisoriesPolicyConfigTest extends TestCase
 
         $advisories = PolicyConfig::fromConfig($config)->advisories;
 
-        self::assertSame(['CVE-2024-1234' => null, 'CVE-2024-5678' => null], $advisories->getIgnoreListForOperation('audit'));
-        self::assertSame(['CVE-2024-1234' => null, 'CVE-2024-5678' => null], $advisories->getIgnoreListForOperation('block'));
+        self::assertSame(['CVE-2024-1234' => null, 'CVE-2024-5678' => null], $advisories->getIgnoreIdForOperation('audit'));
+        self::assertSame(['CVE-2024-1234' => null, 'CVE-2024-5678' => null], $advisories->getIgnoreIdForOperation('block'));
     }
 
     public function testLegacyAuditIgnoreApplyAuditOnly(): void
@@ -150,8 +150,8 @@ class AdvisoriesPolicyConfigTest extends TestCase
 
         $advisories = PolicyConfig::fromConfig($config)->advisories;
 
-        self::assertSame(['CVE-2024-1234' => 'Only ignore for auditing'], $advisories->getIgnoreListForOperation('audit'));
-        self::assertSame([], $advisories->getIgnoreListForOperation('block'));
+        self::assertSame(['CVE-2024-1234' => 'Only ignore for auditing'], $advisories->getIgnoreIdForOperation('audit'));
+        self::assertSame([], $advisories->getIgnoreIdForOperation('block'));
     }
 
     public function testLegacyAuditIgnoreApplyBlockOnly(): void
@@ -165,8 +165,8 @@ class AdvisoriesPolicyConfigTest extends TestCase
 
         $advisories = PolicyConfig::fromConfig($config)->advisories;
 
-        self::assertSame([], $advisories->getIgnoreListForOperation('audit'));
-        self::assertSame(['CVE-2024-1234' => 'Only ignore for blocking'], $advisories->getIgnoreListForOperation('block'));
+        self::assertSame([], $advisories->getIgnoreIdForOperation('audit'));
+        self::assertSame(['CVE-2024-1234' => 'Only ignore for blocking'], $advisories->getIgnoreIdForOperation('block'));
     }
 
     public function testLegacyAuditIgnoreMixedFormats(): void
@@ -187,12 +187,12 @@ class AdvisoriesPolicyConfigTest extends TestCase
             'CVE-2024-1234' => null,
             'CVE-2024-5678' => 'Simple reason',
             'CVE-2024-9999' => 'Detailed reason',
-        ], $advisories->getIgnoreListForOperation('audit'));
+        ], $advisories->getIgnoreIdForOperation('audit'));
         self::assertSame([
             'CVE-2024-1234' => null,
             'CVE-2024-5678' => 'Simple reason',
             'CVE-2024-8888' => null,
-        ], $advisories->getIgnoreListForOperation('block'));
+        ], $advisories->getIgnoreIdForOperation('block'));
     }
 
     public function testLegacyAuditIgnoreSeveritySimpleArray(): void
@@ -239,7 +239,7 @@ class AdvisoriesPolicyConfigTest extends TestCase
         PolicyConfig::fromConfig($config);
     }
 
-    public function testGetIgnoreListForOperationMergesMultiRuleReasons(): void
+    public function testMergeRuleReasonsKeepsEveryMatchingReason(): void
     {
         $config = new Config();
         $config->merge(['config' => ['policy' => [
@@ -249,36 +249,26 @@ class AdvisoriesPolicyConfigTest extends TestCase
                         ['constraint' => '^1.0', 'reason' => 'v1 patched'],
                         ['constraint' => '^2.0', 'reason' => 'v2 mitigated'],
                     ],
+                    'vendor/*' => 'vendor reviewed',
                 ],
             ],
         ]]]);
 
         $advisories = PolicyConfig::fromConfig($config)->advisories;
 
-        $auditList = $advisories->getIgnoreListForOperation('audit');
-        self::assertArrayHasKey('vendor/multi', $auditList);
-        $reason = $auditList['vendor/multi'];
-        self::assertNotNull($reason, 'Reason must not be silently dropped');
-        self::assertStringContainsString('v1 patched', $reason);
-        self::assertStringContainsString('v2 mitigated', $reason);
-
-        $blockList = $advisories->getIgnoreListForOperation('block');
-        self::assertArrayHasKey('vendor/multi', $blockList);
-        $blockReason = $blockList['vendor/multi'];
-        self::assertNotNull($blockReason);
-        self::assertStringContainsString('v1 patched', $blockReason);
-        self::assertStringContainsString('v2 mitigated', $blockReason);
+        self::assertSame('v1 patched; vendor reviewed', ListPolicyConfig::mergeRuleReasons($advisories->getMatchingIgnoreRules('vendor/multi', '1.0.0.0', 'audit')));
+        self::assertSame('v2 mitigated; vendor reviewed', ListPolicyConfig::mergeRuleReasons($advisories->getMatchingIgnoreRules('vendor/multi', '2.0.0.0', 'block')));
     }
 
-    public function testGetIgnoreListForOperationPrefersConcreteReasonOverNull(): void
+    public function testMergeRuleReasonsPrefersConcreteReasonOverNull(): void
     {
         $config = new Config();
         $config->merge(['config' => ['policy' => [
             'advisories' => [
                 'ignore' => [
                     'vendor/mixed' => [
-                        ['constraint' => '^1.0'],
-                        ['constraint' => '^2.0', 'reason' => 'v2 mitigated'],
+                        ['constraint' => '^2.0'],
+                        ['constraint' => '^2.1', 'reason' => 'v2 mitigated'],
                     ],
                 ],
             ],
@@ -286,7 +276,7 @@ class AdvisoriesPolicyConfigTest extends TestCase
 
         $advisories = PolicyConfig::fromConfig($config)->advisories;
 
-        self::assertSame('v2 mitigated', $advisories->getIgnoreListForOperation('audit')['vendor/mixed']);
+        self::assertSame('v2 mitigated', ListPolicyConfig::mergeRuleReasons($advisories->getMatchingIgnoreRules('vendor/mixed', '2.1.0.0', 'audit')));
     }
 
     public function testWithIgnoreSeverityAddsAuditScopedRulesForNewSeverities(): void
