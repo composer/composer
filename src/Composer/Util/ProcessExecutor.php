@@ -18,6 +18,7 @@ use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
 use Seld\Signal\SignalHandler;
 use Symfony\Component\Process\Exception\ProcessSignaledException;
+use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\RuntimeException;
 use React\Promise\Promise;
@@ -167,6 +168,10 @@ class ProcessExecutor
         );
 
         try {
+            if ($tty && Platform::isWindows()) {
+                return $this->runWithInheritedConsole($process, $cwd, $env);
+            }
+
             $process->run($callback);
 
             if ($this->captureOutput && !is_callable($output)) {
@@ -187,6 +192,39 @@ class ProcessExecutor
         }
 
         return $process->getExitCode();
+    }
+
+    /**
+     * Symfony Process has no TTY mode on Windows, so the child gets Composer's own standard
+     * handles instead, which lets it read from and detect the console.
+     *
+     * @param array<string, string>|null $env
+     */
+    private function runWithInheritedConsole(Process $process, ?string $cwd, ?array $env): int
+    {
+        // Same cmd.exe flags as Symfony Process, the arguments escaped by self::escape() rely on them
+        $command = self::escape(self::getExecutable('cmd.exe')).' /V:ON /E:ON /D /C ('.$process->getCommandLine().')';
+        $handle = proc_open($command, [STDIN, STDOUT, STDERR], $pipes, $cwd, $env === null ? null : $env + getenv(), ['bypass_shell' => true]);
+        if (!is_resource($handle)) {
+            throw new RuntimeException('Unable to launch a new process.');
+        }
+
+        $startTime = microtime(true);
+        $timeout = $process->getTimeout();
+        $status = proc_get_status($handle);
+        while ($status['running']) {
+            if ($timeout !== null && microtime(true) - $startTime > $timeout) {
+                (new Process([self::getExecutable('taskkill'), '/F', '/T', '/PID', (string) $status['pid']]))->run();
+                proc_close($handle);
+
+                throw new ProcessTimedOutException($process, ProcessTimedOutException::TYPE_GENERAL);
+            }
+            usleep(10000);
+            $status = proc_get_status($handle);
+        }
+        proc_close($handle);
+
+        return $status['exitcode'];
     }
 
     /**
