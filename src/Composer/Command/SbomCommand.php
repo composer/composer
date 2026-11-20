@@ -201,8 +201,9 @@ EOT
                 $component['licenses'] = [['expression' => $expression]];
             } else {
                 $component['licenses'] = array_map(function (string $license): array {
-                    if ($this->getSpdxLicenses()->getLicenseByIdentifier($license) !== null) {
-                        return ['license' => ['id' => $license]];
+                    $id = $this->getCanonicalLicenseId($license);
+                    if ($id !== null) {
+                        return ['license' => ['id' => $id]];
                     }
 
                     return ['license' => ['name' => $license]];
@@ -396,6 +397,14 @@ EOT
         $expression = count($licenses) === 1 ? $licenses[0] : '('.implode(' OR ', $licenses).')';
 
         return $this->getSpdxLicenses()->validate($expression) ? $expression : null;
+    }
+
+    /**
+     * Returns the identifier as cased in the SPDX license list, lookups being case-insensitive
+     */
+    private function getCanonicalLicenseId(string $license): ?string
+    {
+        return $this->getSpdxLicenses()->getLicenses()[strtolower($license)][0] ?? null;
     }
 
     private function getSpdxLicenses(): SpdxLicenses

@@ -469,6 +469,27 @@ class SbomCommandTest extends TestCase
         self::assertSame('(LGPL-2.1-only OR GPL-3.0-or-later)', $result['spdx']);
     }
 
+    /**
+     * @dataProvider provideLicenseIdCases
+     */
+    public function testLicenseIdUsesCanonicalCase(string $license, string $expected): void
+    {
+        $result = $this->runSbomForLicenses([$license]);
+
+        self::assertSame([['license' => ['id' => $expected]]], $result['cyclonedx']);
+    }
+
+    /**
+     * @return array<array{string, string}>
+     */
+    public static function provideLicenseIdCases(): array
+    {
+        return [
+            ['mit', 'MIT'],
+            ['BSD-3-clause', 'BSD-3-Clause'],
+        ];
+    }
+
     public function testRootBranchAliasIsNotUsedAsVersion(): void
     {
         $this->initTempComposer([
