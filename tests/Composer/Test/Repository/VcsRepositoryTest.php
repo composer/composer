@@ -207,6 +207,45 @@ class VcsRepositoryTest extends TestCase
     }
 
     /**
+     * @dataProvider provideRootRequiredBranches
+     * @param array{only-branches?: list<string>, exclude-branches?: list<string>} $filters
+     * @param array<string, list<string>> $rootRequiredBranches
+     * @param array<string, true> $expected
+     */
+    public function testRootRequiredBranchesBypassOnlyBranchesFilter(array $filters, array $rootRequiredBranches, array $expected): void
+    {
+        $this->assertLoadedVersions($filters, $expected, $rootRequiredBranches);
+    }
+
+    public static function provideRootRequiredBranches(): array
+    {
+        $defaultVersions = [
+            '0.6.0' => true,
+            '1.0.0' => true,
+            'dev-master' => true,
+            '9999999-dev' => true, // alias of dev-master
+        ];
+
+        return [
+            'required branches are kept' => [
+                ['only-branches' => []],
+                ['a/b' => ['dev-feature-b', '1.0.9999999.9999999-dev']],
+                $defaultVersions + ['dev-feature-b' => true, '1.0.x-dev' => true],
+            ],
+            'branches required for another package are not kept' => [
+                ['only-branches' => []],
+                ['other/package' => ['dev-feature-b']],
+                $defaultVersions,
+            ],
+            'exclude-branches still applies' => [
+                ['only-branches' => [], 'exclude-branches' => ['feature-*']],
+                ['a/b' => ['dev-feature-b', '1.0.9999999.9999999-dev']],
+                $defaultVersions + ['1.0.x-dev' => true],
+            ],
+        ];
+    }
+
+    /**
      * @dataProvider provideExcludeBranchesFilters
      * @param array{only-branches?: list<string>, exclude-branches?: list<string>} $filters
      * @param array<string, true> $expected
@@ -327,9 +366,10 @@ class VcsRepositoryTest extends TestCase
     /**
      * @param array{only-branches?: list<string>, exclude-branches?: list<string>} $repoConfig
      * @param array<string, true> $expected
+     * @param array<string, list<string>> $rootRequiredBranches
      * @return array<\Composer\Package\PackageInterface>
      */
-    private function assertLoadedVersions(array $repoConfig, array $expected): array
+    private function assertLoadedVersions(array $repoConfig, array $expected, array $rootRequiredBranches = []): array
     {
         $config = new Config();
         $config->merge([
@@ -339,6 +379,7 @@ class VcsRepositoryTest extends TestCase
         ]);
         $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
         $repo = new VcsRepository(['url' => self::$gitRepo, 'type' => 'vcs'] + $repoConfig, new NullIO, $config, $httpDownloader);
+        $repo->setRootRequiredBranches($rootRequiredBranches);
         $packages = $repo->getPackages();
         $dumper = new ArrayDumper();
 

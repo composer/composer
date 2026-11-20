@@ -74,6 +74,48 @@ class RootPackageLoaderTest extends TestCase
         ], $package->getStabilityFlags());
     }
 
+    public function testRootRequiredBranchesArePassedToVcsRepositories(): void
+    {
+        $vcsRepo = $this->getMockBuilder('Composer\\Repository\\VcsRepository')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $vcsRepo->expects($this->once())
+            ->method('setRootRequiredBranches')
+            ->with([
+                'acme/lib' => ['dev-feature-x'],
+                'acme/aliased' => ['dev-feature-y'],
+                'acme/numeric' => ['1.0.9999999.9999999-dev'],
+                'acme/ref' => ['dev-feature-z'],
+                'acme/or' => ['dev-next'],
+                'acme/dev-tool' => ['dev-wip'],
+            ]);
+
+        $manager = $this->getMockBuilder('Composer\\Repository\\RepositoryManager')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $manager->method('createRepository')->willReturn($vcsRepo);
+
+        $config = new Config;
+        $config->merge(['repositories' => ['packagist' => false, ['type' => 'vcs', 'url' => 'https://example.org/acme/lib.git']]]);
+        $processExecutor = new ProcessExecutor();
+        $processExecutor->enableAsync();
+
+        $loader = new RootPackageLoader($manager, $config, null, new VersionGuesser($config, $processExecutor, new VersionParser()));
+        $loader->load([
+            'require' => [
+                'acme/lib' => 'dev-feature-x',
+                'acme/aliased' => 'dev-feature-y as 1.2.0',
+                'acme/numeric' => '1.0.x-dev',
+                'acme/ref' => 'dev-feature-z#abcdef1',
+                'acme/or' => '^2.0 || dev-next',
+                'acme/stable' => '^1.0@dev',
+            ],
+            'require-dev' => [
+                'acme/dev-tool' => 'dev-wip',
+            ],
+        ]);
+    }
+
     public function testNoVersionIsVisibleInPrettyVersion(): void
     {
         $manager = $this->getMockBuilder('Composer\\Repository\\RepositoryManager')
