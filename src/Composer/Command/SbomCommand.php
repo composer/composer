@@ -251,7 +251,7 @@ EOT
         $getId = static function (PackageInterface $package) use (&$ids): string {
             $key = spl_object_hash($package);
             if (!isset($ids[$key])) {
-                $id = $base = 'SPDXRef-Package-'.str_replace(['/', '_'], '-', $package->getName());
+                $id = $base = 'SPDXRef-Package-'.Preg::replace('{[^A-Za-z0-9.-]}', '-', $package->getName());
                 for ($i = 2; in_array($id, $ids, true); $i++) {
                     $id = $base.'-'.$i;
                 }

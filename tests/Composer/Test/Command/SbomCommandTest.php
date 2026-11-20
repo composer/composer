@@ -419,6 +419,20 @@ class SbomCommandTest extends TestCase
         self::assertSame('SPDXRef-Package-foo-bar-baz-2', $packages['foo/bar_baz']['SPDXID']);
     }
 
+    public function testSpdxIdOnlyContainsAllowedCharacters(): void
+    {
+        $this->initTempComposer([
+            'name' => 'test/root',
+            'version' => '1.0.0',
+        ]);
+        // names from third party repositories are not validated
+        $this->createInstalledJson([self::getPackage('acme/my app@home', '1.0.0')]);
+
+        $sbom = $this->runSbom(['--format' => 'spdx']);
+
+        self::assertSame('SPDXRef-Package-acme-my-app-home', $sbom['packages'][1]['SPDXID']);
+    }
+
     public function testAliasPackagesAreSkipped(): void
     {
         $this->initTempComposer([
