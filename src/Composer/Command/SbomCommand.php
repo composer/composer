@@ -195,7 +195,9 @@ EOT
         $licenses = $this->getLicenses($package);
         if (count($licenses) > 0) {
             $expression = $this->getLicenseExpression($licenses);
-            if (count($licenses) > 1 && $expression !== null) {
+            // a single license may itself be an expression like "(MIT OR Apache-2.0)"
+            $isSingleId = count($licenses) === 1 && $this->getSpdxLicenses()->getLicenseByIdentifier($licenses[0]) !== null;
+            if ($expression !== null && !$isSingleId) {
                 $component['licenses'] = [['expression' => $expression]];
             } else {
                 $component['licenses'] = array_map(function (string $license): array {

@@ -439,6 +439,36 @@ class SbomCommandTest extends TestCase
         self::assertSame(['pkg:composer/alias/pkg@dev-main'], self::dependenciesByRef($sbom)['pkg:composer/test/root@1.0.0']);
     }
 
+    /**
+     * @param list<string> $licenses
+     * @return array{cyclonedx: mixed, spdx: mixed} the licenses of the one installed package in both formats
+     */
+    private function runSbomForLicenses(array $licenses): array
+    {
+        $this->initTempComposer([
+            'name' => 'test/root',
+            'version' => '1.0.0',
+            'require' => ['some/pkg' => '*'],
+        ]);
+
+        $package = self::getPackage('some/pkg', '1.0.0');
+        $package->setLicense($licenses);
+        $this->createInstalledJson([$package]);
+
+        return [
+            'cyclonedx' => $this->runSbom()['components'][0]['licenses'] ?? null,
+            'spdx' => $this->runSbom(['--format' => 'spdx'])['packages'][1]['licenseDeclared'],
+        ];
+    }
+
+    public function testSingleLicenseExpression(): void
+    {
+        $result = $this->runSbomForLicenses(['(LGPL-2.1-only OR GPL-3.0-or-later)']);
+
+        self::assertSame([['expression' => '(LGPL-2.1-only OR GPL-3.0-or-later)']], $result['cyclonedx']);
+        self::assertSame('(LGPL-2.1-only OR GPL-3.0-or-later)', $result['spdx']);
+    }
+
     public function testRootBranchAliasIsNotUsedAsVersion(): void
     {
         $this->initTempComposer([
