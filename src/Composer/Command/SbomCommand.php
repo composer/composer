@@ -98,15 +98,11 @@ EOT
         });
         $packages = array_values(PackageSorter::sortPackagesAlphabetically($packages));
 
+        // a name can be provided/replaced by several installed packages
         $packagesByName = [];
         foreach ($packages as $package) {
-            $packagesByName[$package->getName()] = $package;
-        }
-        foreach ($packages as $package) {
             foreach ($package->getNames() as $name) {
-                if (!isset($packagesByName[$name])) {
-                    $packagesByName[$name] = $package;
-                }
+                $packagesByName[$name][] = $package;
             }
         }
 
@@ -125,11 +121,11 @@ EOT
     }
 
     /**
-     * @param list<PackageInterface>           $packages
-     * @param array<string, PackageInterface>  $packagesByName
-     * @param array<string, Link>              $rootRequires
-     * @param array<string, Link>              $rootDevRequires
-     * @param array<string, int>               $devPackageNames
+     * @param list<PackageInterface>                $packages
+     * @param array<string, list<PackageInterface>> $packagesByName
+     * @param array<string, Link>                   $rootRequires
+     * @param array<string, Link>                   $rootDevRequires
+     * @param array<string, int>                    $devPackageNames
      * @return array<string, mixed>
      */
     private function buildCycloneDx(PackageInterface $root, array $packages, array $packagesByName, array $rootRequires, array $rootDevRequires, array $devPackageNames): array
@@ -139,7 +135,7 @@ EOT
         $components = [];
         $dependencies = [[
             'ref' => $rootComponent['bom-ref'],
-            'dependsOn' => array_map([$this, 'getPurl'], $this->resolveLinks(array_merge($rootRequires, $rootDevRequires), $packagesByName)),
+            'dependsOn' => array_map([$this, 'getPurl'], $this->resolveLinks($root, array_merge($rootRequires, $rootDevRequires), $packagesByName)),
         ]];
         foreach ($packages as $package) {
             $component = $this->buildCycloneDxComponent($package, 'library');
@@ -148,7 +144,7 @@ EOT
 
             $dependencies[] = [
                 'ref' => $component['bom-ref'],
-                'dependsOn' => array_map([$this, 'getPurl'], $this->resolveLinks($package->getRequires(), $packagesByName)),
+                'dependsOn' => array_map([$this, 'getPurl'], $this->resolveLinks($package, $package->getRequires(), $packagesByName)),
             ];
         }
 
@@ -237,10 +233,10 @@ EOT
     }
 
     /**
-     * @param list<PackageInterface>           $packages
-     * @param array<string, PackageInterface>  $packagesByName
-     * @param array<string, Link>              $rootRequires
-     * @param array<string, Link>              $rootDevRequires
+     * @param list<PackageInterface>                $packages
+     * @param array<string, list<PackageInterface>> $packagesByName
+     * @param array<string, Link>                   $rootRequires
+     * @param array<string, Link>                   $rootDevRequires
      * @return array<string, mixed>
      */
     private function buildSpdx(PackageInterface $root, array $packages, array $packagesByName, array $rootRequires, array $rootDevRequires): array
@@ -266,14 +262,14 @@ EOT
             'relatedSpdxElement' => $getId($root),
         ]];
 
-        foreach ($this->resolveLinks($rootRequires, $packagesByName) as $dependency) {
+        foreach ($this->resolveLinks($root, $rootRequires, $packagesByName) as $dependency) {
             $relationships[] = [
                 'spdxElementId' => $getId($root),
                 'relationshipType' => 'DEPENDS_ON',
                 'relatedSpdxElement' => $getId($dependency),
             ];
         }
-        foreach ($this->resolveLinks($rootDevRequires, $packagesByName) as $dependency) {
+        foreach ($this->resolveLinks($root, $rootDevRequires, $packagesByName) as $dependency) {
             $relationships[] = [
                 'spdxElementId' => $getId($dependency),
                 'relationshipType' => 'DEV_DEPENDENCY_OF',
@@ -283,7 +279,7 @@ EOT
 
         foreach ($packages as $package) {
             $spdxPackages[] = $this->buildSpdxPackage($package, $getId($package));
-            foreach ($this->resolveLinks($package->getRequires(), $packagesByName) as $dependency) {
+            foreach ($this->resolveLinks($package, $package->getRequires(), $packagesByName) as $dependency) {
                 $relationships[] = [
                     'spdxElementId' => $getId($package),
                     'relationshipType' => 'DEPENDS_ON',
@@ -347,17 +343,19 @@ EOT
     }
 
     /**
-     * @param array<string, Link>             $links
-     * @param array<string, PackageInterface> $packagesByName
+     * @param array<string, Link>                   $links
+     * @param array<string, list<PackageInterface>> $packagesByName
      * @return list<PackageInterface>
      */
-    private function resolveLinks(array $links, array $packagesByName): array
+    private function resolveLinks(PackageInterface $requirer, array $links, array $packagesByName): array
     {
         $resolved = [];
         foreach ($links as $link) {
-            if (isset($packagesByName[$link->getTarget()])) {
-                $package = $packagesByName[$link->getTarget()];
-                $resolved[spl_object_hash($package)] = $package;
+            foreach ($packagesByName[$link->getTarget()] ?? [] as $package) {
+                // a package may require a name it provides itself
+                if ($package !== $requirer) {
+                    $resolved[spl_object_hash($package)] = $package;
+                }
             }
         }
 

@@ -458,6 +458,39 @@ class SbomCommandTest extends TestCase
         self::assertSame(['pkg:composer/impl/logger@1.0.0'], self::dependenciesByRef($sbom)['pkg:composer/test/root@1.0.0']);
     }
 
+    public function testProvidedNamesResolveToAllProvidingPackages(): void
+    {
+        $this->initTempComposer([
+            'name' => 'test/root',
+            'version' => '1.0.0',
+            'require' => [
+                'psr/log-implementation' => '*',
+            ],
+        ]);
+
+        $first = self::getPackage('acme/logger', '1.0.0');
+        self::configureLinks($first, ['provide' => ['psr/log-implementation' => '1.0.0']]);
+        $second = self::getPackage('impl/logger', '1.0.0');
+        self::configureLinks($second, [
+            'provide' => ['psr/log-implementation' => '1.0.0'],
+            'require' => ['psr/log-implementation' => '*'],
+        ]);
+        $this->createInstalledJson([$first, $second]);
+
+        $dependencies = self::dependenciesByRef($this->runSbom());
+        self::assertSame(['pkg:composer/acme/logger@1.0.0', 'pkg:composer/impl/logger@1.0.0'], $dependencies['pkg:composer/test/root@1.0.0']);
+        // impl/logger depends on the other provider but not on itself
+        self::assertSame(['pkg:composer/acme/logger@1.0.0'], $dependencies['pkg:composer/impl/logger@1.0.0']);
+
+        $sbom = $this->runSbom(['--format' => 'spdx']);
+        self::assertSame([
+            ['spdxElementId' => 'SPDXRef-DOCUMENT', 'relationshipType' => 'DESCRIBES', 'relatedSpdxElement' => 'SPDXRef-Package-test-root'],
+            ['spdxElementId' => 'SPDXRef-Package-test-root', 'relationshipType' => 'DEPENDS_ON', 'relatedSpdxElement' => 'SPDXRef-Package-acme-logger'],
+            ['spdxElementId' => 'SPDXRef-Package-test-root', 'relationshipType' => 'DEPENDS_ON', 'relatedSpdxElement' => 'SPDXRef-Package-impl-logger'],
+            ['spdxElementId' => 'SPDXRef-Package-impl-logger', 'relationshipType' => 'DEPENDS_ON', 'relatedSpdxElement' => 'SPDXRef-Package-acme-logger'],
+        ], $sbom['relationships']);
+    }
+
     public function testPurlEncodesSpecialCharactersInVersion(): void
     {
         $this->initTempComposer([
