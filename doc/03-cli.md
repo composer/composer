@@ -94,6 +94,10 @@ everyone using the library will get the same versions of the dependencies.
 If there is no `composer.lock` file, Composer will create one after dependency
 resolution.
 
+If a [local lock file](#link) written by `update --with-linked-packages` exists,
+it is used instead of `composer.lock`; delete it to install from `composer.lock`
+again.
+
 ### Options
 
 * **--prefer-install:** There are two ways of downloading a package: `source`

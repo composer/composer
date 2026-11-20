@@ -13,6 +13,7 @@
 namespace Composer\Test\Command;
 
 use Composer\Installer;
+use Composer\Json\JsonFile;
 use Composer\Test\TestCase;
 use Generator;
 
@@ -194,5 +195,63 @@ Verifying lock file contents can be installed on current platform.
 Package operations: 1 install, 0 updates, 0 removals
   - Installing root/another (1.0.0)
 Generating autoload files', trim($appTester->getDisplay(true)));
+    }
+
+    /**
+     * @dataProvider localLockFileProvider
+     */
+    public function testInstallFromLocalLockFile(bool $withLinkedPackages, string $expected): void
+    {
+        $this->initTempComposer([
+            'require' => [
+                'root/req' => '1.*',
+            ],
+        ]);
+
+        $localPackage = self::getPackage('root/req', '1.1.0');
+        $package = self::getPackage('root/req');
+        // Set as a metapackage so that we can do the whole post-remove update & install process without Composer trying to download them (DownloadManager::getDownloaderForPackage).
+        $localPackage->setType('metapackage');
+        $package->setType('metapackage');
+
+        $this->createComposerLock([$localPackage], []);
+        rename('composer.lock', 'composer.local.lock');
+        $this->createComposerLock([$package], []);
+        if ($withLinkedPackages) {
+            $localLock = new JsonFile('composer.local.lock');
+            $localLock->write($localLock->read() + ['linked-packages' => ['path' => 'linked']]);
+        }
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'install', '--no-progress' => true]);
+
+        $appTester->assertCommandIsSuccessful();
+        self::assertSame(trim($expected), trim($appTester->getDisplay(true)));
+    }
+
+    public function localLockFileProvider(): Generator
+    {
+        yield 'it installs from the local lock file' => [
+            true,
+            <<<OUTPUT
+Using composer.local.lock instead of composer.lock
+Installing dependencies from lock file (including require-dev)
+Verifying lock file contents can be installed on current platform.
+Package operations: 1 install, 0 updates, 0 removals
+  - Installing root/req (1.1.0)
+Generating autoload files
+OUTPUT
+        ];
+
+        yield 'it ignores a local lock file without linked packages' => [
+            false,
+            <<<OUTPUT
+Installing dependencies from lock file (including require-dev)
+Verifying lock file contents can be installed on current platform.
+Package operations: 1 install, 0 updates, 0 removals
+  - Installing root/req (1.0.0)
+Generating autoload files
+OUTPUT
+        ];
     }
 }
