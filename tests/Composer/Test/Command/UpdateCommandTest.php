@@ -578,6 +578,266 @@ OUTPUT
         self::assertStringNotContainsString('Locking vulnerable/pkg (1.0.0)', $display);
     }
 
+    public function testVulnerableOnlyUpdatesAffectedLockedPackages(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => self::getVulnerableRepository([
+                    ['name' => 'vulnerable/pkg', 'version' => '1.0.0'],
+                    ['name' => 'vulnerable/pkg', 'version' => '1.1.0'],
+                    ['name' => 'safe/pkg', 'version' => '1.0.0'],
+                    ['name' => 'safe/pkg', 'version' => '1.1.0'],
+                ], ['vulnerable/pkg' => '<1.1.0']),
+            ],
+            'require' => [
+                'vulnerable/pkg' => '^1.0',
+                'safe/pkg' => '^1.0',
+            ],
+        ]);
+        $this->createComposerLock([
+            self::getPackage('vulnerable/pkg', '1.0.0'),
+            self::getPackage('safe/pkg', '1.0.0'),
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'update', '--vulnerable-only' => true, '--dry-run' => true, '--no-audit' => true, '--no-install' => true]);
+
+        $display = $appTester->getDisplay(true);
+        self::assertStringContainsString('Updating vulnerable packages: vulnerable/pkg', $display);
+        self::assertStringContainsString('Upgrading vulnerable/pkg (1.0.0 => 1.1.0)', $display);
+        self::assertStringNotContainsString('Upgrading safe/pkg', $display);
+    }
+
+    public function testVulnerableOnlyUpdatesDependenciesOfVulnerablePackagesWithMinimalChanges(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => self::getVulnerableRepository([
+                    ['name' => 'vulnerable/pkg', 'version' => '1.0.0', 'require' => ['dep/pkg' => '^1.0']],
+                    ['name' => 'vulnerable/pkg', 'version' => '1.1.0', 'require' => ['dep/pkg' => '^2.0']],
+                    ['name' => 'dep/pkg', 'version' => '1.0.0'],
+                    ['name' => 'dep/pkg', 'version' => '2.0.0'],
+                    ['name' => 'safe/pkg', 'version' => '1.0.0', 'require' => ['dep/pkg' => '*']],
+                    ['name' => 'safe/pkg', 'version' => '1.1.0', 'require' => ['dep/pkg' => '*']],
+                ], ['vulnerable/pkg' => '<1.1.0']),
+            ],
+            'require' => [
+                'vulnerable/pkg' => '^1.0',
+                'safe/pkg' => '^1.0',
+            ],
+        ]);
+        $vulnerablePackage = self::getPackage('vulnerable/pkg', '1.0.0');
+        self::configureLinks($vulnerablePackage, ['require' => ['dep/pkg' => '^1.0']]);
+        $safePackage = self::getPackage('safe/pkg', '1.0.0');
+        self::configureLinks($safePackage, ['require' => ['dep/pkg' => '*']]);
+        $this->createComposerLock([$vulnerablePackage, $safePackage, self::getPackage('dep/pkg', '1.0.0')]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'update', '--vulnerable-only' => true, '--dry-run' => true, '--no-audit' => true, '--no-install' => true]);
+
+        $display = $appTester->getDisplay(true);
+        self::assertSame(0, $appTester->getStatusCode(), $display);
+        self::assertStringContainsString('Upgrading vulnerable/pkg (1.0.0 => 1.1.0)', $display);
+        self::assertStringContainsString('Upgrading dep/pkg (1.0.0 => 2.0.0)', $display);
+        self::assertStringNotContainsString('safe/pkg', $display);
+    }
+
+    public function testVulnerableOnlyExcludesAffectedVersionsWithoutSecurityBlocking(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => self::getVulnerableRepository([
+                    ['name' => 'vulnerable/pkg', 'version' => '1.0.0'],
+                    ['name' => 'vulnerable/pkg', 'version' => '1.0.5'],
+                    ['name' => 'vulnerable/pkg', 'version' => '1.1.0'],
+                ], ['vulnerable/pkg' => '<1.0.5 || >=1.1.0,<1.1.2']),
+            ],
+            'require' => [
+                'vulnerable/pkg' => '^1.0',
+            ],
+        ]);
+        $this->createComposerLock([self::getPackage('vulnerable/pkg', '1.0.0')]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'update', '--vulnerable-only' => true, '--no-security-blocking' => true, '--dry-run' => true, '--no-audit' => true, '--no-install' => true]);
+
+        $display = $appTester->getDisplay(true);
+        self::assertSame(0, $appTester->getStatusCode(), $display);
+        self::assertStringContainsString('Upgrading vulnerable/pkg (1.0.0 => 1.0.5)', $display);
+    }
+
+    public function testVulnerableOnlyFailsWhenNoFixedVersionIsAvailable(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => self::getVulnerableRepository([
+                    ['name' => 'vulnerable/pkg', 'version' => '1.0.0'],
+                    ['name' => 'vulnerable/pkg', 'version' => '1.1.0'],
+                    ['name' => 'vulnerable/pkg', 'version' => '2.0.0'],
+                ], ['vulnerable/pkg' => '<2.0.0']),
+            ],
+            'require' => [
+                'vulnerable/pkg' => '^1.0',
+            ],
+        ]);
+        $this->createComposerLock([self::getPackage('vulnerable/pkg', '1.0.0')]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'update', '--vulnerable-only' => true, '--no-security-blocking' => true, '--dry-run' => true, '--no-audit' => true, '--no-install' => true]);
+
+        self::assertNotSame(0, $appTester->getStatusCode());
+        self::assertStringNotContainsString('Upgrading vulnerable/pkg', $appTester->getDisplay(true));
+    }
+
+    public function testVulnerableOnlySkipsIgnoredAdvisories(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => self::getVulnerableRepository([
+                    ['name' => 'vulnerable/pkg', 'version' => '1.0.0'],
+                    ['name' => 'vulnerable/pkg', 'version' => '1.1.0'],
+                ], ['vulnerable/pkg' => '<1.1.0']),
+            ],
+            'require' => [
+                'vulnerable/pkg' => '^1.0',
+            ],
+            'config' => [
+                'audit' => ['ignore' => ['PKSA-test-vulnerable/pkg']],
+            ],
+        ]);
+        $this->createComposerLock([self::getPackage('vulnerable/pkg', '1.0.0')]);
+
+        $appTester = $this->getApplicationTester();
+        $exitCode = $appTester->run(['command' => 'update', '--vulnerable-only' => true, '--dry-run' => true, '--no-audit' => true, '--no-install' => true]);
+
+        self::assertSame(0, $exitCode);
+        self::assertStringContainsString('No packages with known security vulnerabilities found in composer.lock.', $appTester->getDisplay(true));
+        self::assertStringNotContainsString('Upgrading vulnerable/pkg', $appTester->getDisplay(true));
+    }
+
+    public function testVulnerableOnlyDoesNothingWithoutAffectedLockedPackages(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'safe/pkg', 'version' => '1.0.0'],
+                        ['name' => 'safe/pkg', 'version' => '1.1.0'],
+                    ],
+                ],
+            ],
+            'require' => [
+                'safe/pkg' => '^1.0',
+            ],
+        ]);
+        $this->createComposerLock([self::getPackage('safe/pkg', '1.0.0')]);
+
+        $appTester = $this->getApplicationTester();
+        $exitCode = $appTester->run(['command' => 'update', '--vulnerable-only' => true, '--dry-run' => true, '--no-audit' => true]);
+
+        $display = $appTester->getDisplay(true);
+        self::assertSame(0, $exitCode);
+        self::assertStringContainsString('No packages with known security vulnerabilities found in composer.lock.', $display);
+        self::assertStringContainsString('Nothing to modify in lock file', $display);
+        self::assertStringContainsString('Installing dependencies from lock file', $display);
+        self::assertStringContainsString('Installing safe/pkg (1.0.0)', $display);
+    }
+
+    public function testVulnerableOnlyRespectsNoDev(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => self::getVulnerableRepository([
+                    ['name' => 'dev/pkg', 'version' => '1.0.0'],
+                    ['name' => 'dev/pkg', 'version' => '1.1.0'],
+                ], ['dev/pkg' => '<1.1.0']),
+            ],
+            'require-dev' => [
+                'dev/pkg' => '^1.0',
+            ],
+        ]);
+        $this->createComposerLock([], [self::getPackage('dev/pkg', '1.0.0')]);
+
+        $appTester = $this->getApplicationTester();
+        $exitCode = $appTester->run(['command' => 'update', '--vulnerable-only' => true, '--no-dev' => true, '--dry-run' => true, '--no-audit' => true]);
+
+        self::assertSame(0, $exitCode);
+        self::assertStringContainsString('No packages with known security vulnerabilities found in composer.lock.', $appTester->getDisplay(true));
+    }
+
+    public function testVulnerableOnlyRequiresLockFile(): void
+    {
+        $this->initTempComposer([
+            'require' => [
+                'vendor/package' => '^1.0',
+            ],
+        ]);
+        self::expectException(\UnexpectedValueException::class);
+        self::expectExceptionMessage('A valid composer.lock file is required to run this command with --vulnerable-only.');
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'update', '--vulnerable-only' => true]);
+    }
+
+    public function testVulnerableOnlyRejectsPackageArguments(): void
+    {
+        $this->initTempComposer();
+        self::expectException(\InvalidArgumentException::class);
+        self::expectExceptionMessage('--vulnerable-only cannot be combined with package arguments.');
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'update', '--vulnerable-only' => true, 'packages' => ['vendor/package']]);
+    }
+
+    /**
+     * @dataProvider provideVulnerableOnlyIncompatibleOptions
+     */
+    public function testVulnerableOnlyRejectsIncompatibleOptions(string $option): void
+    {
+        $this->initTempComposer();
+        self::expectException(\InvalidArgumentException::class);
+        self::expectExceptionMessage('--vulnerable-only cannot be combined with --interactive, --root-reqs or --lock.');
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'update', '--vulnerable-only' => true, $option => true]);
+    }
+
+    public static function provideVulnerableOnlyIncompatibleOptions(): \Generator
+    {
+        yield ['--interactive'];
+        yield ['--root-reqs'];
+        yield ['--lock'];
+    }
+
+    /**
+     * @param list<array<string, mixed>> $packages
+     * @param array<string, string> $affectedVersions package name => affected versions constraint
+     * @return array<string, mixed>
+     */
+    private static function getVulnerableRepository(array $packages, array $affectedVersions): array
+    {
+        $advisories = [];
+        foreach ($affectedVersions as $name => $constraint) {
+            $advisories[$name][] = [
+                'advisoryId' => 'PKSA-test-'.$name,
+                'packageName' => $name,
+                'remoteId' => 'CVE-2024-1234',
+                'title' => 'Test Security Vulnerability',
+                'link' => 'https://example.com/advisory',
+                'cve' => 'CVE-2024-1234',
+                'affectedVersions' => $constraint,
+                'source' => 'test',
+                'reportedAt' => '2024-01-01 00:00:00',
+                'composerRepository' => 'Package Repository',
+                'severity' => 'high',
+                'sources' => [['name' => 'test', 'remoteId' => 'CVE-2024-1234']],
+            ];
+        }
+
+        return ['type' => 'package', 'package' => $packages, 'security-advisories' => $advisories];
+    }
+
     public function testNoBlockingAllowsMalwareFlaggedPackages(): void
     {
         $this->initTempComposer([

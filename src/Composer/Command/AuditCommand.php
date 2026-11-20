@@ -18,11 +18,13 @@ use Composer\Policy\ListPolicyConfig;
 use Composer\Policy\PolicyConfig;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\RepositoryUtils;
+use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepository;
 use Composer\Advisory\Auditor;
+use Composer\Console\Input\InputArgument;
 use Composer\Console\Input\InputOption;
 
 class AuditCommand extends BaseCommand
@@ -33,6 +35,7 @@ class AuditCommand extends BaseCommand
             ->setName('audit')
             ->setDescription('Checks for security vulnerability advisories for installed packages')
             ->setDefinition([
+                new InputArgument('action', InputArgument::OPTIONAL, 'Pass "fix" to update the vulnerable packages, see update --vulnerable-only.', null, ['fix']),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables auditing of require-dev packages.'),
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Output format. Must be "table", "plain", "json", or "summary".', Auditor::FORMAT_TABLE, Auditor::FORMATS),
                 new InputOption('locked', null, InputOption::VALUE_NONE, 'Audit based on the lock file instead of the installed packages.'),
@@ -51,6 +54,9 @@ If you only want to audit packages your root package requires directly, use --di
 
 If you want to ignore repositories and dependency policy sources that are unreachable or return a non-200 status code, use --ignore-unreachable
 
+To update the packages affected by security advisories, use <info>php composer.phar audit fix</info>
+which is an alias for <info>php composer.phar update --vulnerable-only</info>
+
 Read more at https://getcomposer.org/doc/03-cli.md#audit
 EOT
             )
@@ -59,6 +65,17 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $action = $input->getArgument('action');
+        if ($action === 'fix') {
+            $updateInput = new ArrayInput(['--vulnerable-only' => true, '--no-dev' => $input->getOption('no-dev')]);
+            $updateInput->setInteractive($input->isInteractive());
+
+            return $this->getApplication()->find('update')->run($updateInput, $output);
+        }
+        if ($action !== null) {
+            throw new \InvalidArgumentException('Invalid action "'.$action.'", the only supported action is "fix".');
+        }
+
         $composer = $this->requireComposer();
         $packages = $this->getPackages($composer, $input);
 

@@ -195,6 +195,64 @@ class AuditCommandTest extends TestCase
         self::assertEquals('No direct dependencies - skipping audit.', trim($appTester->getDisplay(true)));
     }
 
+    public function testAuditFixUpdatesVulnerablePackages(): void
+    {
+        $advisory = [
+            'advisoryId' => 'PKSA-test-001',
+            'packageName' => 'vulnerable/pkg',
+            'remoteId' => 'CVE-2024-1234',
+            'title' => 'Test Security Vulnerability',
+            'link' => 'https://example.com/advisory',
+            'cve' => 'CVE-2024-1234',
+            'affectedVersions' => '<1.1.0',
+            'source' => 'test',
+            'reportedAt' => '2024-01-01 00:00:00',
+            'composerRepository' => 'Package Repository',
+            'severity' => 'high',
+            'sources' => [['name' => 'test', 'remoteId' => 'CVE-2024-1234']],
+        ];
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'vulnerable/pkg', 'version' => '1.0.0', 'type' => 'metapackage'],
+                        ['name' => 'vulnerable/pkg', 'version' => '1.1.0', 'type' => 'metapackage'],
+                        ['name' => 'vulnerable/dev-pkg', 'version' => '1.0.0', 'type' => 'metapackage'],
+                        ['name' => 'vulnerable/dev-pkg', 'version' => '1.1.0', 'type' => 'metapackage'],
+                    ],
+                    'security-advisories' => [
+                        'vulnerable/pkg' => [$advisory],
+                        'vulnerable/dev-pkg' => [['packageName' => 'vulnerable/dev-pkg', 'advisoryId' => 'PKSA-test-002'] + $advisory],
+                    ],
+                ],
+            ],
+            'require' => ['vulnerable/pkg' => '^1.0'],
+            'require-dev' => ['vulnerable/dev-pkg' => '^1.0'],
+        ]);
+        $this->createComposerLock([self::getPackage('vulnerable/pkg', '1.0.0')], [self::getPackage('vulnerable/dev-pkg', '1.0.0')]);
+
+        $appTester = $this->getApplicationTester();
+        $exitCode = $appTester->run(['command' => 'audit', 'action' => 'fix', '--no-dev' => true]);
+
+        $display = $appTester->getDisplay(true);
+        self::assertSame(0, $exitCode, $display);
+        self::assertStringContainsString('Updating vulnerable packages: vulnerable/pkg', $display);
+        self::assertStringContainsString('Upgrading vulnerable/pkg (1.0.0 => 1.1.0)', $display);
+        self::assertStringNotContainsString('vulnerable/dev-pkg', $display);
+    }
+
+    public function testAuditRejectsUnknownAction(): void
+    {
+        $this->initTempComposer();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid action "foo", the only supported action is "fix".');
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'audit', 'action' => 'foo']);
+    }
+
     /**
      * @param list<array{name: string, version: string}> $packages
      * @param array<string, mixed> $extraConfig

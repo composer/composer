@@ -244,6 +244,11 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
   updates the allow-listed packages are always updated fully. Can also be set via
   the COMPOSER_MINIMAL_CHANGES=1 env var.
 * **--patch-only:** Only allow patch version updates for currently installed dependencies.
+* **--vulnerable-only:** Only update locked packages affected by known security advisories,
+  skipping advisories ignored by your [audit](06-config.md#audit) config. This implies `--with-all-dependencies` and
+  `--minimal-changes`, and the affected versions are excluded so the update fails if no fixed
+  version can be installed. If no package is vulnerable, this behaves like `update --lock`. This requires a `composer.lock` file and cannot be combined with
+  package arguments, `--interactive`, `--root-reqs`, or `--lock`. `--no-dev` excludes development dependencies.
 * **--interactive:** Interactive interface with autocompletion to select the packages to update.
 * **--root-reqs:** Restricts the update to your first degree dependencies.
 * **--bump-after-update:** Runs `bump` after performing the update. Set to `dev` or `no-dev` to only bump those dependencies.
@@ -1232,6 +1237,13 @@ policies and returns the following exit codes based on the findings:
 
 ```shell
 php composer.phar audit
+```
+
+To update the packages affected by security advisories, run `audit fix`. It is an alias for
+[`update --vulnerable-only`](#update-u-upgrade) and only passes on the `--no-dev` option.
+
+```shell
+php composer.phar audit fix
 ```
 
 ### Options
