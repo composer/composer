@@ -1,0 +1,51 @@
+--TEST--
+When unlocking a locked package during a partial update, a package it replaces which is required by a symlinked
+path-repo package must be loaded too, in case an update to the replacer drops the replacement. Path repo packages are
+auto-unlocked so they never show up in getFixedOrLockedPackages() (https://github.com/composer/composer/issues/13024).
+The path repo must be listed before the repo providing the requirer which triggers the unlocking, otherwise locked/dep
+is already unlocked by the time the path repo package is loaded and its constraint is never dropped in the first place.
+
+--REQUEST--
+{
+    "require": {
+        "symlinked/path-pkg": "*",
+        "root/dep": "*"
+    },
+    "locked": [
+        {
+            "name": "symlinked/path-pkg",
+            "version": "1.0.0",
+            "require": {"locked/dep": "^2.0"},
+            "dist": {"type": "path", "url": "./symlinked-path-repo-with-locked-dep", "reference": "abcd"}, "transport-options": {}
+        },
+        {"name": "root/dep", "version": "1.1.0", "require": {"replacer/pkg": "1.*"}},
+        {"name": "replacer/pkg", "version": "1.0.0", "replace": {"locked/dep": "2.0.0"}}
+    ],
+    "allowList": [
+        "root/dep"
+    ],
+    "allowTransitiveDeps": true
+}
+
+--FIXED--
+[
+]
+
+--PACKAGE-REPOS--
+[
+    {"type": "path", "url": "./symlinked-path-repo-with-locked-dep"},
+    [
+        {"name": "root/dep", "version": "1.2.0", "require": {"replacer/pkg": ">=1.1.0"}},
+        {"name": "replacer/pkg", "version": "1.0.0", "replace": {"locked/dep": "2.0.0"}},
+        {"name": "replacer/pkg", "version": "1.1.0"},
+        {"name": "locked/dep", "version": "2.0.0"}
+    ]
+]
+
+--EXPECT--
+[
+    "root/dep-1.2.0.0",
+    "replacer/pkg-1.1.0.0",
+    "locked/dep-2.0.0.0",
+    "symlinked/path-pkg-1.0.0.0"
+]
