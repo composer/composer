@@ -178,6 +178,7 @@ EOT
 
             $generator = $composer->getAutoloadGenerator();
             $generator->setClassMapAuthoritative($authoritative);
+            $generator->setRunScripts(true);
             $generator->setApcu($apcu, $apcuPrefix);
             $generator->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input));
             $generator->dump(
