@@ -16,9 +16,14 @@ use Composer\Composer;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Request;
+use Composer\Factory;
 use Composer\Installer;
 use Composer\IO\IOInterface;
+use Composer\Json\JsonFile;
 use Composer\Package\BasePackage;
+use Composer\Package\Link;
+use Composer\Package\LinkedPackages;
+use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Loader\RootPackageLoader;
 use Composer\Package\Version\VersionSelector;
 use Composer\Pcre\Preg;
@@ -31,6 +36,7 @@ use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositorySet;
 use Composer\Semver\Constraint\MultiConstraint;
 use Composer\Semver\Intervals;
+use Composer\Util\Filesystem;
 use Composer\Util\HttpDownloader;
 use Composer\Advisory\Auditor;
 use Symfony\Component\Console\Helper\Table;
@@ -46,6 +52,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 class UpdateCommand extends BaseCommand
 {
     use CompletionTrait;
+
+    /** @var ?string file name of the local lock file if it is started from the lock file */
+    private $localLockFile = null;
+    /** @var ?string contents before modification if the local lock file exists */
+    private $localLockBackup = null;
 
     protected function configure(): void
     {
@@ -89,6 +100,10 @@ class UpdateCommand extends BaseCommand
                 new InputOption('interactive', 'i', InputOption::VALUE_NONE, 'Interactive interface with autocompletion to select the packages to update.'),
                 new InputOption('root-reqs', null, InputOption::VALUE_NONE, 'Restricts the update to your first degree dependencies.'),
                 new InputOption('bump-after-update', null, InputOption::VALUE_OPTIONAL, 'Runs bump after performing the update.', false, ['dev', 'no-dev', 'all']),
+                new InputOption('with-linked-packages', null, InputOption::VALUE_OPTIONAL, 'Uses the linked packages, optionally only those matching a comma-separated list of package names, and writes the local lock file instead of composer.lock.', false),
+                new InputOption('follow-linked', null, InputOption::VALUE_NONE, 'Updates the local lock file with the same linked packages as the last --with-linked-packages update.'),
+                new InputOption('skip-linked', null, InputOption::VALUE_NONE, 'Updates composer.lock without asking to update the linked packages when a local lock file is present.'),
+                new InputOption('linked-repo-path', null, InputOption::VALUE_REQUIRED, 'Directory holding the linked packages file, defaults to the Composer home directory.'),
             ])
             ->setHelp(
                 <<<EOT
@@ -118,6 +133,11 @@ To run a partial update with more restrictive constraints you can use the shorth
 
 To select packages names interactively with auto-completion use <info>-i</info>.
 
+To update using the packages linked with the <info>link</info> command, writing
+the local lock file (composer.local.lock) instead of composer.lock, use:
+
+<info>php composer.phar update --with-linked-packages</info>
+
 Read more at https://getcomposer.org/doc/03-cli.md#update--u--upgrade
 EOT
             )
@@ -139,6 +159,8 @@ EOT
         if (!HttpDownloader::isCurlEnabled()) {
             $io->writeError('<warning>Composer is operating significantly slower than normal because you do not have the PHP curl extension enabled.</warning>');
         }
+
+        $linkedPackages = $this->setUpLinkedPackages($input, $io, $composer);
 
         $packages = $input->getArgument('packages');
         $reqs = $this->formatRequirements($input->getOption('with'));
@@ -253,6 +275,10 @@ EOT
 
         $composer->getInstallationManager()->setOutputProgress(!$input->getOption('no-progress'));
 
+        if (null !== $linkedPackages) {
+            $this->switchToLocalLock($input, $io, $composer, $linkedPackages);
+        }
+
         $install = Installer::create($io, $composer);
 
         $config = $composer->getConfig();
@@ -307,7 +333,15 @@ EOT
 
         $result = $install->run();
 
-        if ($result === 0 && !$input->getOption('lock')) {
+        if ($result !== 0 && null !== $this->localLockFile) {
+            if (null !== $this->localLockBackup) {
+                Filesystem::safeFilePutContents($this->localLockFile, $this->localLockBackup);
+            } elseif (file_exists($this->localLockFile)) {
+                unlink($this->localLockFile);
+            }
+        }
+
+        if ($result === 0 && !$input->getOption('lock') && null === $linkedPackages) {
             $bumpAfterUpdate = $input->getOption('bump-after-update');
             if (false === $bumpAfterUpdate) {
                 $bumpAfterUpdate = $composer->getConfig()->get('bump-after-update');
@@ -343,6 +377,117 @@ EOT
         }
 
         return $result;
+    }
+
+    /**
+     * Adds the linked packages repositories and requirements when updating with linked packages
+     *
+     * @return array{path: string, only?: list<string>}|null the linked packages to store in the local lock file, or null when not updating with linked packages
+     */
+    private function setUpLinkedPackages(InputInterface $input, IOInterface $io, Composer $composer): ?array
+    {
+        $withLinked = $input->getOption('with-linked-packages');
+        $followLinked = $input->getOption('follow-linked');
+        $skipLinked = $input->getOption('skip-linked');
+        if (false !== $withLinked && $followLinked) {
+            throw new \InvalidArgumentException('--with-linked-packages and --follow-linked cannot be used together.');
+        }
+        if ($skipLinked && (false !== $withLinked || $followLinked)) {
+            throw new \InvalidArgumentException('--skip-linked cannot be used with --with-linked-packages or --follow-linked.');
+        }
+        if (null !== $input->getOption('linked-repo-path') && false === $withLinked) {
+            throw new \InvalidArgumentException('--linked-repo-path can only be used with --with-linked-packages.');
+        }
+
+        $composerFile = Factory::getComposerFile();
+        $localLockFile = Factory::getLocalLockFile($composerFile);
+        if (false === $withLinked && !$followLinked && !file_exists($localLockFile)) {
+            return null;
+        }
+
+        $config = $composer->getConfig();
+        if (false !== $withLinked) {
+            $dir = $input->getOption('linked-repo-path') ?? LinkedPackages::getDefaultDir($config);
+            $path = realpath($dir);
+            $linkedPackages = ['path' => false !== $path ? $path : $dir];
+            if (null !== $withLinked) {
+                $linkedPackages['only'] = Preg::split('{\s*,\s*}', trim($withLinked), -1, PREG_SPLIT_NO_EMPTY);
+            }
+        } else {
+            $linkedPackages = Factory::createLocalLocker($io, $composer, $composerFile)->getLinkedPackages();
+            if (null === $linkedPackages) {
+                if ($followLinked) {
+                    throw new \RuntimeException('The linked packages used are not stored in '.$localLockFile.', run an update with --with-linked-packages first.');
+                }
+
+                return null;
+            }
+            if (!$followLinked && ($skipLinked || !$io->isInteractive() || !$io->askConfirmation('<info>'.basename($localLockFile).' is present, do you want to update the linked packages from it?</info> [<comment>no</comment>]? ', false))) {
+                $io->writeError('<warning>Not updating linked packages, note that composer install keeps using '.basename($localLockFile).' until you delete it.</warning>');
+
+                return null;
+            }
+        }
+
+        $only = $linkedPackages['only'] ?? null;
+        $linked = new LinkedPackages($linkedPackages['path'], $io);
+        $links = array_change_key_case($linked->getLinks($only), CASE_LOWER);
+        if (\count($links) === 0) {
+            $hint = false === $withLinked ? ', update with --with-linked-packages or delete '.basename($localLockFile).' to stop using them' : '';
+            throw new \RuntimeException('No linked packages found in '.$linked->getFile().($only !== null ? ' matching '.implode(', ', $only) : '').$hint.'.');
+        }
+
+        $rootPackage = $composer->getPackage();
+        $composerJson = (new JsonFile($composerFile))->read();
+        $requireLinked = (new ArrayLoader())->parseLinks($rootPackage->getName(), $rootPackage->getPrettyVersion(), Link::TYPE_REQUIRE, $composerJson['require-linked'] ?? []);
+        foreach (array_keys($requireLinked) as $name) {
+            if (!isset($links[$name])) {
+                throw new \RuntimeException('Package "'.$name.'" is listed in require-linked but is not one of the linked packages from '.$linked->getFile().'.');
+            }
+        }
+
+        $rootPackage->setRequires(array_merge($rootPackage->getRequires(), $requireLinked));
+        $rootPackage->setDevRequires(array_diff_key($rootPackage->getDevRequires(), $requireLinked));
+        $rootPackage->setStabilityFlags(array_merge($rootPackage->getStabilityFlags(), array_fill_keys(array_keys($links), BasePackage::STABILITY_DEV)));
+
+        $repositoryManager = $composer->getRepositoryManager();
+        foreach (array_reverse($linked->createRepositories($repositoryManager, $config, $only)) as $repository) {
+            $repositoryManager->prependRepository($repository);
+        }
+
+        return $linkedPackages;
+    }
+
+    /**
+     * Switches to the local lock file, starting it from the lock file when updating with --with-linked-packages
+     *
+     * @param array{path: string, only?: list<string>} $linkedPackages
+     */
+    private function switchToLocalLock(InputInterface $input, IOInterface $io, Composer $composer, array $linkedPackages): void
+    {
+        $withLinked = false !== $input->getOption('with-linked-packages');
+        if (!$composer->getConfig()->get('lock') || ($withLinked && $input->getOption('dry-run'))) {
+            return;
+        }
+
+        $composerFile = Factory::getComposerFile();
+        $lockFile = Factory::getLockFile($composerFile);
+        $localLockFile = Factory::getLocalLockFile($composerFile);
+        if ($withLinked) {
+            // start from the lock file so that only the linked packages and the packages being updated change
+            $this->localLockFile = $localLockFile;
+            $this->localLockBackup = file_exists($localLockFile) ? (string) file_get_contents($localLockFile) : null;
+            if (file_exists($lockFile)) {
+                copy($lockFile, $localLockFile);
+            } elseif (file_exists($localLockFile)) {
+                unlink($localLockFile);
+            }
+        }
+
+        $locker = Factory::createLocalLocker($io, $composer, $composerFile);
+        $locker->setLinkedPackages($linkedPackages);
+        $composer->setLocker($locker);
+        $io->writeError('<info>Using '.basename($localLockFile).' instead of '.basename($lockFile).'</info>');
     }
 
     /**

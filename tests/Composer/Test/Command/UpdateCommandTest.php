@@ -14,6 +14,7 @@ namespace Composer\Test\Command;
 
 use Composer\Json\JsonFile;
 use Composer\Package\Link;
+use Composer\Package\LinkedPackages;
 use Composer\Package\Locker;
 use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Test\TestCase;
@@ -823,5 +824,175 @@ Nothing to modify in lock file
 OUTPUT;
 
         self::assertStringMatchesFormat(trim($expected), trim($appTester->getDisplay(true)));
+    }
+
+    public function testUpdateWithLinkedPackagesWritesLocalLock(): void
+    {
+        $dir = $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'acme/foo', 'version' => '1.0.0'],
+                    ],
+                ],
+            ],
+            'require-dev' => [
+                'acme/foo' => '1.0.0',
+            ],
+            'require-linked' => [
+                'acme/foo' => '^1.0',
+            ],
+        ]);
+        $this->createComposerLock([self::getPackage('acme/foo', '1.0.0')]);
+        $composerJsonContents = file_get_contents($dir.'/composer.json');
+        $lockContents = file_get_contents($dir.'/composer.lock');
+        $this->linkPackage($dir, 'acme/foo', '1.x-dev');
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'update', '--with-linked-packages' => null, '--bump-after-update' => null, '--no-install' => true, '--no-audit' => true]);
+
+        $appTester->assertCommandIsSuccessful();
+        self::assertStringContainsString('Upgrading acme/foo (1.0.0 => 1.x-dev', $appTester->getDisplay(true));
+        self::assertSame($composerJsonContents, file_get_contents($dir.'/composer.json'));
+        self::assertSame($lockContents, file_get_contents($dir.'/composer.lock'));
+
+        $localLock = (new JsonFile($dir.'/composer.local.lock'))->read();
+        self::assertSame('acme/foo', $localLock['packages'][0]['name']);
+        self::assertSame('1.x-dev', $localLock['packages'][0]['version']);
+        self::assertSame('path', $localLock['packages'][0]['dist']['type']);
+        self::assertSame([], $localLock['packages-dev']);
+        self::assertSame(['path' => realpath($dir.'/composer-home')], $localLock['linked-packages']);
+
+        // a failed update keeps the previous local lock
+        $localLockContents = file_get_contents($dir.'/composer.local.lock');
+        $this->linkPackage($dir, 'acme/foo', '2.x-dev');
+
+        $appTester = $this->getApplicationTester();
+        self::assertSame(2, $appTester->run(['command' => 'update', '--with-linked-packages' => null, '--no-install' => true, '--no-audit' => true]));
+        self::assertSame($localLockContents, file_get_contents($dir.'/composer.local.lock'));
+    }
+
+    public function testUpdateWithFilteredLinkedPackagesThenFollowLinked(): void
+    {
+        $dir = $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'acme/foo', 'version' => '1.0.0'],
+                        ['name' => 'other/bar', 'version' => '1.0.0'],
+                    ],
+                ],
+            ],
+            'require' => [
+                'acme/foo' => '^1.0',
+                'other/bar' => '^1.0',
+            ],
+        ]);
+        $linkedDir = $dir.'/linked';
+        $this->linkPackage($dir, 'acme/foo', '1.0.x-dev', $linkedDir);
+        $this->linkPackage($dir, 'other/bar', '1.x-dev', $linkedDir);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'update', '--with-linked-packages' => 'acme/*', '--linked-repo-path' => $linkedDir, '--no-install' => true, '--no-audit' => true]);
+
+        $appTester->assertCommandIsSuccessful();
+        $localLock = (new JsonFile($dir.'/composer.local.lock'))->read();
+        self::assertSame(['acme/foo' => '1.0.x-dev', 'other/bar' => '1.0.0'], array_column($localLock['packages'], 'version', 'name'));
+        self::assertSame(['path' => realpath($linkedDir), 'only' => ['acme/*']], $localLock['linked-packages']);
+
+        // re-linking with another version makes --follow-linked rewrite the local lock
+        (new LinkedPackages($linkedDir))->link('acme/foo', $dir.'/packages/acme/foo', '1.x-dev');
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'update', '--follow-linked' => true, '--no-install' => true, '--no-audit' => true]);
+
+        $appTester->assertCommandIsSuccessful();
+        $localLock = (new JsonFile($dir.'/composer.local.lock'))->read();
+        self::assertSame(['acme/foo' => '1.x-dev', 'other/bar' => '1.0.0'], array_column($localLock['packages'], 'version', 'name'));
+        self::assertSame(['path' => realpath($linkedDir), 'only' => ['acme/*']], $localLock['linked-packages']);
+        self::assertFileDoesNotExist($dir.'/composer.lock');
+    }
+
+    public function testUpdateWithLinkedPackagesFailsIfRequireLinkedPackageIsNotLinked(): void
+    {
+        $dir = $this->initTempComposer([
+            'repositories' => [],
+            'require-linked' => [
+                'acme/bar' => '^1.0',
+            ],
+        ]);
+        $this->linkPackage($dir, 'acme/foo', '1.x-dev');
+
+        self::expectException(\RuntimeException::class);
+        self::expectExceptionMessage('Package "acme/bar" is listed in require-linked but is not one of the linked packages');
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'update', '--with-linked-packages' => null, '--no-install' => true, '--no-audit' => true]);
+    }
+
+    public function testUpdateAsksToUpdateLinkedPackagesWhenLocalLockIsPresent(): void
+    {
+        $dir = $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'acme/foo', 'version' => '1.0.0'],
+                        ['name' => 'acme/foo', 'version' => '1.1.0'],
+                    ],
+                ],
+            ],
+            'require' => [
+                'acme/foo' => '^1.0',
+            ],
+        ]);
+        $this->createComposerLock([self::getPackage('acme/foo', '1.0.0')]);
+        $this->linkPackage($dir, 'acme/foo', '1.x-dev');
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'update', '--with-linked-packages' => null, '--no-install' => true, '--no-audit' => true]);
+        $appTester->assertCommandIsSuccessful();
+        $localLockContents = file_get_contents($dir.'/composer.local.lock');
+
+        // non-interactive updates ignore the local lock
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'update', '--no-install' => true, '--no-audit' => true], ['interactive' => false]);
+
+        $appTester->assertCommandIsSuccessful();
+        self::assertStringContainsString('Not updating linked packages, note that composer install keeps using composer.local.lock until you delete it.', $appTester->getDisplay(true));
+        self::assertSame('1.1.0', (new JsonFile($dir.'/composer.lock'))->read()['packages'][0]['version']);
+        self::assertSame($localLockContents, file_get_contents($dir.'/composer.local.lock'));
+
+        // --skip-linked does the same without asking in interactive mode
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'update', '--skip-linked' => true, '--no-install' => true, '--no-audit' => true]);
+
+        $appTester->assertCommandIsSuccessful();
+        self::assertStringNotContainsString('do you want to update the linked packages', $appTester->getDisplay(true));
+        self::assertStringContainsString('Not updating linked packages', $appTester->getDisplay(true));
+        self::assertSame($localLockContents, file_get_contents($dir.'/composer.local.lock'));
+
+        // answering yes updates the local lock with the same linked packages
+        $lockContents = file_get_contents($dir.'/composer.lock');
+        (new LinkedPackages($dir.'/composer-home'))->link('acme/foo', $dir.'/packages/acme/foo', '1.0.x-dev');
+
+        $appTester = $this->getApplicationTester();
+        $appTester->setInputs(['yes']);
+        $appTester->run(['command' => 'update', '--no-install' => true, '--no-audit' => true]);
+
+        $appTester->assertCommandIsSuccessful();
+        self::assertSame($lockContents, file_get_contents($dir.'/composer.lock'));
+        $localLock = (new JsonFile($dir.'/composer.local.lock'))->read();
+        self::assertSame('1.0.x-dev', $localLock['packages'][0]['version']);
+        self::assertSame(['path' => realpath($dir.'/composer-home')], $localLock['linked-packages']);
+    }
+
+    private function linkPackage(string $dir, string $name, string $version, ?string $linkedDir = null): void
+    {
+        $path = $dir.'/packages/'.$name;
+        (new JsonFile($path.'/composer.json'))->write(['name' => $name]);
+        (new LinkedPackages($linkedDir ?? $dir.'/composer-home'))->link($name, $path, $version);
     }
 }

@@ -189,6 +189,23 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
 > must be a subset of the existing constraint. The composer.json constraints still
 > apply and the composer.json is not modified by these temporary update constraints.
 
+To work on packages from local directories, link them with [`link`](#link) and
+update with `--with-linked-packages`. The linked packages are then used instead
+of the released versions, and the result is written to the
+[local lock file](#link) instead of `composer.lock`. The local lock file starts
+from `composer.lock`, so a partial update only changes the listed packages:
+
+```shell
+php composer.phar update --with-linked-packages=acme/foo acme/foo
+```
+
+Use `--follow-linked` to update again with the same linked packages; a plain
+`update` offers to do so when a local lock file exists, unless `--skip-linked`
+is passed.
+[`require-linked`](04-schema.md#require-linked) lists requirements only needed
+with linked packages. `--bump-after-update` is not applied when updating with
+linked packages.
+
 
 ### Options
 
@@ -251,6 +268,16 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
 * **--interactive:** Interactive interface with autocompletion to select the packages to update.
 * **--root-reqs:** Restricts the update to your first degree dependencies.
 * **--bump-after-update:** Runs `bump` after performing the update. Set to `dev` or `no-dev` to only bump those dependencies.
+* **--with-linked-packages:** Uses the [linked packages](#link) and writes the local lock file
+  instead of `composer.lock`. Pass a comma-separated list of package names, which may contain
+  wildcards, to only use some of them, e.g. `--with-linked-packages=acme/*,other/pkg`.
+  Use the `=` form, otherwise the next argument is taken as the list.
+* **--follow-linked:** Updates the local lock file with the same linked packages as the
+  previous `--with-linked-packages` update.
+* **--skip-linked:** Updates `composer.lock` without asking to update the linked packages
+  when a local lock file exists, as in non-interactive mode.
+* **--linked-repo-path:** Directory holding the `linked-packages.json` file to use with
+  `--with-linked-packages`. Defaults to the Composer home directory.
 
 Specifying one of the words `mirrors`, `lock`, or `nothing` as an argument has the same effect as specifying the option `--lock`, for example `composer update mirrors` is exactly the same as `composer update --lock`.
 
