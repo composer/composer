@@ -17,11 +17,13 @@ use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Package\RootAliasPackage;
 use Composer\Pcre\Preg;
+use Composer\Repository\FilterRepository;
 use Composer\Repository\RepositoryFactory;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\RootPackage;
 use Composer\Repository\RepositoryManager;
+use Composer\Repository\VcsRepository;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 
@@ -153,6 +155,7 @@ class RootPackageLoader extends ArrayLoader
         $aliases = [];
         $stabilityFlags = [];
         $references = [];
+        $requiredBranches = [];
         foreach (['require', 'require-dev'] as $linkType) {
             if (isset($config[$linkType])) {
                 $linkInfo = BasePackage::$supportedLinkTypes[$linkType];
@@ -164,6 +167,7 @@ class RootPackageLoader extends ArrayLoader
                 $aliases = $this->extractAliases($links, $aliases);
                 $stabilityFlags = self::extractStabilityFlags($links, $realPackage->getMinimumStability(), $stabilityFlags);
                 $references = self::extractReferences($links, $references);
+                $requiredBranches = $this->extractRequiredBranches($links, $requiredBranches);
 
                 if (isset($links[$config['name']])) {
                     throw new \RuntimeException(sprintf('Root package \'%s\' cannot require itself in its composer.json' . PHP_EOL .
@@ -196,6 +200,10 @@ class RootPackageLoader extends ArrayLoader
 
         $repos = RepositoryFactory::defaultRepos(null, $this->config, $this->manager);
         foreach ($repos as $repo) {
+            $vcsRepo = $repo instanceof FilterRepository ? $repo->getRepository() : $repo;
+            if ($vcsRepo instanceof VcsRepository) {
+                $vcsRepo->setRootRequiredBranches($requiredBranches);
+            }
             $this->manager->addRepository($repo);
         }
         $realPackage->setRepositories($this->config->getRepositories());
@@ -290,6 +298,31 @@ class RootPackageLoader extends ArrayLoader
         }
 
         return $stabilityFlags;
+    }
+
+    /**
+     * @param array<string, string>       $requires
+     * @param array<string, list<string>> $branches
+     *
+     * @return array<string, list<string>>
+     */
+    private function extractRequiredBranches(array $requires, array $branches): array
+    {
+        foreach ($requires as $reqName => $reqVersion) {
+            $reqVersion = Preg::replace('{ +as +[^,\s|]+}', '', $reqVersion);
+            foreach (Preg::split('{\s*(?:\|\|?|,)\s*|\s+}', trim($reqVersion)) as $constraint) {
+                $constraint = Preg::replace('{[#@].*$}', '', $constraint);
+                if (!Preg::isMatch('{^[a-z0-9]}i', $constraint) || 'dev' !== VersionParser::parseStability($constraint)) {
+                    continue;
+                }
+                try {
+                    $branches[strtolower($reqName)][] = $this->versionParser->normalize($constraint);
+                } catch (\UnexpectedValueException $e) {
+                }
+            }
+        }
+
+        return $branches;
     }
 
     /**

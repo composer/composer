@@ -76,6 +76,8 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     private $onlyBranchesRegex = null;
     /** @var ?non-empty-string */
     private $excludeBranchesRegex = null;
+    /** @var array<string, list<string>> */
+    private $rootRequiredBranches = [];
 
     /**
      * @param array{url: string, type?: string}&array<string, mixed> $repoConfig
@@ -132,6 +134,15 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     public function setLoader(LoaderInterface $loader): void
     {
         $this->loader = $loader;
+    }
+
+    /**
+     * @internal
+     * @param array<string, list<string>> $branches normalized branch versions indexed by lowercased package name
+     */
+    public function setRootRequiredBranches(array $branches): void
+    {
+        $this->rootRequiredBranches = $branches;
     }
 
     public function getDriver(): ?VcsDriverInterface
@@ -473,6 +484,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
 
     /**
      * Restricts the branches to the ones matching "only-branches" and not matching "exclude-branches", the default branch is always kept
+     * and branches required by the root package bypass "only-branches"
      *
      * @param array<int|string, string> $branches
      * @return array<int|string, string>
@@ -489,7 +501,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
             if ($branch === $rootIdentifier || $identifier === $rootIdentifier) {
                 continue;
             }
-            if (null !== $this->onlyBranchesRegex && !Preg::isMatch($this->onlyBranchesRegex, $branch)) {
+            if (null !== $this->onlyBranchesRegex && !Preg::isMatch($this->onlyBranchesRegex, $branch) && !$this->isRequiredByRoot($branch)) {
                 $reason = 'not matching the only-branches filter';
             } elseif (null !== $this->excludeBranchesRegex && Preg::isMatch($this->excludeBranchesRegex, $branch)) {
                 $reason = 'matching the exclude-branches filter';
@@ -503,6 +515,24 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         }
 
         return $branches;
+    }
+
+    private function isRequiredByRoot(string $branch): bool
+    {
+        if (null !== $this->packageName) {
+            $required = $this->rootRequiredBranches[strtolower($this->packageName)] ?? [];
+        } else {
+            $required = array_merge([], ...array_values($this->rootRequiredBranches));
+        }
+        if ([] === $required) {
+            return false;
+        }
+
+        try {
+            return in_array($this->versionParser->normalizeBranch($branch), $required, true);
+        } catch (\UnexpectedValueException $e) {
+            return false;
+        }
     }
 
     /**

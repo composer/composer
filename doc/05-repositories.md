@@ -638,7 +638,9 @@ Repositories with a large number of branches can be slow to load, as the
 `composer.json` of every branch has to be read. You can restrict which
 branches are loaded with the `only-branches` key, which takes a list of branch
 names that may contain `*` wildcards. The default branch is always loaded,
-so an empty list loads only the default branch.
+so an empty list loads only the default branch. Branches the root package
+requires (e.g. `dev-feature-x` in `require`) are loaded as well, even if they
+do not match `only-branches`.
 
 ```json
 {
@@ -655,7 +657,8 @@ so an empty list loads only the default branch.
 The `exclude-branches` key does the opposite and skips the branches matching
 its patterns, which lets you leave out bot-managed or otherwise short-lived
 branches. Both keys can be combined, in which case a branch is loaded only if
-it matches `only-branches` and does not match `exclude-branches`.
+it matches `only-branches` and does not match `exclude-branches`. Branches
+matching `exclude-branches` are skipped even if the root package requires them.
 
 ```json
 {
