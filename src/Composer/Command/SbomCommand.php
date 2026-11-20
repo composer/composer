@@ -396,7 +396,24 @@ EOT
 
         $expression = count($licenses) === 1 ? $licenses[0] : '('.implode(' OR ', $licenses).')';
 
-        return $this->getSpdxLicenses()->validate($expression) ? $expression : null;
+        if (!$this->getSpdxLicenses()->validate($expression)) {
+            return null;
+        }
+
+        // validation is case-insensitive but SPDX wants upper-case operators and exact ids
+        return Preg::replaceCallback('{[\pL\pN.-]+}u', function (array $match): string {
+            $token = $match[0];
+            if (in_array(strtoupper($token), ['AND', 'OR', 'WITH', 'NONE', 'NOASSERTION'], true)) {
+                return strtoupper($token);
+            }
+
+            $exception = $this->getSpdxLicenses()->getExceptionByIdentifier($token);
+            if ($exception !== null) {
+                return $this->getSpdxLicenses()->getIdentifierByName($exception[0]) ?? $token;
+            }
+
+            return $this->getCanonicalLicenseId($token) ?? $token;
+        }, $expression);
     }
 
     /**

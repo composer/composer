@@ -490,6 +490,31 @@ class SbomCommandTest extends TestCase
         ];
     }
 
+    /**
+     * @dataProvider provideLicenseExpressionCases
+     * @param list<string> $licenses
+     */
+    public function testLicenseExpressionIsNormalized(array $licenses, string $expected): void
+    {
+        $result = $this->runSbomForLicenses($licenses);
+
+        self::assertSame([['expression' => $expected]], $result['cyclonedx']);
+        self::assertSame($expected, $result['spdx']);
+    }
+
+    /**
+     * @return array<array{list<string>, string}>
+     */
+    public static function provideLicenseExpressionCases(): array
+    {
+        return [
+            [['(lgpl-2.1-only or GPL-3.0-or-later)'], '(LGPL-2.1-only OR GPL-3.0-or-later)'],
+            [['mit', 'apache-2.0'], '(MIT OR Apache-2.0)'],
+            [['gpl-2.0-only with classpath-exception-2.0 and LicenseRef-custom'], 'GPL-2.0-only WITH Classpath-exception-2.0 AND LicenseRef-custom'],
+            [['apache-2.0+'], 'Apache-2.0+'],
+        ];
+    }
+
     public function testRootBranchAliasIsNotUsedAsVersion(): void
     {
         $this->initTempComposer([
