@@ -136,14 +136,13 @@ class LockTransaction extends Transaction
             }
 
             if ($presentPackage->getSourceReference() === null) {
+                // dist-only packages keep their locked dist reference, except path repos whose metadata is local and always refreshed
+                if ($presentPackage->getDistReference() === null || $presentPackage->getDistType() === 'path') {
+                    continue;
+                }
+            } elseif ($presentPackage->getSourceType() !== $package->getSourceType()) {
                 continue;
-            }
-
-            if ($presentPackage->getSourceType() !== $package->getSourceType()) {
-                continue;
-            }
-
-            if ($presentPackage instanceof Package) {
+            } elseif ($presentPackage instanceof Package) {
                 $presentPackage->setSourceUrl($package->getSourceUrl());
                 $presentPackage->setSourceMirrors($package->getSourceMirrors());
             }
@@ -153,13 +152,17 @@ class LockTransaction extends Transaction
                 return $presentPackage;
             }
 
-            // update dist url if it is in a known format
-            if (
-                $package->getDistUrl() !== null
-                && $presentPackage->getDistReference() !== null
-                && Preg::isMatch('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com|(?:www\.)?gitlab\.com)/}i', $package->getDistUrl())
-            ) {
-                $presentPackage->setDistUrl(Preg::replace('{(?<=/|sha=)[a-f0-9]{40}(?=/|$)}i', $presentPackage->getDistReference(), $package->getDistUrl()));
+            if ($package->getDistUrl() !== null && $presentPackage->getDistReference() !== null) {
+                if ($presentPackage->getDistReference() === $package->getDistReference()) {
+                    // same archive, so the new url (and checksum) can be used as is
+                    $presentPackage->setDistUrl($package->getDistUrl());
+                    if ($presentPackage instanceof Package) {
+                        $presentPackage->setDistSha1Checksum($package->getDistSha1Checksum());
+                    }
+                } elseif (Preg::isMatch('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com|(?:www\.)?gitlab\.com)/}i', $package->getDistUrl())) {
+                    // update dist url if it is in a known format
+                    $presentPackage->setDistUrl(Preg::replace('{(?<=/|sha=)[a-f0-9]{40}(?=/|$)}i', $presentPackage->getDistReference(), $package->getDistUrl()));
+                }
             }
             $presentPackage->setDistMirrors($package->getDistMirrors());
 
