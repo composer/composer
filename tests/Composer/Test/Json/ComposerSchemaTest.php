@@ -127,6 +127,30 @@ class ComposerSchemaTest extends TestCase
         ], $this->check($json));
     }
 
+    public function testRequireLinkedTypes(): void
+    {
+        $json = '{"name": "vendor/package", "description": "description", "require-linked": {"a/b": "^1.0"} }';
+        self::assertTrue($this->check($json));
+
+        $json = '{"name": "vendor/package", "description": "description", "require-linked": {"a/b": ["^1.0"]} }';
+        self::assertEquals([
+            [
+                'property' => 'require-linked.a/b',
+                'message' => 'Array value found, but a string is required',
+                'constraint' => ['name' => 'type', 'params' => ['found' => 'array', 'expected' => 'a string']],
+            ],
+        ], $this->check($json));
+    }
+
+    public function testLinkedPackagesConfig(): void
+    {
+        $json = '{"name": "vendor/package", "description": "description", "config": {"linked-packages": {"symlink": false}}}';
+        self::assertTrue($this->check($json));
+
+        $json = '{"name": "vendor/package", "description": "description", "config": {"linked-packages": {"symlink": "no"}}}';
+        self::assertNotTrue($this->check($json));
+    }
+
     public function testMinimumStabilityValues(): void
     {
         $expectedError = [

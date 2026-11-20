@@ -161,6 +161,13 @@
                 "type": "string"
             }
         },
+        "require-linked": {
+            "type": "object",
+            "description": "This is an object of package name (keys) and version constraints (values) that are required when installing with linked packages. Each of these packages must be provided by a linked package.",
+            "additionalProperties": {
+                "type": "string"
+            }
+        },
         "replace": {
             "type": "object",
             "description": "This is an object of package name (keys) and version constraints (values) that can be replaced by this package.",
@@ -1140,6 +1147,16 @@
                 "update-with-minimal-changes": {
                     "type": ["boolean"],
                     "description": "Defaults to false. If set to true, Composer will only perform absolutely necessary changes to transitive dependencies during update."
+                },
+                "linked-packages": {
+                    "type": "object",
+                    "description": "Options for linked packages. See https://getcomposer.org/doc/06-config.md#linked-packages",
+                    "properties": {
+                        "symlink": {
+                            "type": "boolean",
+                            "description": "If set to true, linked packages are always symlinked. If set to false, they are mirrored (copied). Defaults to symlinking with a fallback to mirroring."
+                        }
+                    }
                 }
             }
         },

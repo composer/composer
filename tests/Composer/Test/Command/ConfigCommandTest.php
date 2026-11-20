@@ -459,6 +459,11 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'policy.malware', '--unset' => true],
             ['config' => ['policy' => []]],
         ];
+        yield 'set linked-packages.symlink' => [
+            [],
+            ['setting-key' => 'linked-packages.symlink', 'setting-value' => ['false']],
+            ['config' => ['linked-packages' => ['symlink' => false]]],
+        ];
     }
 
     /**
