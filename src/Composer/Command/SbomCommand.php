@@ -118,7 +118,8 @@ EOT
             $sbom = $this->buildCycloneDx($root, $packages, $packagesByName, $rootRequires, $rootDevRequires, array_flip($devPackageNames));
         }
 
-        $this->getIO()->write(JsonFile::encode($sbom));
+        // raw as package data must not be interpreted as console formatting tags
+        $this->getIO()->writeRaw(JsonFile::encode($sbom));
 
         return 0;
     }

@@ -529,6 +529,13 @@ class SbomCommandTest extends TestCase
         ];
     }
 
+    public function testOutputIsNotConsoleFormatted(): void
+    {
+        $result = $this->runSbomForLicenses(['Custom <info>tagged</info> license']);
+
+        self::assertSame([['license' => ['name' => 'Custom <info>tagged</info> license']]], $result['cyclonedx']);
+    }
+
     public function testRootBranchAliasIsNotUsedAsVersion(): void
     {
         $this->initTempComposer([
