@@ -400,6 +400,57 @@ are local to the library and do not affect consumers of the package.
 * **--no-dev-only:** Only bump requirements in "require".
 * **--dry-run:** Outputs the packages to bump, but will not execute anything.
 
+## link
+
+The `link` command links the package in the current directory, so that projects
+can install it from there instead of from their repositories. This lets you try
+changes to a package in a project without publishing them or editing the
+project's `composer.json`.
+
+```shell
+cd ~/dev/acme-foo
+php composer.phar link --as-version=1.x-dev
+cd ~/dev/my-project
+php composer.phar update --with-linked-packages=acme/foo
+```
+
+Links are stored in a `linked-packages.json` file in the
+[Composer home directory](#composer_home), and linking a package again replaces
+its previous link. In a project, [`update`](#update--u--upgrade) with
+`--with-linked-packages` installs the linked packages like
+[path repositories](05-repositories.md#path) (see the
+[`linked-packages`](06-config.md#linked-packages) config to mirror them) and
+writes the result to the local lock file, `composer.local.lock` (see
+[COMPOSER_LOCAL_LOCK](#composer_local_lock)), leaving `composer.lock` untouched.
+`install` then uses the local lock file until you delete it. Do not commit it:
+add it to your VCS ignore file (e.g. `.gitignore`).
+
+### Options
+
+* **--as-version:** The version to expose the package as, e.g. `1.x-dev`, instead
+  of the version a path repository would detect (including any
+  [branch alias](articles/aliases.md#branch-alias)). It must satisfy the
+  requirements of the projects using the package.
+* **--linked-repo-path:** The directory holding the `linked-packages.json` file,
+  defaults to the Composer home directory. This lets you keep several sets of
+  linked packages, for example to link the same package with different versions
+  for different projects. Pass the same option to `update`.
+
+## unlink
+
+The `unlink` command removes a package linked with [`link`](#link). Without an
+argument, it unlinks the package in the current directory. Projects which
+already installed the package are not changed until they are updated again.
+
+```shell
+php composer.phar unlink acme/foo
+```
+
+### Options
+
+* **--linked-repo-path:** The directory holding the `linked-packages.json` file,
+  defaults to the Composer home directory.
+
 ## reinstall
 
 The `reinstall` command looks up installed packages by name (or by type
