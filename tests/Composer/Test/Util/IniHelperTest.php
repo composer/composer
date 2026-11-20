@@ -13,8 +13,8 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\IniHelper;
-use Composer\XdebugHandler\XdebugHandler;
 use Composer\Test\TestCase;
+use Composer\Util\ProcessRestarter;
 
 /**
  * @author John Stevenson <john-stevenson@blueyonder.co.uk>
@@ -76,7 +76,7 @@ class IniHelperTest extends TestCase
     public static function setUpBeforeClass(): void
     {
         // Register our name with XdebugHandler
-        $xdebug = new XdebugHandler('composer');
+        $xdebug = new ProcessRestarter('composer');
         // Save current state
         self::$envOriginal = getenv('COMPOSER_ORIGINAL_INIS');
     }
