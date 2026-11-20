@@ -197,7 +197,7 @@ class SbomCommandTest extends TestCase
             ['type' => 'vcs', 'url' => 'https://example.org/first.git', 'comment' => 'reference: abcdef123'],
             [
                 'type' => 'distribution',
-                'url' => 'https://user:***@example.org/first.zip',
+                'url' => 'https://example.org/first.zip',
                 'comment' => 'reference: abcdef123',
                 'hashes' => [['alg' => 'SHA-1', 'content' => '0123456789abcdef0123456789abcdef01234567']],
             ],
@@ -224,6 +224,50 @@ class SbomCommandTest extends TestCase
         self::assertSame(0, $appTester->run(['command' => 'sbom'], ['capture_stderr_separately' => true]));
 
         self::assertStringNotContainsString('secret', $appTester->getDisplay());
+    }
+
+    public function testUrlsDoNotLeakTokensOrLocalPaths(): void
+    {
+        $this->initTempComposer([
+            'name' => 'test/root',
+            'version' => '1.0.0',
+            'require' => ['remote/pkg' => '*', 'local/pkg' => '*', 'ssh/pkg' => '*'],
+        ]);
+
+        $remote = self::getPackage('remote/pkg', '1.0.0');
+        $remote->setSourceType('git');
+        $remote->setSourceUrl('https://tokenvalue@example.org/remote.git');
+        $remote->setSourceReference('abcdef123');
+        $remote->setDistType('zip');
+        $remote->setDistUrl('https://example.org/dl/remote.zip?token=tokenvalue#frag');
+
+        $local = self::getPackage('local/pkg', '1.0.0');
+        $local->setDistType('path');
+        $local->setDistUrl('/home/alice/work/pkg');
+
+        $ssh = self::getPackage('ssh/pkg', '1.0.0');
+        $ssh->setSourceType('git');
+        $ssh->setSourceUrl('git@example.org:ssh/pkg.git');
+        $ssh->setSourceReference('fedcba987');
+
+        $this->createInstalledJson([$local, $remote, $ssh]);
+
+        $appTester = $this->getApplicationTester();
+        self::assertSame(0, $appTester->run(['command' => 'sbom'], ['capture_stderr_separately' => true]));
+        self::assertStringNotContainsString('tokenvalue', $appTester->getDisplay());
+        self::assertStringNotContainsString('alice', $appTester->getDisplay());
+
+        $components = self::componentsByPurl($this->runSbom());
+        self::assertSame([
+            ['type' => 'vcs', 'url' => 'https://example.org/remote.git', 'comment' => 'reference: abcdef123'],
+            ['type' => 'distribution', 'url' => 'https://example.org/dl/remote.zip'],
+        ], $components['pkg:composer/remote/pkg@1.0.0']['externalReferences']);
+        self::assertArrayNotHasKey('externalReferences', $components['pkg:composer/local/pkg@1.0.0']);
+        self::assertSame([['type' => 'vcs', 'url' => 'git@example.org:ssh/pkg.git', 'comment' => 'reference: fedcba987']], $components['pkg:composer/ssh/pkg@1.0.0']['externalReferences']);
+
+        $packages = self::spdxPackagesByName($this->runSbom(['--format' => 'spdx']));
+        self::assertSame('https://example.org/dl/remote.zip', $packages['remote/pkg']['downloadLocation']);
+        self::assertSame('NOASSERTION', $packages['local/pkg']['downloadLocation']);
     }
 
     public function testCycloneDxDependencies(): void
@@ -371,7 +415,7 @@ class SbomCommandTest extends TestCase
             'name' => 'first/pkg',
             'SPDXID' => 'SPDXRef-Package-first-pkg',
             'versionInfo' => '2.3.4',
-            'downloadLocation' => 'https://user:***@example.org/first.zip',
+            'downloadLocation' => 'https://example.org/first.zip',
             'filesAnalyzed' => false,
             'checksums' => [['algorithm' => 'SHA1', 'checksumValue' => '0123456789abcdef0123456789abcdef01234567']],
             'licenseConcluded' => 'NOASSERTION',

@@ -25,6 +25,7 @@ use Composer\Plugin\PluginEvents;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryUtils;
 use Composer\Spdx\SpdxLicenses;
+use Composer\Util\Filesystem;
 use Composer\Util\PackageSorter;
 use Composer\Util\Url;
 use Symfony\Component\Console\Input\InputInterface;
@@ -225,15 +226,17 @@ EOT
         $component['purl'] = $purl;
 
         $externalReferences = [];
-        if (null !== $package->getSourceUrl()) {
-            $reference = ['type' => 'vcs', 'url' => Url::sanitize($package->getSourceUrl())];
+        $sourceUrl = $this->getPublicUrl($package->getSourceUrl());
+        if (null !== $sourceUrl) {
+            $reference = ['type' => 'vcs', 'url' => $sourceUrl];
             if (null !== $package->getSourceReference()) {
                 $reference['comment'] = 'reference: '.$package->getSourceReference();
             }
             $externalReferences[] = $reference;
         }
-        if (null !== $package->getDistUrl()) {
-            $reference = ['type' => 'distribution', 'url' => Url::sanitize($package->getDistUrl())];
+        $distUrl = $this->getPublicUrl($package->getDistUrl());
+        if (null !== $distUrl) {
+            $reference = ['type' => 'distribution', 'url' => $distUrl];
             if (null !== $package->getDistReference()) {
                 $reference['comment'] = 'reference: '.$package->getDistReference();
             }
@@ -326,10 +329,12 @@ EOT
     private function buildSpdxPackage(PackageInterface $package, string $id): array
     {
         $downloadLocation = 'NOASSERTION';
-        if (null !== $package->getDistUrl() && Preg::isMatch('{^[a-z][a-z0-9+.-]*://}i', $package->getDistUrl())) {
-            $downloadLocation = Url::sanitize($package->getDistUrl());
-        } elseif (null !== $package->getSourceUrl() && in_array($package->getSourceType(), ['git', 'hg', 'svn'], true) && Preg::isMatch('{^[a-z][a-z0-9+.-]*://}i', $package->getSourceUrl())) {
-            $downloadLocation = $package->getSourceType().'+'.Url::sanitize($package->getSourceUrl());
+        $distUrl = $this->getPublicUrl($package->getDistUrl());
+        $sourceUrl = $this->getPublicUrl($package->getSourceUrl());
+        if (null !== $distUrl && Preg::isMatch('{^[a-z][a-z0-9+.-]*://}i', $distUrl)) {
+            $downloadLocation = $distUrl;
+        } elseif (null !== $sourceUrl && in_array($package->getSourceType(), ['git', 'hg', 'svn'], true) && Preg::isMatch('{^[a-z][a-z0-9+.-]*://}i', $sourceUrl)) {
+            $downloadLocation = $package->getSourceType().'+'.$sourceUrl;
             if (null !== $package->getSourceReference()) {
                 $downloadLocation .= '@'.$package->getSourceReference();
             }
@@ -377,6 +382,19 @@ EOT
         }
 
         return array_values($resolved);
+    }
+
+    /**
+     * Returns a URL fit for a published document, null for local paths
+     */
+    private function getPublicUrl(?string $url): ?string
+    {
+        if (null === $url || Filesystem::isLocalPath($url)) {
+            return null;
+        }
+
+        // userinfo and query strings commonly carry access tokens
+        return Preg::replace('{[?#].*$}s', '', Url::stripCredentials($url));
     }
 
     private function getPurl(PackageInterface $package): string
