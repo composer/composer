@@ -308,6 +308,30 @@ class SbomCommandTest extends TestCase
         $appTester->run(['command' => 'sbom', '--locked' => true]);
     }
 
+    public function testFailsWhenDependenciesAreNotInstalled(): void
+    {
+        $this->initDefaultProject();
+        unlink('vendor/composer/installed.json');
+
+        $this->expectException(\UnexpectedValueException::class);
+        $this->expectExceptionMessage('No dependencies are installed, run `composer install` first or use --locked');
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'sbom']);
+    }
+
+    public function testNothingInstalledIsFineWithoutNonPlatformRequires(): void
+    {
+        $this->initTempComposer([
+            'name' => 'test/root',
+            'version' => '1.0.0',
+            'require' => ['php' => '>=7.2', 'ext-json' => '*'],
+        ]);
+        $this->createInstalledJson([]);
+
+        self::assertSame([], $this->runSbom()['components']);
+    }
+
     public function testFormatUnknown(): void
     {
         $this->initDefaultProject();

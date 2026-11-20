@@ -22,6 +22,7 @@ use Composer\Package\PackageInterface;
 use Composer\Pcre\Preg;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryUtils;
 use Composer\Spdx\SpdxLicenses;
 use Composer\Util\PackageSorter;
@@ -54,7 +55,8 @@ The <info>sbom</info> command outputs a Software Bill of Materials of the
 installed dependencies, in CycloneDX 1.6 JSON or SPDX 2.3 JSON format.
 
 Use --locked to generate it from composer.lock instead of what's currently
-installed in the vendor directory.
+installed in the vendor directory. Without it the command fails if the
+dependencies are not installed.
 
 Read more at https://getcomposer.org/doc/03-cli.md#sbom
 EOT
@@ -90,6 +92,14 @@ EOT
         } else {
             $repo = $composer->getRepositoryManager()->getLocalRepository();
             $packages = $repo->getPackages();
+            if (count($packages) === 0) {
+                $requires = array_merge($root->getRequires(), $noDev ? [] : $root->getDevRequires());
+                foreach ($requires as $link) {
+                    if (!PlatformRepository::isPlatformPackage($link->getTarget())) {
+                        throw new \UnexpectedValueException('No dependencies are installed, run `composer install` first or use --locked to generate the SBOM from the composer.lock file');
+                    }
+                }
+            }
             if ($noDev) {
                 $packages = RepositoryUtils::filterRequiredPackages($packages, $root);
             }

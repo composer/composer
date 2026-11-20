@@ -1171,6 +1171,9 @@ their versions, licenses, source and dist references and dependency
 relationships. Packages installed through require-dev get the `optional` scope
 in the CycloneDX output.
 
+The dependencies must be installed, unless you pass `--locked` to generate the
+SBOM from the lock file.
+
 ```shell
 php composer.phar sbom --locked > sbom.cdx.json
 ```
