@@ -3275,6 +3275,11 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
+			message: "#^Parameter \\$job of method Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:isCurlErrorRetryNeeded\\(\\) has invalid type CurlHandle\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
 			message: "#^Parameter \\$job of method Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:isStatusCodeRetryNeeded\\(\\) has invalid type CurlHandle\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
