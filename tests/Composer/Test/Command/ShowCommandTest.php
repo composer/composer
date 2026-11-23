@@ -1241,6 +1241,20 @@ vendor/longpackagename', trim($appTester->getDisplay(true))); // trim() is fine 
         $this->createInstalledJson([self::getPackage('vendor/package', $installedVersion)]);
     }
 
+    public function testVersionIsPrintedLiterally(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [],
+            'require' => ['vendor/pkg' => '*'],
+        ]);
+        $this->createInstalledJson([self::getPackage('vendor/pkg', 'dev-<fg=foo>x</>')]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', 'package' => 'vendor/pkg']);
+        $appTester->assertCommandIsSuccessful();
+        self::assertStringContainsString('versions : * dev-<fg=foo>x</>', $appTester->getDisplay(true));
+    }
+
     public function testPackageMetadataIsPrintedLiterally(): void
     {
         $this->initTempComposer([

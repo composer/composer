@@ -107,7 +107,7 @@ EOT
                     // Table output bypasses ConsoleIO::write(), so sanitize here
                     $table->addRow(ConsoleIO::sanitize([
                         $name,
-                        $package->getFullPrettyVersion(),
+                        OutputFormatter::escape($package->getFullPrettyVersion()),
                         OutputFormatter::escape(implode(', ', $package instanceof CompletePackageInterface ? $package->getLicense() : []) ?: 'none'),
                     ]));
                 }
