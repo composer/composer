@@ -754,6 +754,7 @@ EOT
     {
         $versions = array_keys($versions);
         $versions = Semver::rsort($versions);
+        $formattedVersions = array_map(array('Symfony\Component\Console\Formatter\OutputFormatter', 'escape'), $versions);
 
         // highlight installed version
         if ($installedPackages = $installedRepo->findPackages($package->getName())) {
@@ -761,12 +762,12 @@ EOT
                 $installedVersion = $installedPackage->getPrettyVersion();
                 $key = array_search($installedVersion, $versions);
                 if (false !== $key) {
-                    $versions[$key] = '<info>* ' . $installedVersion . '</info>';
+                    $formattedVersions[$key] = '<info>* ' . OutputFormatter::escape($installedVersion) . '</info>';
                 }
             }
         }
 
-        $versions = implode(', ', $versions);
+        $versions = implode(', ', $formattedVersions);
 
         $this->getIO()->write('<info>versions</info> : ' . $versions);
     }
