@@ -236,4 +236,20 @@ class AuditCommandTest extends TestCase
         $this->createInstalledJson($packages);
         $this->createComposerLock($packages);
     }
+
+    public function testAbandonedReplacementIsPrintedLiterally(): void
+    {
+        $this->initTempComposer();
+        $package = self::getPackage('vendor/pkg');
+        $package->setAbandoned('<fg=foo>new/pkg</>');
+        $this->createInstalledJson([$package]);
+        $this->createComposerLock([$package]);
+
+        foreach (['plain', 'table'] as $format) {
+            $appTester = $this->getApplicationTester();
+            $appTester->run(['command' => 'audit', '--locked' => true, '--format' => $format, '--abandoned' => 'report']);
+
+            self::assertStringContainsString('<fg=foo>new/pkg</>', $appTester->getDisplay(true), $format);
+        }
+    }
 }

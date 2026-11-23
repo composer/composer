@@ -154,4 +154,25 @@ OUTPUT
         self::assertStringContainsString('vendor-1/package-1', $output);
         self::assertStringContainsString('vendor-1/package-2', $output);
     }
+
+    public function testDescriptionIsPrintedLiterally(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                ['packagist.org' => false],
+                [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'vendor/pkg', 'description' => 'A <fg=foo>description</>', 'version' => '1.0.0'],
+                    ],
+                ],
+            ],
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'search', 'tokens' => ['vendor']]);
+
+        $appTester->assertCommandIsSuccessful();
+        self::assertStringContainsString('vendor/pkg A <fg=foo>description</>', $appTester->getDisplay(true));
+    }
 }

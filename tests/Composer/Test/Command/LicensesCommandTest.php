@@ -13,6 +13,7 @@
 namespace Composer\Test\Command;
 
 use Composer\Test\TestCase;
+use Composer\Util\Filesystem;
 
 class LicensesCommandTest extends TestCase
 {
@@ -264,5 +265,27 @@ class LicensesCommandTest extends TestCase
 
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'license', '--locked' => true]);
+    }
+
+    public function testLicenseMetadataIsPrintedLiterally(): void
+    {
+        $package = self::getPackage('vendor/pkg', '1.0.0');
+        $package->setLicense(["<fg=foo>MIT</>\x1B[2J"]);
+        (new Filesystem())->removeDirectory('vendor');
+        $this->createInstalledJson([$package]);
+
+        $appTester = $this->getApplicationTester();
+        self::assertSame(0, $appTester->run(['command' => 'license']));
+
+        $output = $appTester->getDisplay();
+        self::assertStringContainsString('<fg=foo>MIT</>', $output);
+        self::assertStringNotContainsString("\x1B", $output);
+
+        $appTester = $this->getApplicationTester();
+        self::assertSame(0, $appTester->run(['command' => 'license', '--format' => 'summary']));
+
+        $output = $appTester->getDisplay();
+        self::assertStringContainsString('<fg=foo>MIT</>', $output);
+        self::assertStringNotContainsString("\x1B", $output);
     }
 }

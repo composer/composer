@@ -73,6 +73,7 @@ use Composer\Script\ScriptEvents;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Advisory\Auditor;
 use Composer\Util\Platform;
+use Symfony\Component\Console\Formatter\OutputFormatter;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -362,7 +363,7 @@ class Installer
             }
 
             $replacement = is_string($package->getReplacementPackage())
-                ? 'Use ' . $package->getReplacementPackage() . ' instead'
+                ? 'Use ' . OutputFormatter::escape($package->getReplacementPackage()) . ' instead'
                 : 'No replacement was suggested';
 
             $this->io->writeError(
