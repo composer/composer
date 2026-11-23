@@ -20,6 +20,10 @@ use Composer\Config;
 use Composer\IO\NullIO;
 use Composer\Pcre\Preg;
 use Composer\Repository\ArrayRepository;
+use Composer\Repository\BatchLoadingRepositoryInterface;
+use Composer\Repository\CompositeRepository;
+use Composer\Repository\PackageLoadBudget;
+use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Repository\FilterRepository;
 use Composer\Repository\LockArrayRepository;
 use Composer\DependencyResolver\Request;
@@ -35,7 +39,7 @@ use Composer\Util\Platform;
 
 class PoolBuilderTest extends TestCase
 {
-    public function testEmptyRepositoryPreservesPackageBatches(): void
+    public function testEmptyRepositoryPreservesPendingNames(): void
     {
         $request = new Request();
         $names = [];
@@ -60,7 +64,32 @@ class PoolBuilderTest extends TestCase
         $builder = new PoolBuilder(BasePackage::STABILITIES, [], [], [], new NullIO());
         $builder->buildPool([new ArrayRepository(), $secondRepository], $request);
 
-        self::assertSame(array_chunk($names, 50), $secondRepository->batchNames);
+        self::assertSame([$names], $secondRepository->batchNames);
+    }
+
+    public function testPackageLoadingBudgetReachesWrappedRepository(): void
+    {
+        $request = new Request;
+        $names = [];
+
+        for ($i = 0; $i < 250; ++$i) {
+            $name = 'vendor/pkg'.$i;
+            $names[] = $name;
+            $request->requireName($name, new MatchAllConstraint);
+        }
+
+        $legacy = $this->createMock(ArrayRepository::class);
+        $legacy->expects(self::once())->method('loadPackages')
+            ->with(self::callback(static function (array $map) use ($names): bool {
+                return array_keys($map) === $names;
+            }))->willReturn(['namesFound' => [], 'packages' => []]);
+        $child = $this->createMock(BatchLoadingRepositoryInterface::class);
+        $child->expects(self::once())->method('configurePackageLoading')->with(self::isInstanceOf(PackageLoadBudget::class));
+        $child->method('loadPackages')->willReturn(['namesFound' => [], 'packages' => []]);
+
+        $repositories = new RepositorySet;
+        $repositories->addRepository(new CompositeRepository([$legacy, new FilterRepository($child, [])]));
+        $repositories->createPool($request, new NullIO);
     }
 
     /**

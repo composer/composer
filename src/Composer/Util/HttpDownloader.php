@@ -47,7 +47,7 @@ class HttpDownloader
     /** @var int */
     private $runningJobs = 0;
     /** @var int */
-    private $maxJobs = 12;
+    private $maxJobs = 36;
     /** @var ?CurlDownloader */
     private $curl;
     /** @var ?RemoteFilesystem */
