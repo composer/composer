@@ -1034,8 +1034,8 @@ EOT
         $io = $this->getIO();
         foreach ($arrayTree as $package) {
             $io->write(sprintf('<info>%s</info>', $package['name']), false);
-            $io->write(' ' . $package['version'], false);
-            $io->write(' ' . strtok($package['description'], "\r\n"));
+            $io->write(' ' . OutputFormatter::escape($package['version']), false);
+            $io->write(' ' . OutputFormatter::escape((string) strtok($package['description'], "\r\n")));
 
             if (isset($package['requires'])) {
                 $requires = $package['requires'];
@@ -1054,9 +1054,9 @@ EOT
                         '%s──<%s>%s</%s> %s',
                         $treeBar,
                         $color,
-                        $requireName,
+                        OutputFormatter::escape($requireName),
                         $color,
-                        $require['version']
+                        OutputFormatter::escape($require['version'])
                     );
                     $this->writeTreeLine($info);
 
@@ -1151,9 +1151,9 @@ EOT
                     '%s──<%s>%s</%s> %s %s',
                     $treeBar,
                     $color,
-                    $require['name'],
+                    OutputFormatter::escape($require['name']),
                     $color,
-                    $require['version'],
+                    OutputFormatter::escape($require['version']),
                     $circularWarn
                 ));
                 $this->writeTreeLine($info);
