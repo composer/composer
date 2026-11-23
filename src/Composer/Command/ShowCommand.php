@@ -40,6 +40,7 @@ use Composer\Repository\RootPackageRepository;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Semver;
 use Composer\Spdx\SpdxLicenses;
+use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -555,14 +556,14 @@ EOT
                         if (strlen($description) > $remaining) {
                             $description = substr($description, 0, $remaining - 3) . '...';
                         }
-                        $io->write(' ' . $description, false);
+                        $io->write(' ' . OutputFormatter::escape((string) $description), false);
                     }
                     if (isset($package['path'])) {
                         $io->write(' ' . $package['path'], false);
                     }
                     $io->write('');
                     if (isset($package['warning'])) {
-                        $io->write('<warning>' . $package['warning'] . '</warning>');
+                        $io->write('<warning>' . OutputFormatter::escape($package['warning']) . '</warning>');
                     }
                 }
 
@@ -664,7 +665,7 @@ EOT
         if ($package->getSuggests()) {
             $io->write("\n<info>suggests</info>");
             foreach ($package->getSuggests() as $suggested => $reason) {
-                $io->write($suggested . ' <comment>' . $reason . '</comment>');
+                $io->write(OutputFormatter::escape($suggested) . ' <comment>' . OutputFormatter::escape($reason) . '</comment>');
             }
         }
 
@@ -685,8 +686,8 @@ EOT
     {
         $io = $this->getIO();
         $io->write('<info>name</info>     : ' . $package->getPrettyName());
-        $io->write('<info>descrip.</info> : ' . $package->getDescription());
-        $io->write('<info>keywords</info> : ' . implode(', ', $package->getKeywords() ?: array()));
+        $io->write('<info>descrip.</info> : ' . OutputFormatter::escape((string) $package->getDescription()));
+        $io->write('<info>keywords</info> : ' . OutputFormatter::escape(implode(', ', $package->getKeywords() ?: array())));
         $this->printVersions($package, $versions, $installedRepo);
         if ($latestPackage) {
             $style = $this->getVersionStyle($latestPackage, $package);
@@ -694,19 +695,19 @@ EOT
         } else {
             $latestPackage = $package;
         }
-        $io->write('<info>type</info>     : ' . $package->getType());
+        $io->write('<info>type</info>     : ' . OutputFormatter::escape($package->getType()));
         $this->printLicenses($package);
-        $io->write('<info>homepage</info> : ' . $package->getHomepage());
-        $io->write('<info>source</info>   : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getSourceType(), $package->getSourceUrl(), $package->getSourceReference()));
-        $io->write('<info>dist</info>     : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getDistType(), $package->getDistUrl(), $package->getDistReference()));
+        $io->write('<info>homepage</info> : ' . OutputFormatter::escape((string) $package->getHomepage()));
+        $io->write('<info>source</info>   : ' . OutputFormatter::escape(sprintf('[%s] ', $package->getSourceType())) . '<comment>' . OutputFormatter::escape((string) $package->getSourceUrl()) . '</comment> ' . OutputFormatter::escape((string) $package->getSourceReference()));
+        $io->write('<info>dist</info>     : ' . OutputFormatter::escape(sprintf('[%s] ', $package->getDistType())) . '<comment>' . OutputFormatter::escape((string) $package->getDistUrl()) . '</comment> ' . OutputFormatter::escape((string) $package->getDistReference()));
         if (!PlatformRepository::isPlatformPackage($package->getName()) && $installedRepo->hasPackage($package)) {
             $io->write('<info>path</info>     : ' . sprintf('%s', realpath($this->getComposer()->getInstallationManager()->getInstallPath($package))));
         }
-        $io->write('<info>names</info>    : ' . implode(', ', $package->getNames()));
+        $io->write('<info>names</info>    : ' . OutputFormatter::escape(implode(', ', $package->getNames())));
 
         if ($latestPackage instanceof CompletePackageInterface && $latestPackage->isAbandoned()) {
             $replacement = ($latestPackage->getReplacementPackage() !== null)
-                ? ' The author suggests using the ' . $latestPackage->getReplacementPackage(). ' package instead.'
+                ? ' The author suggests using the ' . OutputFormatter::escape($latestPackage->getReplacementPackage()) . ' package instead.'
                 : null;
 
             $io->writeError(
@@ -717,7 +718,7 @@ EOT
         if ($package->getSupport()) {
             $io->write("\n<info>support</info>");
             foreach ($package->getSupport() as $type => $value) {
-                $io->write('<comment>' . $type . '</comment> : '.$value);
+                $io->write('<comment>' . OutputFormatter::escape($type) . '</comment> : ' . OutputFormatter::escape($value));
             }
         }
 
@@ -729,15 +730,15 @@ EOT
 
                 if ($type === 'psr-0' || $type === 'psr-4') {
                     foreach ($autoloads as $name => $path) {
-                        $io->write(($name ?: '*') . ' => ' . (is_array($path) ? implode(', ', $path) : ($path ?: '.')));
+                        $io->write(OutputFormatter::escape(($name ?: '*') . ' => ' . (is_array($path) ? implode(', ', $path) : ($path ?: '.'))));
                     }
                 } elseif ($type === 'classmap') {
-                    $io->write(implode(', ', $autoloadConfig[$type]));
+                    $io->write(OutputFormatter::escape(implode(', ', $autoloadConfig[$type])));
                 }
             }
             if ($package->getIncludePaths()) {
                 $io->write('<comment>include-path</comment>');
-                $io->write(implode(', ', $package->getIncludePaths()));
+                $io->write(OutputFormatter::escape(implode(', ', $package->getIncludePaths())));
             }
         }
     }
@@ -753,6 +754,7 @@ EOT
     {
         $versions = array_keys($versions);
         $versions = Semver::rsort($versions);
+        $formattedVersions = array_map(array('Symfony\Component\Console\Formatter\OutputFormatter', 'escape'), $versions);
 
         // highlight installed version
         if ($installedPackages = $installedRepo->findPackages($package->getName())) {
@@ -760,12 +762,12 @@ EOT
                 $installedVersion = $installedPackage->getPrettyVersion();
                 $key = array_search($installedVersion, $versions);
                 if (false !== $key) {
-                    $versions[$key] = '<info>* ' . $installedVersion . '</info>';
+                    $formattedVersions[$key] = '<info>* ' . OutputFormatter::escape($installedVersion) . '</info>';
                 }
             }
         }
 
-        $versions = implode(', ', $versions);
+        $versions = implode(', ', $formattedVersions);
 
         $this->getIO()->write('<info>versions</info> : ' . $versions);
     }
@@ -786,7 +788,7 @@ EOT
             $io->write("\n<info>" . $title . "</info>");
 
             foreach ($links as $link) {
-                $io->write($link->getTarget() . ' <comment>' . $link->getPrettyConstraint() . '</comment>');
+                $io->write(OutputFormatter::escape($link->getTarget()) . ' <comment>' . OutputFormatter::escape($link->getPrettyConstraint()) . '</comment>');
             }
         }
     }
@@ -817,7 +819,7 @@ EOT
                 }
             }
 
-            $io->write('<info>license</info>  : ' . $out);
+            $io->write('<info>license</info>  : ' . OutputFormatter::escape($out));
         }
     }
 
@@ -1033,8 +1035,8 @@ EOT
         $io = $this->getIO();
         foreach ($arrayTree as $package) {
             $io->write(sprintf('<info>%s</info>', $package['name']), false);
-            $io->write(' ' . $package['version'], false);
-            $io->write(' ' . strtok($package['description'], "\r\n"));
+            $io->write(' ' . (is_string($package['version']) ? OutputFormatter::escape($package['version']) : ''), false);
+            $io->write(' ' . OutputFormatter::escape((string) strtok($package['description'], "\r\n")));
 
             if (isset($package['requires'])) {
                 $requires = $package['requires'];
@@ -1053,9 +1055,9 @@ EOT
                         '%s──<%s>%s</%s> %s',
                         $treeBar,
                         $color,
-                        $requireName,
+                        OutputFormatter::escape($requireName),
                         $color,
-                        $require['version']
+                        OutputFormatter::escape($require['version'])
                     );
                     $this->writeTreeLine($info);
 
@@ -1150,9 +1152,9 @@ EOT
                     '%s──<%s>%s</%s> %s %s',
                     $treeBar,
                     $color,
-                    $require['name'],
+                    OutputFormatter::escape($require['name']),
                     $color,
-                    $require['version'],
+                    OutputFormatter::escape($require['version']),
                     $circularWarn
                 ));
                 $this->writeTreeLine($info);
