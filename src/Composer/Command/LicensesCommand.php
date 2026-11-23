@@ -151,7 +151,7 @@ EOT
 
                 $rows = [];
                 foreach ($usedLicenses as $usedLicense => $numberOfDependencies) {
-                    $rows[] = [$usedLicense, $numberOfDependencies];
+                    $rows[] = ConsoleIO::sanitize([OutputFormatter::escape((string) $usedLicense), (string) $numberOfDependencies]);
                 }
 
                 $symfonyIo = new SymfonyStyle($input, $output);

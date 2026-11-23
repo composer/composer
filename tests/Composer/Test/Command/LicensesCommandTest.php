@@ -280,5 +280,12 @@ class LicensesCommandTest extends TestCase
         $output = $appTester->getDisplay();
         self::assertStringContainsString('<fg=foo>MIT</>', $output);
         self::assertStringNotContainsString("\x1B", $output);
+
+        $appTester = $this->getApplicationTester();
+        self::assertSame(0, $appTester->run(['command' => 'license', '--format' => 'summary']));
+
+        $output = $appTester->getDisplay();
+        self::assertStringContainsString('<fg=foo>MIT</>', $output);
+        self::assertStringNotContainsString("\x1B", $output);
     }
 }
