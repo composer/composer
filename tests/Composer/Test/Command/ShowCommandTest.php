@@ -1273,5 +1273,10 @@ vendor/longpackagename', trim($appTester->getDisplay(true))); // trim() is fine 
         $appTester->run(['command' => 'show']);
         $appTester->assertCommandIsSuccessful();
         self::assertStringContainsString('A <fg=foo>description</>', $appTester->getDisplay(true));
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', '--tree' => true]);
+        $appTester->assertCommandIsSuccessful();
+        self::assertStringContainsString('vendor/pkg 1.0.0 A <fg=foo>description</>', $appTester->getDisplay(true));
     }
 }
