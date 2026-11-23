@@ -1649,31 +1649,38 @@ EOT
         }
         $withheld = null;
         if ($cooldown !== null && !str_starts_with($package->getVersion(), 'dev-')) {
-            // a waiting release is only worth mentioning if it is newer than what can be installed already
-            $baseline = $latest !== null && version_compare($latest->getVersion(), $package->getVersion(), '>') ? $latest : $package;
+            // with prefer-stable, a less stable version is only selected when every stable one in range
+            // was withheld or rejected
+            $isStabilityFallback = $latest !== null && $composer->getPackage()->getPreferStable() && BasePackage::STABILITIES[$latest->getStability()] > BasePackage::STABILITIES[$package->getStability()];
+            $withheldCandidates = [];
             $installedIsWithheld = false;
             foreach ($versionSelector->getWithheldCandidates() as $withheldCandidate) {
-                $withheldPackage = $withheldCandidate['package'];
-                while ($withheldPackage instanceof AliasPackage) {
-                    $withheldPackage = $withheldPackage->getAliasOf();
+                while ($withheldCandidate['package'] instanceof AliasPackage) {
+                    $withheldCandidate['package'] = $withheldCandidate['package']->getAliasOf();
                 }
-                if ($withheldPackage->getVersion() === $package->getVersion()) {
+                if ($withheldCandidate['package']->getVersion() === $package->getVersion()) {
                     $installedIsWithheld = true;
                 }
-                // the first release to clear the cooldown period among those newer than the baseline,
-                // a withheld backport to an older branch is no update
-                if (!version_compare($withheldPackage->getVersion(), $baseline->getVersion(), '>')) {
-                    continue;
-                }
-                if ($withheld === null || $withheldCandidate['releaseDate'] < $withheld['releaseDate']) {
-                    $withheld = ['package' => $withheldPackage, 'releaseDate' => $withheldCandidate['releaseDate']];
-                }
+                $withheldCandidates[] = $withheldCandidate;
             }
 
             // the installed version is itself still in the cooldown period, e.g. the period was configured after
             // installing it, so the older releases the selector fell back to are no update either
-            if ($installedIsWithheld && ($latest === null || version_compare($latest->getVersion(), $package->getVersion(), '<'))) {
+            if ($installedIsWithheld && ($latest === null || $isStabilityFallback || version_compare($latest->getVersion(), $package->getVersion(), '<'))) {
                 $latest = $package;
+            }
+
+            // a waiting release is only worth mentioning if it is newer than what can be installed already
+            $baseline = $latest !== null && version_compare($latest->getVersion(), $package->getVersion(), '>') ? $latest : $package;
+            foreach ($withheldCandidates as $withheldCandidate) {
+                // the first release to clear the cooldown period among those newer than the baseline,
+                // a withheld backport to an older branch is no update
+                if (!version_compare($withheldCandidate['package']->getVersion(), $baseline->getVersion(), '>')) {
+                    continue;
+                }
+                if ($withheld === null || $withheldCandidate['releaseDate'] < $withheld['releaseDate']) {
+                    $withheld = ['package' => $withheldCandidate['package'], 'releaseDate' => $withheldCandidate['releaseDate']];
+                }
             }
 
             if ($withheld !== null) {
