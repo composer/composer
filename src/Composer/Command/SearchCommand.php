@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\Factory;
 use Composer\Json\JsonFile;
+use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -112,6 +113,7 @@ EOT
                 if (strlen($description) > $remaining) {
                     $description = substr($description, 0, $remaining - 3) . '...';
                 }
+                $description = OutputFormatter::escape($description);
 
                 $io->write(str_pad($result['name'], $nameLength, ' ') . $warning . $description);
             }
