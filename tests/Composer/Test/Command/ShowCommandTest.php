@@ -1201,18 +1201,45 @@ vendor/longpackagename', trim($appTester->getDisplay(true))); // trim() is fine 
         self::assertStringNotContainsString('[none matched]', $display);
     }
 
-    public function testOutdatedMinorOnlyDoesNotOfferTheDevBranchWhenTheInstalledVersionIsStillInTheCooldownPeriod(): void
+    /**
+     * @dataProvider provideRangeOnlyOptions
+     */
+    public function testOutdatedRangeOnlyDoesNotOfferTheDevBranchWhenTheInstalledVersionIsStillInTheCooldownPeriod(string $option): void
+    {
+        $this->initProjectWithDevBranchAndCooldownPeriod([
+            ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.0.0', 'published-time' => '2020-01-01T00:00:00+00:00'],
+            ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.1.0', 'published-time' => '2999-01-01T00:00:00+00:00'],
+            ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.1.1', 'published-time' => '2999-02-01T00:00:00+00:00'],
+            ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.1.x-dev'],
+        ]);
+        $this->createInstalledJson([self::getPackage('vendor/package', '1.1.0')]);
+
+        // no stable release in range is installable yet, so prefer-stable falls back to 1.1.x-dev, which is no update
+        $appTester = $this->getApplicationTester();
+        self::assertSame(0, $appTester->run(['command' => 'outdated', '--strict' => true, $option => true]));
+        $display = $appTester->getDisplay(true);
+        self::assertStringNotContainsString('1.1.x-dev', $display);
+        self::assertMatchesRegularExpression('{^vendor/package 1\.1\.0 c 1\.1\.1 \(\d+d(?: \d+h)? left\)}m', $display);
+    }
+
+    public static function provideRangeOnlyOptions(): array
+    {
+        return [
+            'minor-only' => ['--minor-only'],
+            'patch-only' => ['--patch-only'],
+        ];
+    }
+
+    /**
+     * @param list<array<string, string>> $versions
+     */
+    private function initProjectWithDevBranchAndCooldownPeriod(array $versions): void
     {
         $this->initTempComposer([
             'repositories' => [
                 'packages' => [
                     'type' => 'package',
-                    'package' => [
-                        ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.0.0', 'published-time' => '2020-01-01T00:00:00+00:00'],
-                        ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.1.0', 'published-time' => '2999-01-01T00:00:00+00:00'],
-                        ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.1.1', 'published-time' => '2999-02-01T00:00:00+00:00'],
-                        ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.1.x-dev'],
-                    ],
+                    'package' => $versions,
                 ],
             ],
             'require' => ['vendor/package' => '^1.0'],
@@ -1220,15 +1247,6 @@ vendor/longpackagename', trim($appTester->getDisplay(true))); // trim() is fine 
             'prefer-stable' => true,
             'config' => ['policy' => ['cooldown' => ['period' => '1 week']]],
         ]);
-
-        $this->createInstalledJson([self::getPackage('vendor/package', '1.1.0')]);
-
-        // no stable release in ^1.1.0 is installable yet, so prefer-stable falls back to 1.1.x-dev, which is no update
-        $appTester = $this->getApplicationTester();
-        self::assertSame(0, $appTester->run(['command' => 'outdated', '--strict' => true, '--minor-only' => true]));
-        $display = $appTester->getDisplay(true);
-        self::assertStringNotContainsString('1.1.x-dev', $display);
-        self::assertMatchesRegularExpression('{^vendor/package 1\.1\.0 c 1\.1\.1 \(\d+d(?: \d+h)? left\)}m', $display);
     }
 
     public function testShowingASinglePackageMentionsAReleaseStillInTheCooldownPeriod(): void
