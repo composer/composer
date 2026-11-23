@@ -12,12 +12,14 @@
 
 namespace Composer\Command;
 
+use Composer\IO\ConsoleIO;
 use Composer\Json\JsonFile;
 use Composer\Package\CompletePackageInterface;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Package\PackageInterface;
 use Composer\Repository\RepositoryInterface;
+use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -95,11 +97,12 @@ EOT
                 $tableStyle->setCellRowContentFormat('%s  ');
                 $table->setHeaders(array('Name', 'Version', 'Licenses'));
                 foreach ($packages as $package) {
-                    $table->addRow(array(
+                    // Table output bypasses ConsoleIO::write(), so sanitize here
+                    $table->addRow(ConsoleIO::sanitize(array(
                         $package->getPrettyName(),
                         $package->getFullPrettyVersion(),
-                        implode(', ', $package instanceof CompletePackageInterface ? $package->getLicense() : array()) ?: 'none',
-                    ));
+                        OutputFormatter::escape(implode(', ', $package instanceof CompletePackageInterface ? $package->getLicense() : array()) ?: 'none'),
+                    )));
                 }
                 $table->render();
                 break;
