@@ -111,7 +111,7 @@ class FundCommand extends BaseCommand
                         $prev = $line;
                     }
 
-                    $io->write(sprintf('    <href=%s>%s</>', OutputFormatter::escape($url), $url));
+                    $io->write(sprintf('    <href=%s>%s</>', OutputFormatter::escape($url), OutputFormatter::escape($url)));
                 }
             }
 

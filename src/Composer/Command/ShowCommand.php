@@ -827,14 +827,14 @@ EOT
                     }
                 }
 
-                $io->write(' ' . $description, false);
+                $io->write(' ' . OutputFormatter::escape($description), false);
             }
             if (array_key_exists('path', $package)) {
                 $io->write(' '.(is_string($package['path']) ? $package['path'] : 'null'), false);
             }
             $io->write('');
             if (isset($package['warning'])) {
-                $io->write('<warning>' . $package['warning'] . '</warning>');
+                $io->write('<warning>' . OutputFormatter::escape($package['warning']) . '</warning>');
             }
         }
     }
@@ -936,7 +936,7 @@ EOT
         if ($package->getSuggests()) {
             $io->write("\n<info>suggests</info>");
             foreach ($package->getSuggests() as $suggested => $reason) {
-                $io->write($suggested . ' <comment>' . $reason . '</comment>');
+                $io->write(OutputFormatter::escape($suggested) . ' <comment>' . OutputFormatter::escape($reason) . '</comment>');
             }
         }
 
@@ -957,8 +957,8 @@ EOT
 
         $io = $this->getIO();
         $io->write('<info>name</info>     : ' . $package->getPrettyName());
-        $io->write('<info>descrip.</info> : ' . $package->getDescription());
-        $io->write('<info>keywords</info> : ' . implode(', ', $package->getKeywords() ?: []));
+        $io->write('<info>descrip.</info> : ' . OutputFormatter::escape((string) $package->getDescription()));
+        $io->write('<info>keywords</info> : ' . OutputFormatter::escape(implode(', ', $package->getKeywords() ?: [])));
         $this->printVersions($package, $versions, $installedRepo);
         if ($isInstalledPackage && $package->getReleaseDate() !== null) {
             $io->write('<info>released</info> : ' . $package->getReleaseDate()->format('Y-m-d') . ', ' . $this->getRelativeTime($package->getReleaseDate()));
@@ -977,11 +977,11 @@ EOT
         } else {
             $latestPackage = $package;
         }
-        $io->write('<info>type</info>     : ' . $package->getType());
+        $io->write('<info>type</info>     : ' . OutputFormatter::escape($package->getType()));
         $this->printLicenses($package);
-        $io->write('<info>homepage</info> : ' . $package->getHomepage());
-        $io->write('<info>source</info>   : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getSourceType(), $package->getSourceUrl(), $package->getSourceReference()));
-        $io->write('<info>dist</info>     : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getDistType(), $package->getDistUrl(), $package->getDistReference()));
+        $io->write('<info>homepage</info> : ' . OutputFormatter::escape((string) $package->getHomepage()));
+        $io->write('<info>source</info>   : ' . OutputFormatter::escape(sprintf('[%s] ', $package->getSourceType())) . '<comment>' . OutputFormatter::escape((string) $package->getSourceUrl()) . '</comment> ' . OutputFormatter::escape((string) $package->getSourceReference()));
+        $io->write('<info>dist</info>     : ' . OutputFormatter::escape(sprintf('[%s] ', $package->getDistType())) . '<comment>' . OutputFormatter::escape((string) $package->getDistUrl()) . '</comment> ' . OutputFormatter::escape((string) $package->getDistReference()));
         if ($isInstalledPackage) {
             $path = $this->requireComposer()->getInstallationManager()->getInstallPath($package);
             if (is_string($path)) {
@@ -990,11 +990,11 @@ EOT
                 $io->write('<info>path</info>     : null');
             }
         }
-        $io->write('<info>names</info>    : ' . implode(', ', $package->getNames()));
+        $io->write('<info>names</info>    : ' . OutputFormatter::escape(implode(', ', $package->getNames())));
 
         if ($latestPackage instanceof CompletePackageInterface && $latestPackage->isAbandoned()) {
             $replacement = ($latestPackage->getReplacementPackage() !== null)
-                ? ' The author suggests using the ' . $latestPackage->getReplacementPackage(). ' package instead.'
+                ? ' The author suggests using the ' . OutputFormatter::escape($latestPackage->getReplacementPackage()) . ' package instead.'
                 : null;
 
             $io->writeError(
@@ -1005,7 +1005,7 @@ EOT
         if ($package->getSupport()) {
             $io->write("\n<info>support</info>");
             foreach ($package->getSupport() as $type => $value) {
-                $io->write('<comment>' . $type . '</comment> : '.$value);
+                $io->write('<comment>' . OutputFormatter::escape($type) . '</comment> : ' . OutputFormatter::escape($value));
             }
         }
 
@@ -1017,15 +1017,15 @@ EOT
 
                 if ($type === 'psr-0' || $type === 'psr-4') {
                     foreach ($autoloads as $name => $path) {
-                        $io->write(($name ?: '*') . ' => ' . (is_array($path) ? implode(', ', $path) : ($path ?: '.')));
+                        $io->write(OutputFormatter::escape(($name ?: '*') . ' => ' . (is_array($path) ? implode(', ', $path) : ($path ?: '.'))));
                     }
                 } elseif ($type === 'classmap') {
-                    $io->write(implode(', ', $autoloadConfig[$type]));
+                    $io->write(OutputFormatter::escape(implode(', ', $autoloadConfig[$type])));
                 }
             }
             if ($package->getIncludePaths()) {
                 $io->write('<comment>include-path</comment>');
-                $io->write(implode(', ', $package->getIncludePaths()));
+                $io->write(OutputFormatter::escape(implode(', ', $package->getIncludePaths())));
             }
         }
     }
@@ -1067,7 +1067,7 @@ EOT
             $io->write("\n<info>" . $title . "</info>");
 
             foreach ($links as $link) {
-                $io->write($link->getTarget() . ' <comment>' . $link->getPrettyConstraint() . '</comment>');
+                $io->write(OutputFormatter::escape($link->getTarget()) . ' <comment>' . OutputFormatter::escape($link->getPrettyConstraint()) . '</comment>');
             }
         }
     }
@@ -1096,7 +1096,7 @@ EOT
                 }
             }
 
-            $io->write('<info>license</info>  : ' . $out);
+            $io->write('<info>license</info>  : ' . OutputFormatter::escape($out));
         }
     }
 

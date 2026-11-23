@@ -1240,4 +1240,38 @@ vendor/longpackagename', trim($appTester->getDisplay(true))); // trim() is fine 
 
         $this->createInstalledJson([self::getPackage('vendor/package', $installedVersion)]);
     }
+
+    public function testPackageMetadataIsPrintedLiterally(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [],
+            'require' => ['vendor/pkg' => '*'],
+        ]);
+        $package = self::getPackage('vendor/pkg', '1.0.0');
+        $package->setDescription('A <fg=foo>description</>');
+        $package->setKeywords(['<href=https://example.org>keyword</>']);
+        $package->setHomepage('<fg=foo>https://example.org</>');
+        $package->setSupport(['issues' => '<error>https://example.org</error>']);
+        $package->setSuggests(['other/pkg' => '<fg=foo>reason</>']);
+        $package->setLicense(['<fg=foo>MIT</>']);
+        $package->setAbandoned('<fg=foo>new/pkg</>');
+        $this->createInstalledJson([$package]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', 'package' => 'vendor/pkg']);
+        $appTester->assertCommandIsSuccessful();
+        $output = $appTester->getDisplay(true);
+        self::assertStringContainsString('descrip. : A <fg=foo>description</>', $output);
+        self::assertStringContainsString('keywords : <href=https://example.org>keyword</>', $output);
+        self::assertStringContainsString('homepage : <fg=foo>https://example.org</>', $output);
+        self::assertStringContainsString('issues : <error>https://example.org</error>', $output);
+        self::assertStringContainsString('other/pkg <fg=foo>reason</>', $output);
+        self::assertStringContainsString('license  : <fg=foo>MIT</>', $output);
+        self::assertStringContainsString('The author suggests using the <fg=foo>new/pkg</> package instead.', $output);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show']);
+        $appTester->assertCommandIsSuccessful();
+        self::assertStringContainsString('A <fg=foo>description</>', $appTester->getDisplay(true));
+    }
 }

@@ -491,7 +491,7 @@ class Auditor
         if ($format === self::FORMAT_PLAIN) {
             foreach ($packages as $pkg) {
                 $replacement = $pkg->getReplacementPackage() !== null
-                    ? 'Use '.$pkg->getReplacementPackage().' instead'
+                    ? 'Use '.OutputFormatter::escape($pkg->getReplacementPackage()).' instead'
                     : 'No replacement was suggested';
                 $io->write(sprintf(
                     '%s is abandoned. %s.',
@@ -513,7 +513,7 @@ class Auditor
             ->setColumnMaxWidth(1, 80);
 
         foreach ($packages as $pkg) {
-            $replacement = $pkg->getReplacementPackage() !== null ? $pkg->getReplacementPackage() : 'none';
+            $replacement = $pkg->getReplacementPackage() !== null ? OutputFormatter::escape($pkg->getReplacementPackage()) : 'none';
             $table->addRow(ConsoleIO::sanitize([$this->getPackageNameWithLink($pkg), $replacement]));
         }
 

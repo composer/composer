@@ -195,4 +195,21 @@ Package operations: 1 install, 0 updates, 0 removals
   - Installing root/another (1.0.0)
 Generating autoload files', trim($appTester->getDisplay(true)));
     }
+
+    public function testAbandonedReplacementIsPrintedLiterally(): void
+    {
+        $this->initTempComposer(['require' => ['vendor/pkg' => '1.*']]);
+
+        $package = self::getPackage('vendor/pkg');
+        $package->setType('metapackage');
+        $package->setAbandoned('<fg=foo>new/pkg</>');
+        $this->createComposerLock([$package]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'install', '--no-progress' => true]);
+
+        $appTester->assertCommandIsSuccessful();
+        self::assertStringContainsString('Package vendor/pkg is abandoned, you should avoid using it. Use <fg=foo>new/pkg</> instead.', $appTester->getDisplay(true));
+        self::assertStringContainsString('Generating autoload files', $appTester->getDisplay(true));
+    }
 }

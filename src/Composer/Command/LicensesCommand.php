@@ -13,6 +13,7 @@
 namespace Composer\Command;
 
 use Composer\Console\Input\InputOption;
+use Composer\IO\ConsoleIO;
 use Composer\Json\JsonFile;
 use Composer\Package\CompletePackageInterface;
 use Composer\Plugin\CommandEvent;
@@ -103,11 +104,12 @@ EOT
                         $name = $package->getPrettyName();
                     }
 
-                    $table->addRow([
+                    // Table output bypasses ConsoleIO::write(), so sanitize here
+                    $table->addRow(ConsoleIO::sanitize([
                         $name,
                         $package->getFullPrettyVersion(),
-                        implode(', ', $package instanceof CompletePackageInterface ? $package->getLicense() : []) ?: 'none',
-                    ]);
+                        OutputFormatter::escape(implode(', ', $package instanceof CompletePackageInterface ? $package->getLicense() : []) ?: 'none'),
+                    ]));
                 }
                 $table->render();
                 break;
