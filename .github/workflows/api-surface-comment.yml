@@ -25,4 +25,4 @@ jobs:
       pull-requests: write # create the comment on the pull request
 
     steps:
-      - uses: composer/api-surface-check/post-comment@4a61b8a7bedd319bf9d3e5215dc3708c5a29fc0b # main
+      - uses: composer/api-surface-check/post-comment@09e3754365a4626daac35eef61d474a389961084 # 2.0.0

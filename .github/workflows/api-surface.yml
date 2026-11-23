@@ -21,7 +21,7 @@ jobs:
     name: 'Analyze API surface'
     runs-on: ubuntu-latest
     steps:
-      - uses: composer/api-surface-check@4a61b8a7bedd319bf9d3e5215dc3708c5a29fc0b # main
+      - uses: composer/api-surface-check@09e3754365a4626daac35eef61d474a389961084 # 2.0.0
         with:
           install-dependencies: true
           # paths: src/**/*.php
