@@ -556,7 +556,7 @@ EOT
                         if (strlen($description) > $remaining) {
                             $description = substr($description, 0, $remaining - 3) . '...';
                         }
-                        $io->write(' ' . OutputFormatter::escape($description), false);
+                        $io->write(' ' . OutputFormatter::escape((string) $description), false);
                     }
                     if (isset($package['path'])) {
                         $io->write(' ' . $package['path'], false);
@@ -1035,7 +1035,7 @@ EOT
         $io = $this->getIO();
         foreach ($arrayTree as $package) {
             $io->write(sprintf('<info>%s</info>', $package['name']), false);
-            $io->write(' ' . OutputFormatter::escape($package['version']), false);
+            $io->write(' ' . (is_string($package['version']) ? OutputFormatter::escape($package['version']) : ''), false);
             $io->write(' ' . OutputFormatter::escape((string) strtok($package['description'], "\r\n")));
 
             if (isset($package['requires'])) {
