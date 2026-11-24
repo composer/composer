@@ -119,6 +119,63 @@ Affected versions: >=8,<8.2.2|>=1,<2.5.6
 Reported at: 2022-05-25T13:21:00+00:00',
         ];
 
+        yield 'advisories failing are shown as error' => [
+            'data' => [
+                'packages' => [
+                    new Package('vendor1/package1', '8.2.1', '8.2.1'),
+                ],
+                'warningOnly' => false,
+            ],
+            'expected' => Auditor::STATUS_FAILED,
+            'output' => 'Found 2 security vulnerability advisories affecting 1 package:
+Package: vendor1/package1
+Severity: high
+Advisory ID: ID4
+CVE: CVE3
+Title: advisory4
+URL: https://advisory.example.com/advisory4
+Affected versions: >=8,<8.2.2|>=1,<2.5.6
+Reported at: 2022-05-25T13:21:00+00:00
+--------
+Package: vendor1/package1
+Severity: medium
+Advisory ID: ID5
+CVE: '.'
+Title: advisory5
+URL: https://advisory.example.com/advisory5
+Affected versions: >=8,<8.2.2|>=1,<2.5.6
+Reported at: 2022-05-25T13:21:00+00:00',
+        ];
+
+        yield 'advisories reported only are shown as warning even if not warningOnly' => [
+            'data' => [
+                'packages' => [
+                    new Package('vendor1/package1', '8.2.1', '8.2.1'),
+                ],
+                'warningOnly' => false,
+                'advisories' => ListPolicyConfig::AUDIT_REPORT,
+            ],
+            'expected' => Auditor::STATUS_OK,
+            'output' => '<warning>Found 2 security vulnerability advisories affecting 1 package:</warning>
+Package: vendor1/package1
+Severity: high
+Advisory ID: ID4
+CVE: CVE3
+Title: advisory4
+URL: https://advisory.example.com/advisory4
+Affected versions: >=8,<8.2.2|>=1,<2.5.6
+Reported at: 2022-05-25T13:21:00+00:00
+--------
+Package: vendor1/package1
+Severity: medium
+Advisory ID: ID5
+CVE: '.'
+Title: advisory5
+URL: https://advisory.example.com/advisory5
+Affected versions: >=8,<8.2.2|>=1,<2.5.6
+Reported at: 2022-05-25T13:21:00+00:00',
+        ];
+
         yield 'advisories ignored' => [
             'data' => [
                 'packages' => [

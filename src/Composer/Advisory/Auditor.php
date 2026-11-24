@@ -185,7 +185,7 @@ class Auditor
             return $auditResult;
         }
 
-        $errorOrWarn = $warningOnly ? 'warning' : 'error';
+        $errorOrWarn = !$warningOnly && $failedAdvisoriesCount > 0 ? 'error' : 'warning';
         if ($affectedPackagesCount > 0 || count($ignoredAdvisories) > 0) {
             $passes = [
                 [$ignoredAdvisories, "<info>Found %d ignored security vulnerability advisor%s affecting %d package%s%s</info>"],
