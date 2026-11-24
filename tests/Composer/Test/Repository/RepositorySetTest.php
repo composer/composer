@@ -71,4 +71,25 @@ class RepositorySetTest extends TestCase
         self::assertNotNull($priority);
         self::assertSame($canonical->getRepoName(), $priority->getCanonicalRepositoryName());
     }
+
+    public function testFindPackagesWithRejectionsCanLeaveShadowedRepositoriesAlone(): void
+    {
+        $canonical = new ArrayRepository([self::getPackage('foo/bar', '1.0.0'), self::getPackage('foo/bar', '2.0.0')]);
+        $lower = $this->getMockBuilder(ArrayRepository::class)->onlyMethods(['loadPackages'])->getMock();
+        $lower->expects(self::exactly(3))
+            ->method('loadPackages')
+            ->willReturn(['namesFound' => [], 'packages' => []]);
+
+        $repositorySet = new RepositorySet();
+        $repositorySet->addRepository($canonical);
+        $repositorySet->addRepository($lower);
+
+        // a version is acceptable, so findPackages() would not look further either
+        $result = $repositorySet->findPackagesWithRejections('foo/bar', self::getVersionConstraint('<', '2.0.0.0'), true);
+        self::assertCount(1, $result->getAccepted());
+
+        // nothing is acceptable, the lower priority repository may explain why
+        $result = $repositorySet->findPackagesWithRejections('foo/bar', self::getVersionConstraint('>', '2.0.0.0'), true);
+        self::assertCount(0, $result->getAccepted());
+    }
 }

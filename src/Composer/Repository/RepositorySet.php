@@ -246,13 +246,18 @@ class RepositorySet
      * Returned in the order of repositories, matching priority. This loads more than findPackages() does, so only use it to explain why a package was not found.
      *
      * @internal
+     * @param bool $skipShadowedIfAccepted do not query the repositories findPackages() would not look in when it would return versions
      */
-    public function findPackagesWithRejections(string $name, ?ConstraintInterface $constraint = null): PackageFilterResult
+    public function findPackagesWithRejections(string $name, ?ConstraintInterface $constraint = null, bool $skipShadowedIfAccepted = false): PackageFilterResult
     {
         $packages = [];
         $reasons = [];
         $canonicalRepo = null;
         foreach ($this->repositories as $repository) {
+            if ($skipShadowedIfAccepted && $canonicalRepo !== null && \count($packages) > \count($reasons)) {
+                break;
+            }
+
             // what findPackages() would load from this repository, aliases included the same way
             $acceptable = $repository->loadPackages([$name => $constraint], $this->acceptableStabilities, $this->stabilityFlags);
             $acceptableKeys = self::getPackageKeys($acceptable['packages']);

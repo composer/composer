@@ -414,7 +414,8 @@ class Problem
             }
         }
 
-        $result = $repositorySet->findPackagesWithRejections($packageName, $constraint);
+        // lower priority repositories only help explaining why nothing was found
+        $result = $repositorySet->findPackagesWithRejections($packageName, $constraint, true);
 
         // first check if the actual requested package is found in normal conditions
         // if so it must mean it is rejected by another constraint than the one given here
@@ -731,28 +732,17 @@ class Problem
     }
 
     /**
-     * Mentions the versions matching the constraint that were skipped for another reason, so one message explains all of them
+     * Mentions the versions matching the constraint that were skipped for the minimum-stability, so one message explains all of them
      */
     private static function formatOtherRejections(PackageFilterResult $result, bool $isVerbose): string
     {
-        $acceptedVersions = [];
-        foreach ($result->getAccepted() as $package) {
-            $acceptedVersions[$package->getName()][$package->getVersion()] = true;
+        $packages = $result->getRejectedOnlyBy(RejectionReason::STABILITY);
+        $reason = \count($packages) > 0 ? $result->getReason($packages[0], RejectionReason::STABILITY) : null;
+        if ($reason === null) {
+            return '';
         }
 
-        $found = [];
-        foreach ([RejectionReason::STABILITY, RejectionReason::REPOSITORY_PRIORITY] as $type) {
-            // a copy of an accepted version in a lower priority repository is no alternative
-            $packages = array_values(array_filter($result->getRejectedOnlyBy($type), static function (BasePackage $package) use ($acceptedVersions): bool {
-                return !isset($acceptedVersions[$package->getName()][$package->getVersion()]);
-            }));
-            $reason = \count($packages) > 0 ? $result->getReason($packages[0], $type) : null;
-            if ($reason !== null) {
-                $found[] = self::getPackageList($packages, $isVerbose).' which '.$reason->getVerb(\count($packages) > 1).' '.$reason->getDescription();
-            }
-        }
-
-        return \count($found) > 0 ? ' Also found '.implode(', and ', $found).'.' : '';
+        return ' Also found '.self::getPackageList($packages, $isVerbose).' which '.$reason->getVerb(\count($packages) > 1).' '.$reason->getDescription().'.';
     }
 
     /**
