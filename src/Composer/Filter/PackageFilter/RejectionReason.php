@@ -313,7 +313,7 @@ class RejectionReason
                     return $advisory->advisoryId;
                 }, $this->advisories)) . '")';
             case self::FILTER_LIST:
-                return implode(', ', $this->getFilterListDescriptions());
+                return implode(', ', $this->getFilterListDescriptions($decorated));
             case self::COOLDOWN:
                 $availableIn = '';
                 if ($this->cooldown !== null) {
@@ -405,14 +405,14 @@ class RejectionReason
     {
         return array_map(static function (PartialSecurityAdvisory $advisory): string {
             if ($advisory instanceof SecurityAdvisory && $advisory->link !== null && $advisory->link !== '') {
-                return '<href='.OutputFormatter::escape($advisory->link).'>'.$advisory->advisoryId.'</>';
+                return '<href='.OutputFormatter::escape($advisory->link).'>'.OutputFormatter::escape($advisory->advisoryId).'</>';
             }
 
             if (str_starts_with($advisory->advisoryId, 'PKSA-')) {
-                return '<href='.OutputFormatter::escape('https://packagist.org/security-advisories/'.$advisory->advisoryId).'>'.$advisory->advisoryId.'</>';
+                return '<href='.OutputFormatter::escape('https://packagist.org/security-advisories/'.$advisory->advisoryId).'>'.OutputFormatter::escape($advisory->advisoryId).'</>';
             }
 
-            return $advisory->advisoryId;
+            return OutputFormatter::escape($advisory->advisoryId);
         }, $this->advisories);
     }
 
@@ -436,9 +436,10 @@ class RejectionReason
     }
 
     /**
+     * @param bool $decorated whether this goes to console output, where the texts the list provides must be escaped
      * @return array<string, string> list name => description
      */
-    private function getFilterListDescriptions(): array
+    private function getFilterListDescriptions(bool $decorated = true): array
     {
         $lists = [];
         foreach ($this->filterListEntries as $entry) {
@@ -446,7 +447,7 @@ class RejectionReason
             $url = (bool) $entry->url ? ' (see ' . $entry->url . ')' : '';
             $reason = (bool) $entry->reason ? ' reason: ' . $entry->reason : '';
 
-            $lists[$entry->listName][] = $source . $url . $reason;
+            $lists[$entry->listName][] = $decorated ? OutputFormatter::escape($source . $url . $reason) : $source . $url . $reason;
         }
 
         $result = [];

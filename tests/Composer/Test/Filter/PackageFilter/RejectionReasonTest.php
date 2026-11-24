@@ -19,6 +19,7 @@ use Composer\Package\Link;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Test\TestCase;
+use Symfony\Component\Console\Formatter\OutputFormatter;
 
 class RejectionReasonTest extends TestCase
 {
@@ -70,6 +71,23 @@ class RejectionReasonTest extends TestCase
         self::assertSame('flagged as malware reported by aikido (see https://example.org/m) reason: looks suspicious, filtered by internal', $reason->getDescription());
         self::assertSame('To ignore filters for this package, add the package to the "policy.malware.ignore" and "policy.internal.ignore" config.', $reason->getRemedy());
         self::assertSame('"policy.malware.block" and "policy.internal.block"', $reason->getOffSwitch());
+    }
+
+    public function testRemoteTextsAreEscapedForConsoleOutputOnly(): void
+    {
+        $formatter = new OutputFormatter(false);
+
+        $filtered = RejectionReason::filterList('vendor/pkg', '1.0.0', [
+            new FilterListEntry('vendor/pkg', new MatchAllConstraint(), 'malware', 'https://example.org/<u>', '</warning><info>safe</info>', 'PKG-1', '<b>src'),
+        ]);
+        $expected = 'flagged as malware reported by <b>src (see https://example.org/<u>) reason: </warning><info>safe</info>';
+        self::assertSame($expected, $formatter->format($filtered->getDescription()));
+        self::assertSame($expected, $filtered->getDescription(false));
+
+        $advisories = RejectionReason::advisories('vendor/pkg', '1.0.0', [new PartialSecurityAdvisory('vendor/pkg', '<info>CVE</info>', new MatchAllConstraint())]);
+        $expected = 'affected by security advisories ("<info>CVE</info>")';
+        self::assertSame($expected, $formatter->format($advisories->getDescription()));
+        self::assertSame($expected, $advisories->getDescription(false));
     }
 
     public function testCooldownMentionsWeakerTimeSource(): void
