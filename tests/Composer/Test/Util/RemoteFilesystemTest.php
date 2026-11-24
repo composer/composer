@@ -330,6 +330,39 @@ class RemoteFilesystemTest extends TestCase
     }
 
     /**
+     * @dataProvider provideRedirectOrigins
+     */
+    public function testRedirectTargetOriginIncludesPort(string $location, string $expectedOrigin): void
+    {
+        $origins = [];
+        $fs = $this->getRemoteFilesystemWithMockedMethods(['getRemoteContents']);
+        $fs->expects($this->exactly(2))->method('getRemoteContents')
+            ->willReturnCallback(static function ($originUrl, $fileUrl, $ctx, &$http_response_header) use ($location, &$origins): string {
+                $origins[] = $originUrl;
+                $http_response_header = count($origins) === 1 ? ['HTTP/1.1 302 Found', 'Location: '.$location] : ['HTTP/1.1 200 OK'];
+
+                return 'ok';
+            });
+
+        $fs->getContents('example.org:8443', 'https://example.org:8443/packages.json', false);
+
+        self::assertSame(['example.org:8443', $expectedOrigin], $origins);
+    }
+
+    /**
+     * @return array<string, array{string, string}>
+     */
+    public static function provideRedirectOrigins(): array
+    {
+        return [
+            'same origin' => ['/other.json', 'example.org:8443'],
+            'other port' => ['https://example.org:9443/other.json', 'example.org:9443'],
+            'default port' => ['https://example.org/other.json', 'example.org'],
+            'other host' => ['https://example.net:8443/other.json', 'example.net:8443'],
+        ];
+    }
+
+    /**
      * @return string[][]
      */
     public static function provideDisallowedRedirectSchemes(): array
