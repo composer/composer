@@ -188,6 +188,36 @@ Reported at: 2022-05-25T13:21:00+00:00',
             'output' => '',
         ];
 
+        yield 'advisories ignored are omitted from json' => [
+            'data' => [
+                'packages' => [
+                    new Package('vendor1/package1', '8.2.1', '8.2.1'),
+                ],
+                'warningOnly' => false,
+                'advisories' => ListPolicyConfig::AUDIT_IGNORE,
+                'format' => Auditor::FORMAT_JSON,
+            ],
+            'expected' => Auditor::STATUS_OK,
+            'output' => '{
+    "abandoned": [],
+    "filter": [],
+    "cooldown": []
+}',
+        ];
+
+        yield 'advisories ignored with summary format' => [
+            'data' => [
+                'packages' => [
+                    new Package('vendor1/package1', '8.2.1', '8.2.1'),
+                ],
+                'warningOnly' => false,
+                'advisories' => ListPolicyConfig::AUDIT_IGNORE,
+                'format' => Auditor::FORMAT_SUMMARY,
+            ],
+            'expected' => Auditor::STATUS_OK,
+            'output' => '',
+        ];
+
         $abandonedWithReplacement = new CompletePackage('vendor/abandoned', '1.0.0', '1.0.0');
         $abandonedWithReplacement->setAbandoned('foo/bar');
         $abandonedNoReplacement = new CompletePackage('vendor/abandoned2', '1.0.0', '1.0.0');

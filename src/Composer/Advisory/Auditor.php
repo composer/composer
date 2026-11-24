@@ -158,7 +158,11 @@ class Auditor
         $auditResult = (0 < $failedAdvisoriesCount || 0 < $abandonedCount || 0 < $filteredCount || 0 < $cooldownCount) ? self::STATUS_FAILED : self::STATUS_OK;
 
         if (self::FORMAT_JSON === $format) {
-            $json = ['advisories' => $advisories];
+            $json = [];
+            // an empty list would read as "checked, nothing found"
+            if ($policyConfig->advisories->audit !== ListPolicyConfig::AUDIT_IGNORE) {
+                $json['advisories'] = $advisories;
+            }
             if ($ignoredAdvisories !== []) {
                 $json['ignored-advisories'] = $ignoredAdvisories;
             }
