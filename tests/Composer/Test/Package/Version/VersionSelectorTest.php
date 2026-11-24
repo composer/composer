@@ -14,6 +14,7 @@ namespace Composer\Test\Package\Version;
 
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PackageFilter\RejectionReason;
+use Composer\Filter\PackageFilter\RejectionRuleInterface;
 use Composer\IO\BufferIO;
 use Composer\IO\NullIO;
 use Composer\Repository\ArrayRepository;
@@ -478,6 +479,25 @@ class VersionSelectorTest extends TestCase
         $withheld = array_column($versionSelector->getLastResult()->getRejections(RejectionReason::COOLDOWN), 'reason');
         self::assertNotEmpty($withheld);
         self::assertSame('1.2.1', RejectionReason::combine($withheld)->getPrettyVersion());
+    }
+
+    public function testPreloadPolicyDataChecksAllPackagesInOneBatch(): void
+    {
+        $repository = new ArrayRepository([self::getPackage('foo/bar', '1.0.0'), self::getPackage('foo/baz', '1.0.0')]);
+        $repositorySet = new RepositorySet();
+        $repositorySet->addRepository($repository);
+
+        $rule = $this->getMockBuilder(RejectionRuleInterface::class)->getMock();
+        $rule->expects(self::once())
+            ->method('getRejections')
+            ->with(self::countOf(2))
+            ->willReturn([]);
+
+        $versionSelector = new VersionSelector($repositorySet, null, null, [$rule]);
+        $versionSelector->preloadPolicyData(['foo/bar', 'Foo/Baz']);
+
+        self::assertNotFalse($versionSelector->findBestCandidate('foo/bar'));
+        self::assertNotFalse($versionSelector->findBestCandidate('foo/baz'));
     }
 
     public function testCooldownIsNotAppliedWhenBlockingIsDisabled(): void

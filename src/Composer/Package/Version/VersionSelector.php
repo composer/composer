@@ -167,12 +167,7 @@ class VersionSelector
             return;
         }
 
-        $packages = [];
-        foreach ($packageNames as $packageName) {
-            foreach ($this->repositorySet->findPackages(strtolower($packageName)) as $package) {
-                $packages[] = $package;
-            }
-        }
+        $packages = $this->repositorySet->preloadPackages(array_map('strtolower', $packageNames));
 
         (new PackageFilter($this->policyRules))->filter($packages, true);
     }

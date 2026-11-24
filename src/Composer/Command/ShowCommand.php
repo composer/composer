@@ -502,15 +502,18 @@ EOT
                 }
             }
 
-            // load all metadata in parallel upfront so the per-package lookups hit the fresh cache, which needs the cache to be usable
-            if ($latestLookups !== [] && $composer !== null && Cache::isUsable($composer->getConfig()->get('cache-repo-dir'))) {
+            if ($latestLookups !== [] && $composer !== null) {
                 $names = [];
                 foreach ($latestLookups as $lookups) {
                     foreach ($lookups as $package) {
                         $names[$package->getName()] = true;
                     }
                 }
-                $this->getRepositorySet($composer)->preloadPackages(array_keys($names));
+                // load all metadata in parallel upfront so the per-package lookups hit the fresh cache, which needs the cache to be usable
+                if (Cache::isUsable($composer->getConfig()->get('cache-repo-dir'))) {
+                    $this->getRepositorySet($composer)->preloadPackages(array_keys($names));
+                }
+                // the policy decisions are kept in memory, so these are worth batching without a cache too
                 if ($latestVersionSelector !== null) {
                     $latestVersionSelector->preloadPolicyData(array_keys($names));
                 }

@@ -40,7 +40,10 @@ class RepositorySetTest extends TestCase
         $repositorySet = new RepositorySet();
         $repositorySet->addRepository(new CompositeRepository([$first, $second, $third, $fourth]));
 
-        $repositorySet->preloadPackages(['acme/private', 'foo/bar']);
+        $packages = $repositorySet->preloadPackages(['acme/private', 'foo/bar']);
+        self::assertSame(['acme/private', 'foo/bar'], array_map(static function ($package): string {
+            return $package->getName();
+        }, $packages));
     }
 
     public function testFindPackagesWithRejectionsExplainsWhatFindPackagesSkips(): void

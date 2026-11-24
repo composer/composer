@@ -313,9 +313,11 @@ class RepositorySet
      * Loads packages from all repositories in one batch per repository, to warm up caches before many findPackages() calls
      *
      * @param string[] $names
+     * @return list<BasePackage> what findPackages() would return for each of the names
      */
-    public function preloadPackages(array $names): void
+    public function preloadPackages(array $names): array
     {
+        $packages = [];
         $nameMap = array_fill_keys($names, null);
         foreach ($this->repositories as $repository) {
             if ($nameMap === []) {
@@ -323,11 +325,16 @@ class RepositorySet
             }
 
             $result = $repository->loadPackages($nameMap, $this->acceptableStabilities, $this->stabilityFlags);
+            foreach ($result['packages'] as $package) {
+                $packages[] = $package;
+            }
             foreach ($result['namesFound'] as $name) {
                 // like findPackages, do not query lower priority repositories for names already found
                 unset($nameMap[$name]);
             }
         }
+
+        return $packages;
     }
 
     /**
