@@ -521,7 +521,8 @@ dependencies from being installed.
 
 Map of packages required only when working with [linked packages](03-cli.md#link),
 for example a package that has not been published yet. It is only read when
-[updating](03-cli.md#update--u--upgrade) with linked packages. Every package
+[updating](03-cli.md#update--u--upgrade) with linked packages, and when installing
+from the local lock file they write. Every package
 listed here must be provided by a linked package, and an entry overrides a
 requirement on the same package in `require` or `require-dev`.
 

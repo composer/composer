@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\Factory;
 use Composer\Installer;
+use Composer\Package\LinkedPackages;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Advisory\Auditor;
@@ -110,6 +111,8 @@ EOT
         if (file_exists($localLockFile)) {
             $localLocker = Factory::createLocalLocker($io, $composer, $composerFile);
             if (null !== $localLocker->getLinkedPackages()) {
+                // the local lock file was written with the require-linked requirements
+                LinkedPackages::addRequireLinked($composer->getPackage(), $composerFile);
                 $composer->setLocker($localLocker);
                 $io->writeError('<info>Using '.basename($localLockFile).' instead of '.basename(Factory::getLockFile($composerFile)).'</info>');
             }

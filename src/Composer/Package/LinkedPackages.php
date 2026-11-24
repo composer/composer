@@ -15,6 +15,7 @@ namespace Composer\Package;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
+use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Version\VersionParser;
 use Composer\Pcre\Preg;
 use Composer\Repository\RepositoryInterface;
@@ -44,6 +45,22 @@ final class LinkedPackages
     public static function getDefaultDir(Config $config): string
     {
         return $config->get('home');
+    }
+
+    /**
+     * Adds the require-linked requirements of the composer file to the root package, replacing its requirements for the same packages
+     *
+     * @return array<string, Link> the require-linked requirements
+     */
+    public static function addRequireLinked(RootPackageInterface $rootPackage, string $composerFile): array
+    {
+        $composerJson = (new JsonFile($composerFile))->read();
+        $requireLinked = (new ArrayLoader())->parseLinks($rootPackage->getName(), $rootPackage->getPrettyVersion(), Link::TYPE_REQUIRE, $composerJson['require-linked'] ?? []);
+
+        $rootPackage->setRequires(array_merge($rootPackage->getRequires(), $requireLinked));
+        $rootPackage->setDevRequires(array_diff_key($rootPackage->getDevRequires(), $requireLinked));
+
+        return $requireLinked;
     }
 
     public function getFile(): string

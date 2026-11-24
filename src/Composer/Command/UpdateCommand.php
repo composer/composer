@@ -19,11 +19,8 @@ use Composer\DependencyResolver\Request;
 use Composer\Factory;
 use Composer\Installer;
 use Composer\IO\IOInterface;
-use Composer\Json\JsonFile;
 use Composer\Package\BasePackage;
-use Composer\Package\Link;
 use Composer\Package\LinkedPackages;
-use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Loader\RootPackageLoader;
 use Composer\Package\Version\VersionSelector;
 use Composer\Pcre\Preg;
@@ -438,16 +435,12 @@ EOT
         }
 
         $rootPackage = $composer->getPackage();
-        $composerJson = (new JsonFile($composerFile))->read();
-        $requireLinked = (new ArrayLoader())->parseLinks($rootPackage->getName(), $rootPackage->getPrettyVersion(), Link::TYPE_REQUIRE, $composerJson['require-linked'] ?? []);
-        foreach (array_keys($requireLinked) as $name) {
+        foreach (array_keys(LinkedPackages::addRequireLinked($rootPackage, $composerFile)) as $name) {
             if (!isset($links[$name])) {
                 throw new \RuntimeException('Package "'.$name.'" is listed in require-linked but is not one of the linked packages from '.$linked->getFile().'.');
             }
         }
 
-        $rootPackage->setRequires(array_merge($rootPackage->getRequires(), $requireLinked));
-        $rootPackage->setDevRequires(array_diff_key($rootPackage->getDevRequires(), $requireLinked));
         $rootPackage->setStabilityFlags(array_merge($rootPackage->getStabilityFlags(), array_fill_keys(array_keys($links), BasePackage::STABILITY_DEV)));
 
         $repositoryManager = $composer->getRepositoryManager();

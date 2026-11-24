@@ -204,7 +204,10 @@ Generating autoload files', trim($appTester->getDisplay(true)));
     {
         $this->initTempComposer([
             'require' => [
-                'root/req' => '1.*',
+                'root/req' => '1.0.0',
+            ],
+            'require-linked' => [
+                'root/req' => '^1.1',
             ],
         ]);
 
