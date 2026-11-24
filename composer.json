@@ -52,7 +52,10 @@
         "platform": {
             "php": "5.3.9"
         },
-        "platform-check": false
+        "platform-check": false,
+        "policy": {
+            "advisories": false
+        }
     },
     "extra": {
         "branch-alias": {
