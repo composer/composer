@@ -428,6 +428,36 @@ Everything up to date", trim($appTester->getDisplay(true)));
         self::assertArrayNotHasKey('cooldown-available-in', $installed[0]);
     }
 
+    public function testOutdatedNamesEveryPolicyBlockingARelease(): void
+    {
+        $repository = self::getVulnerableRepository([
+            ['name' => 'vulnerable/pkg', 'version' => '1.0.0'],
+            ['name' => 'vulnerable/pkg', 'version' => '2.0.0'],
+        ]);
+        $repository['filter'] = ['malware' => [['package' => 'vulnerable/pkg', 'constraint' => '2.0.0', 'reason' => 'malware sample']]];
+        $this->initTempComposer([
+            'repositories' => ['packages' => $repository],
+            'require' => ['vulnerable/pkg' => '*'],
+        ]);
+
+        $this->createInstalledJson([
+            self::getPackage('vulnerable/pkg', '1.0.0'),
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'outdated', '--all' => true]);
+        self::assertStringContainsString('vulnerable/pkg 1.0.0 = 1.0.0 (2.0.0 blocked by advisories, malware)', $appTester->getDisplay(true));
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'outdated', '--all' => true, '--format' => 'json']);
+        $installed = JsonFile::parseJson($appTester->getDisplay(true))['installed'];
+        self::assertSame(['advisories', 'malware'], $installed[0]['blocked-by']);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', 'package' => 'vulnerable/pkg', '--latest' => true]);
+        self::assertMatchesRegularExpression('{^blocked  : 2\.0\.0 \(affected by security advisories \("PKSA-test-001"\), flagged as malware reason: malware sample\)$}m', $appTester->getDisplay(true));
+    }
+
     public function testShowLatestDoesNotOfferADowngradeWhenTheInstalledVersionIsBlocked(): void
     {
         $this->initTempComposer([

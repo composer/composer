@@ -483,7 +483,7 @@ EOT
         $latestPackages = [];
         /** @var array<string, array{package: PackageInterface, releaseDate: DateTimeInterface, availableIn: string}> newer releases still in the cooldown period than the newest installable version */
         $withheldPackages = [];
-        /** @var array<string, array{package: PackageInterface, reason: RejectionReason}> newer releases a dependency policy blocks than the newest installable version */
+        /** @var array<string, array{package: PackageInterface, reasons: non-empty-list<RejectionReason>}> newer releases a dependency policy blocks than the newest installable version */
         $blockedPackages = [];
         $exitCode = 0;
         $viewData = [];
@@ -636,7 +636,7 @@ EOT
                             }
                             if ($blocked !== null) {
                                 $packageViewData['blocked-latest'] = $blocked['package']->getFullPrettyVersion();
-                                $packageViewData['blocked-by'] = $blocked['reason']->getPolicyNames();
+                                $packageViewData['blocked-by'] = self::getBlockingPolicyNames($blocked['reasons']);
                                 if ($format === 'text') {
                                     $packageViewData['latest'] .= ' ('.ltrim($packageViewData['blocked-latest'], 'v').' blocked by '.implode(', ', $packageViewData['blocked-by']).')';
                                 }
@@ -949,7 +949,7 @@ EOT
      *
      * @param array<string, string>    $versions
      * @param array{package: PackageInterface, releaseDate: DateTimeInterface, availableIn: string}|null $withheld newer release still in the cooldown period
-     * @param array{package: PackageInterface, reason: RejectionReason}|null $blocked newer release a dependency policy blocks
+     * @param array{package: PackageInterface, reasons: non-empty-list<RejectionReason>}|null $blocked newer release a dependency policy blocks
      */
     protected function printPackageInfo(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, ?PackageInterface $latestPackage = null, ?array $withheld = null, ?array $blocked = null): void
     {
@@ -976,7 +976,7 @@ EOT
      *
      * @param array<string, string>    $versions
      * @param array{package: PackageInterface, releaseDate: DateTimeInterface, availableIn: string}|null $withheld newer release still in the cooldown period
-     * @param array{package: PackageInterface, reason: RejectionReason}|null $blocked newer release a dependency policy blocks
+     * @param array{package: PackageInterface, reasons: non-empty-list<RejectionReason>}|null $blocked newer release a dependency policy blocks
      */
     protected function printMeta(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, ?PackageInterface $latestPackage = null, ?array $withheld = null, ?array $blocked = null): void
     {
@@ -1005,7 +1005,9 @@ EOT
             $latestPackage = $package;
         }
         if ($blocked !== null) {
-            $io->write('<info>blocked</info>  : ' . OutputFormatter::escape($blocked['package']->getPrettyVersion()) . ' (' . $blocked['reason']->getDescription() . ')');
+            $io->write('<info>blocked</info>  : ' . OutputFormatter::escape($blocked['package']->getPrettyVersion()) . ' (' . implode(', ', array_map(static function (RejectionReason $reason): string {
+                return $reason->getDescription();
+            }, $blocked['reasons'])) . ')');
         }
         $io->write('<info>type</info>     : ' . OutputFormatter::escape($package->getType()));
         $this->printLicenses($package);
@@ -1136,7 +1138,7 @@ EOT
      *
      * @param array<string, string>    $versions
      * @param array{package: PackageInterface, releaseDate: DateTimeInterface, availableIn: string}|null $withheld newer release still in the cooldown period
-     * @param array{package: PackageInterface, reason: RejectionReason}|null $blocked newer release a dependency policy blocks
+     * @param array{package: PackageInterface, reasons: non-empty-list<RejectionReason>}|null $blocked newer release a dependency policy blocks
      */
     protected function printPackageInfoAsJson(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, ?PackageInterface $latestPackage = null, ?array $withheld = null, ?array $blocked = null): void
     {
@@ -1169,7 +1171,7 @@ EOT
         }
         if ($blocked !== null) {
             $json['blocked-latest'] = $blocked['package']->getPrettyVersion();
-            $json['blocked-by'] = $blocked['reason']->getPolicyNames();
+            $json['blocked-by'] = self::getBlockingPolicyNames($blocked['reasons']);
         }
 
         if (null !== $package->getSourceType()) {
@@ -1632,7 +1634,7 @@ EOT
      * period that becomes installable first when a cooldown policy applies, and the newest release
      * another policy blocks
      *
-     * @return array{latest: ?PackageInterface, withheld: ?array{package: PackageInterface, releaseDate: DateTimeInterface, availableIn: string}, blocked: ?array{package: PackageInterface, reason: RejectionReason}}
+     * @return array{latest: ?PackageInterface, withheld: ?array{package: PackageInterface, releaseDate: DateTimeInterface, availableIn: string}, blocked: ?array{package: PackageInterface, reasons: non-empty-list<RejectionReason>}}
      */
     private function findLatestPackage(PackageInterface $package, Composer $composer, VersionSelector $versionSelector, bool $majorOnly, bool $minorOnly, bool $patchOnly, PlatformRequirementFilterInterface $platformReqFilter, ?CooldownPolicyConfig $cooldown = null): array
     {
@@ -1706,17 +1708,16 @@ EOT
         if (!str_starts_with($package->getVersion(), 'dev-')) {
             $baseline = $latest !== null && version_compare($latest->getVersion(), $package->getVersion(), '>') ? $latest : $package;
             foreach ($result->getRejectedOnlyBy(RejectionReason::COOLDOWN, ...$blockingPolicies) as $blockedPackage) {
-                $reason = null;
-                foreach ($result->getReasons($blockedPackage) as $candidateReason) {
-                    if ($candidateReason->getType() !== RejectionReason::COOLDOWN) {
-                        $reason = $candidateReason;
-                        break;
+                $reasons = [];
+                foreach ($result->getReasons($blockedPackage) as $reason) {
+                    if (in_array($reason->getType(), $blockingPolicies, true)) {
+                        $reasons[] = $reason;
                     }
                 }
                 while ($blockedPackage instanceof AliasPackage) {
                     $blockedPackage = $blockedPackage->getAliasOf();
                 }
-                if ($reason === null) {
+                if ($reasons === []) {
                     continue;
                 }
 
@@ -1727,7 +1728,7 @@ EOT
 
                 // candidates come in order of preference, so the first one newer than what can be installed is the one to mention
                 if ($blocked === null && version_compare($blockedPackage->getVersion(), $baseline->getVersion(), '>')) {
-                    $blocked = ['package' => $blockedPackage, 'reason' => $reason];
+                    $blocked = ['package' => $blockedPackage, 'reasons' => $reasons];
                 }
             }
         }
@@ -1786,6 +1787,22 @@ EOT
             'withheld' => $withheld,
             'blocked' => $blocked,
         ];
+    }
+
+    /**
+     * @param non-empty-list<RejectionReason> $reasons
+     * @return list<string> policy names as configured under "policy", e.g. advisories or malware
+     */
+    private static function getBlockingPolicyNames(array $reasons): array
+    {
+        $names = [];
+        foreach ($reasons as $reason) {
+            foreach ($reason->getPolicyNames() as $name) {
+                $names[$name] = true;
+            }
+        }
+
+        return array_keys($names);
     }
 
     /**
