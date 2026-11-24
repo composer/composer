@@ -1,3 +1,15 @@
+### [2.11.3] 2026-11-24
+
+  * Security: Fixed arbitrary code execution when running Composer in a directory whose `composer.json` and vendor directory were prepared by an attacker, a bypass of the CVE-2024-24821 fix (GHSA-374h-4mh9-7rpm)
+  * Security: Fixed package metadata such as descriptions, support links or license names being rendered as console markup, which could also make `show`, `licenses`, `audit` or even `install`/`update` fail on an invalid style tag (#13292)
+  * Security: Fixed credentials embedded in repository URLs showing up in download error messages when curl is not available (#13266)
+  * Improved performance of security advisory filtering and of package loading when a repository has none of the requested packages (#13264, #13226)
+  * Fixed `audit` ignoring the `policy.advisories.audit` setting, advisories are now skipped when it is set to `ignore` and only fail the audit when it is set to `fail` (#13269)
+  * Fixed plugin autoloading failing with "Could not scan for classes" warnings or a fatal error when a plugin requires the root package and some packages use a custom installer which is not loaded yet (#13259)
+  * Fixed `outdated` reporting a less stable version such as the dev branch as an update when the installed version is still in the cooldown period (#13265)
+  * Fixed `status` reporting unmodified path repository packages as changed (#13154)
+  * Fixed warnings when the GitHub API returns a file without an encoding, e.g. a symlink or submodule (#13284)
+
 ### [2.11.2] 2026-11-11
 
   * Security: Fixed arbitrary command execution via the `prevent_url_access_callable` transport option being loaded from `composer.lock` / `vendor/composer/installed.json` (GHSA-jhfp-4ppm-crmm)
@@ -2310,6 +2322,7 @@
 
   * Initial release
 
+[2.11.3]: https://github.com/composer/composer/compare/2.11.2...2.11.3
 [2.11.2]: https://github.com/composer/composer/compare/2.11.1...2.11.2
 [2.11.1]: https://github.com/composer/composer/compare/2.11.0...2.11.1
 [2.11.0]: https://github.com/composer/composer/compare/2.11.0-RC1...2.11.0

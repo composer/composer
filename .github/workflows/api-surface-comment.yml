@@ -15,21 +15,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check-api-surface:
+  comment:
     name: "API surface comment"
 
     runs-on: ubuntu-latest
 
     permissions:
-      contents: read
-      pull-requests: write # required to create the comment on the pull request
+      actions: read        # download the artifact from the analysis run
+      pull-requests: write # create the comment on the pull request
 
     steps:
-      - uses: composer/api-surface-check@bba9f1cb940df6e02271b1b6158679ac0b3f39d3 # 1.0.1
-        with:
-          install-dependencies: true
-          # paths: src/**/*.php
-          # source-roots: src
-          # include-internal: false
-          # show-removed: true
-          # show-modified: true
+      - uses: composer/api-surface-check/post-comment@09e3754365a4626daac35eef61d474a389961084 # 2.0.0

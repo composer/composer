@@ -174,6 +174,10 @@ Set to `false` to disable all dependency policy enforcement:
 }
 ```
 
+This disables auditing as well: nothing is checked during `install`/`update`, and `composer audit`
+only prints a warning that dependency policies are disabled and exits with a zero code. The
+[`COMPOSER_POLICY`](03-cli.md#composer_policy) env var set to `0` has the same effect.
+
 > **Migrating from `config.audit`?** See
 > [How `config.audit` interacts with `config.policy`](#how-configaudit-interacts-with-configpolicy)
 > for how the legacy keys are still honored as a fallback while you migrate.
@@ -214,7 +218,7 @@ For advisory authors, this means an advisory cannot target a named branch with a
 
 Defaults to `fail`. How `composer audit` treats packages with security advisories.
 
-- `ignore` — advisories are not reported
+- `ignore` — advisories are not checked nor reported
 - `report` — advisories are reported but do not cause a non-zero exit code
 - `fail` — advisories cause `composer audit` to exit with a non-zero code
 
@@ -229,6 +233,8 @@ Defaults to `fail`. How `composer audit` treats packages with security advisorie
     }
 }
 ```
+
+Setting `policy.advisories` or the whole `policy` config to `false` implies `ignore`.
 
 #### ignore-id
 

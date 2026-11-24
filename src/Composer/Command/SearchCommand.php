@@ -109,6 +109,7 @@ EOT
                 if (strlen($description) > $remaining) {
                     $description = substr($description, 0, $remaining - 3) . '...';
                 }
+                $description = OutputFormatter::escape($description);
 
                 $link = $result['url'] ?? null;
                 if ($link !== null) {

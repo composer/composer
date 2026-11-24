@@ -827,14 +827,14 @@ EOT
                     }
                 }
 
-                $io->write(' ' . $description, false);
+                $io->write(' ' . OutputFormatter::escape($description), false);
             }
             if (array_key_exists('path', $package)) {
                 $io->write(' '.(is_string($package['path']) ? $package['path'] : 'null'), false);
             }
             $io->write('');
             if (isset($package['warning'])) {
-                $io->write('<warning>' . $package['warning'] . '</warning>');
+                $io->write('<warning>' . OutputFormatter::escape($package['warning']) . '</warning>');
             }
         }
     }
@@ -936,7 +936,7 @@ EOT
         if ($package->getSuggests()) {
             $io->write("\n<info>suggests</info>");
             foreach ($package->getSuggests() as $suggested => $reason) {
-                $io->write($suggested . ' <comment>' . $reason . '</comment>');
+                $io->write(OutputFormatter::escape($suggested) . ' <comment>' . OutputFormatter::escape($reason) . '</comment>');
             }
         }
 
@@ -957,8 +957,8 @@ EOT
 
         $io = $this->getIO();
         $io->write('<info>name</info>     : ' . $package->getPrettyName());
-        $io->write('<info>descrip.</info> : ' . $package->getDescription());
-        $io->write('<info>keywords</info> : ' . implode(', ', $package->getKeywords() ?: []));
+        $io->write('<info>descrip.</info> : ' . OutputFormatter::escape((string) $package->getDescription()));
+        $io->write('<info>keywords</info> : ' . OutputFormatter::escape(implode(', ', $package->getKeywords() ?: [])));
         $this->printVersions($package, $versions, $installedRepo);
         if ($isInstalledPackage && $package->getReleaseDate() !== null) {
             $io->write('<info>released</info> : ' . $package->getReleaseDate()->format('Y-m-d') . ', ' . $this->getRelativeTime($package->getReleaseDate()));
@@ -977,11 +977,11 @@ EOT
         } else {
             $latestPackage = $package;
         }
-        $io->write('<info>type</info>     : ' . $package->getType());
+        $io->write('<info>type</info>     : ' . OutputFormatter::escape($package->getType()));
         $this->printLicenses($package);
-        $io->write('<info>homepage</info> : ' . $package->getHomepage());
-        $io->write('<info>source</info>   : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getSourceType(), $package->getSourceUrl(), $package->getSourceReference()));
-        $io->write('<info>dist</info>     : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getDistType(), $package->getDistUrl(), $package->getDistReference()));
+        $io->write('<info>homepage</info> : ' . OutputFormatter::escape((string) $package->getHomepage()));
+        $io->write('<info>source</info>   : ' . OutputFormatter::escape(sprintf('[%s] ', $package->getSourceType())) . '<comment>' . OutputFormatter::escape((string) $package->getSourceUrl()) . '</comment> ' . OutputFormatter::escape((string) $package->getSourceReference()));
+        $io->write('<info>dist</info>     : ' . OutputFormatter::escape(sprintf('[%s] ', $package->getDistType())) . '<comment>' . OutputFormatter::escape((string) $package->getDistUrl()) . '</comment> ' . OutputFormatter::escape((string) $package->getDistReference()));
         if ($isInstalledPackage) {
             $path = $this->requireComposer()->getInstallationManager()->getInstallPath($package);
             if (is_string($path)) {
@@ -990,11 +990,11 @@ EOT
                 $io->write('<info>path</info>     : null');
             }
         }
-        $io->write('<info>names</info>    : ' . implode(', ', $package->getNames()));
+        $io->write('<info>names</info>    : ' . OutputFormatter::escape(implode(', ', $package->getNames())));
 
         if ($latestPackage instanceof CompletePackageInterface && $latestPackage->isAbandoned()) {
             $replacement = ($latestPackage->getReplacementPackage() !== null)
-                ? ' The author suggests using the ' . $latestPackage->getReplacementPackage(). ' package instead.'
+                ? ' The author suggests using the ' . OutputFormatter::escape($latestPackage->getReplacementPackage()) . ' package instead.'
                 : null;
 
             $io->writeError(
@@ -1005,7 +1005,7 @@ EOT
         if ($package->getSupport()) {
             $io->write("\n<info>support</info>");
             foreach ($package->getSupport() as $type => $value) {
-                $io->write('<comment>' . $type . '</comment> : '.$value);
+                $io->write('<comment>' . OutputFormatter::escape($type) . '</comment> : ' . OutputFormatter::escape($value));
             }
         }
 
@@ -1017,15 +1017,15 @@ EOT
 
                 if ($type === 'psr-0' || $type === 'psr-4') {
                     foreach ($autoloads as $name => $path) {
-                        $io->write(($name ?: '*') . ' => ' . (is_array($path) ? implode(', ', $path) : ($path ?: '.')));
+                        $io->write(OutputFormatter::escape(($name ?: '*') . ' => ' . (is_array($path) ? implode(', ', $path) : ($path ?: '.'))));
                     }
                 } elseif ($type === 'classmap') {
-                    $io->write(implode(', ', $autoloadConfig[$type]));
+                    $io->write(OutputFormatter::escape(implode(', ', $autoloadConfig[$type])));
                 }
             }
             if ($package->getIncludePaths()) {
                 $io->write('<comment>include-path</comment>');
-                $io->write(implode(', ', $package->getIncludePaths()));
+                $io->write(OutputFormatter::escape(implode(', ', $package->getIncludePaths())));
             }
         }
     }
@@ -1039,6 +1039,7 @@ EOT
     {
         $versions = array_keys($versions);
         $versions = Semver::rsort($versions);
+        $formattedVersions = array_map([OutputFormatter::class, 'escape'], $versions);
 
         // highlight installed version
         if ($installedPackages = $installedRepo->findPackages($package->getName())) {
@@ -1046,12 +1047,12 @@ EOT
                 $installedVersion = $installedPackage->getPrettyVersion();
                 $key = array_search($installedVersion, $versions);
                 if (false !== $key) {
-                    $versions[$key] = '<info>* ' . $installedVersion . '</info>';
+                    $formattedVersions[$key] = '<info>* ' . OutputFormatter::escape($installedVersion) . '</info>';
                 }
             }
         }
 
-        $versions = implode(', ', $versions);
+        $versions = implode(', ', $formattedVersions);
 
         $this->getIO()->write('<info>versions</info> : ' . $versions);
     }
@@ -1067,7 +1068,7 @@ EOT
             $io->write("\n<info>" . $title . "</info>");
 
             foreach ($links as $link) {
-                $io->write($link->getTarget() . ' <comment>' . $link->getPrettyConstraint() . '</comment>');
+                $io->write(OutputFormatter::escape($link->getTarget()) . ' <comment>' . OutputFormatter::escape($link->getPrettyConstraint()) . '</comment>');
             }
         }
     }
@@ -1096,7 +1097,7 @@ EOT
                 }
             }
 
-            $io->write('<info>license</info>  : ' . $out);
+            $io->write('<info>license</info>  : ' . OutputFormatter::escape($out));
         }
     }
 
@@ -1326,9 +1327,9 @@ EOT
         $io = $this->getIO();
         foreach ($arrayTree as $package) {
             $io->write(sprintf('<info>%s</info>', $package['name']), false);
-            $io->write(' ' . $package['version'], false);
+            $io->write(' ' . (is_string($package['version']) ? OutputFormatter::escape($package['version']) : ''), false);
             if (isset($package['description'])) {
-                $io->write(' ' . strtok($package['description'], "\r\n"));
+                $io->write(' ' . OutputFormatter::escape((string) strtok($package['description'], "\r\n")));
             } else {
                 // output newline
                 $io->write('');
@@ -1351,9 +1352,9 @@ EOT
                         '%s──<%s>%s</%s> %s',
                         $treeBar,
                         $color,
-                        $requireName,
+                        OutputFormatter::escape($requireName),
                         $color,
-                        $require['version']
+                        OutputFormatter::escape($require['version'])
                     );
                     $this->writeTreeLine($info);
 
@@ -1452,9 +1453,9 @@ EOT
                     '%s──<%s>%s</%s> %s %s',
                     $treeBar,
                     $color,
-                    $require['name'],
+                    OutputFormatter::escape($require['name']),
                     $color,
-                    $require['version'],
+                    OutputFormatter::escape($require['version']),
                     $circularWarn
                 ));
                 $this->writeTreeLine($info);
@@ -1648,31 +1649,38 @@ EOT
         }
         $withheld = null;
         if ($cooldown !== null && !str_starts_with($package->getVersion(), 'dev-')) {
-            // a waiting release is only worth mentioning if it is newer than what can be installed already
-            $baseline = $latest !== null && version_compare($latest->getVersion(), $package->getVersion(), '>') ? $latest : $package;
+            // with prefer-stable, a less stable version is only selected when every stable one in range
+            // was withheld or rejected
+            $isStabilityFallback = $latest !== null && $composer->getPackage()->getPreferStable() && BasePackage::STABILITIES[$latest->getStability()] > BasePackage::STABILITIES[$package->getStability()];
+            $withheldCandidates = [];
             $installedIsWithheld = false;
             foreach ($versionSelector->getWithheldCandidates() as $withheldCandidate) {
-                $withheldPackage = $withheldCandidate['package'];
-                while ($withheldPackage instanceof AliasPackage) {
-                    $withheldPackage = $withheldPackage->getAliasOf();
+                while ($withheldCandidate['package'] instanceof AliasPackage) {
+                    $withheldCandidate['package'] = $withheldCandidate['package']->getAliasOf();
                 }
-                if ($withheldPackage->getVersion() === $package->getVersion()) {
+                if ($withheldCandidate['package']->getVersion() === $package->getVersion()) {
                     $installedIsWithheld = true;
                 }
-                // the first release to clear the cooldown period among those newer than the baseline,
-                // a withheld backport to an older branch is no update
-                if (!version_compare($withheldPackage->getVersion(), $baseline->getVersion(), '>')) {
-                    continue;
-                }
-                if ($withheld === null || $withheldCandidate['releaseDate'] < $withheld['releaseDate']) {
-                    $withheld = ['package' => $withheldPackage, 'releaseDate' => $withheldCandidate['releaseDate']];
-                }
+                $withheldCandidates[] = $withheldCandidate;
             }
 
             // the installed version is itself still in the cooldown period, e.g. the period was configured after
             // installing it, so the older releases the selector fell back to are no update either
-            if ($installedIsWithheld && ($latest === null || version_compare($latest->getVersion(), $package->getVersion(), '<'))) {
+            if ($installedIsWithheld && ($latest === null || $isStabilityFallback || version_compare($latest->getVersion(), $package->getVersion(), '<'))) {
                 $latest = $package;
+            }
+
+            // a waiting release is only worth mentioning if it is newer than what can be installed already
+            $baseline = $latest !== null && version_compare($latest->getVersion(), $package->getVersion(), '>') ? $latest : $package;
+            foreach ($withheldCandidates as $withheldCandidate) {
+                // the first release to clear the cooldown period among those newer than the baseline,
+                // a withheld backport to an older branch is no update
+                if (!version_compare($withheldCandidate['package']->getVersion(), $baseline->getVersion(), '>')) {
+                    continue;
+                }
+                if ($withheld === null || $withheldCandidate['releaseDate'] < $withheld['releaseDate']) {
+                    $withheld = ['package' => $withheldCandidate['package'], 'releaseDate' => $withheldCandidate['releaseDate']];
+                }
             }
 
             if ($withheld !== null) {

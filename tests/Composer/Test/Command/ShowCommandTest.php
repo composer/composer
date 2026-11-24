@@ -1201,6 +1201,71 @@ vendor/longpackagename', trim($appTester->getDisplay(true))); // trim() is fine 
         self::assertStringNotContainsString('[none matched]', $display);
     }
 
+    /**
+     * @dataProvider provideRangeOnlyOptions
+     */
+    public function testOutdatedRangeOnlyDoesNotOfferTheDevBranchWhenTheInstalledVersionIsStillInTheCooldownPeriod(string $option): void
+    {
+        $this->initProjectWithDevBranchAndCooldownPeriod([
+            ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.0.0', 'published-time' => '2020-01-01T00:00:00+00:00'],
+            ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.1.0', 'published-time' => '2999-01-01T00:00:00+00:00'],
+            ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.1.1', 'published-time' => '2999-02-01T00:00:00+00:00'],
+            ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.1.x-dev'],
+        ]);
+        $this->createInstalledJson([self::getPackage('vendor/package', '1.1.0')]);
+
+        // no stable release in range is installable yet, so prefer-stable falls back to 1.1.x-dev, which is no update
+        $appTester = $this->getApplicationTester();
+        self::assertSame(0, $appTester->run(['command' => 'outdated', '--strict' => true, $option => true]));
+        $display = $appTester->getDisplay(true);
+        self::assertStringNotContainsString('1.1.x-dev', $display);
+        self::assertMatchesRegularExpression('{^vendor/package 1\.1\.0 c 1\.1\.1 \(\d+d(?: \d+h)? left\)}m', $display);
+    }
+
+    /**
+     * @dataProvider provideRangeOnlyOptions
+     */
+    public function testOutdatedRangeOnlyOffersTheDevBranchWhenTheInstalledVersionIsGone(string $option): void
+    {
+        $this->initProjectWithDevBranchAndCooldownPeriod([
+            ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.1.1', 'published-time' => '2999-02-01T00:00:00+00:00'],
+            ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.1.x-dev'],
+        ]);
+        $this->createInstalledJson([self::getPackage('vendor/package', '1.1.0')]);
+
+        // update would move to 1.1.x-dev, and the withheld 1.1.1 is older than it so it is not mentioned
+        $appTester = $this->getApplicationTester();
+        self::assertSame(1, $appTester->run(['command' => 'outdated', '--strict' => true, $option => true]));
+        self::assertStringContainsString('vendor/package 1.1.0 <highlight>! 1.1.x-dev</highlight>'."\n", $appTester->getDisplay(true));
+    }
+
+    public static function provideRangeOnlyOptions(): array
+    {
+        return [
+            'minor-only' => ['--minor-only'],
+            'patch-only' => ['--patch-only'],
+        ];
+    }
+
+    /**
+     * @param list<array<string, string>> $versions
+     */
+    private function initProjectWithDevBranchAndCooldownPeriod(array $versions): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => $versions,
+                ],
+            ],
+            'require' => ['vendor/package' => '^1.0'],
+            'minimum-stability' => 'dev',
+            'prefer-stable' => true,
+            'config' => ['policy' => ['cooldown' => ['period' => '1 week']]],
+        ]);
+    }
+
     public function testShowingASinglePackageMentionsAReleaseStillInTheCooldownPeriod(): void
     {
         $this->initProjectWithCooldownPeriod('1.1.0');
@@ -1239,5 +1304,58 @@ vendor/longpackagename', trim($appTester->getDisplay(true))); // trim() is fine 
         ]);
 
         $this->createInstalledJson([self::getPackage('vendor/package', $installedVersion)]);
+    }
+
+    public function testVersionIsPrintedLiterally(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [],
+            'require' => ['vendor/pkg' => '*'],
+        ]);
+        $this->createInstalledJson([self::getPackage('vendor/pkg', 'dev-<fg=foo>x</>')]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', 'package' => 'vendor/pkg']);
+        $appTester->assertCommandIsSuccessful();
+        self::assertStringContainsString('versions : * dev-<fg=foo>x</>', $appTester->getDisplay(true));
+    }
+
+    public function testPackageMetadataIsPrintedLiterally(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [],
+            'require' => ['vendor/pkg' => '*'],
+        ]);
+        $package = self::getPackage('vendor/pkg', '1.0.0');
+        $package->setDescription('A <fg=foo>description</>');
+        $package->setKeywords(['<href=https://example.org>keyword</>']);
+        $package->setHomepage('<fg=foo>https://example.org</>');
+        $package->setSupport(['issues' => '<error>https://example.org</error>']);
+        $package->setSuggests(['other/pkg' => '<fg=foo>reason</>']);
+        $package->setLicense(['<fg=foo>MIT</>']);
+        $package->setAbandoned('<fg=foo>new/pkg</>');
+        $this->createInstalledJson([$package]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', 'package' => 'vendor/pkg']);
+        $appTester->assertCommandIsSuccessful();
+        $output = $appTester->getDisplay(true);
+        self::assertStringContainsString('descrip. : A <fg=foo>description</>', $output);
+        self::assertStringContainsString('keywords : <href=https://example.org>keyword</>', $output);
+        self::assertStringContainsString('homepage : <fg=foo>https://example.org</>', $output);
+        self::assertStringContainsString('issues : <error>https://example.org</error>', $output);
+        self::assertStringContainsString('other/pkg <fg=foo>reason</>', $output);
+        self::assertStringContainsString('license  : <fg=foo>MIT</>', $output);
+        self::assertStringContainsString('The author suggests using the <fg=foo>new/pkg</> package instead.', $output);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show']);
+        $appTester->assertCommandIsSuccessful();
+        self::assertStringContainsString('A <fg=foo>description</>', $appTester->getDisplay(true));
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', '--tree' => true]);
+        $appTester->assertCommandIsSuccessful();
+        self::assertStringContainsString('vendor/pkg 1.0.0 A <fg=foo>description</>', $appTester->getDisplay(true));
     }
 }

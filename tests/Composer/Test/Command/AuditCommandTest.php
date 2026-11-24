@@ -17,6 +17,7 @@ use Composer\Package\Link;
 use Composer\Policy\ListPolicyConfig;
 use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Test\TestCase;
+use Composer\Util\Platform;
 use UnexpectedValueException;
 
 class AuditCommandTest extends TestCase
@@ -148,6 +149,49 @@ class AuditCommandTest extends TestCase
         self::assertSame(Auditor::STATUS_OK, $exitCode);
     }
 
+    public function testAuditDoesNothingWhenPolicyIsDisabledInConfig(): void
+    {
+        $packages = [
+            ['name' => 'malicious/pkg', 'version' => '1.0.0'],
+            ['name' => 'banned/pkg', 'version' => '1.0.0'],
+        ];
+        $this->initTempComposerWithFilterLists($packages, ['config' => ['policy' => false]]);
+        $this->createComposerLockWithPackages($packages);
+
+        $appTester = $this->getApplicationTester();
+        $exitCode = $appTester->run(['command' => 'audit', '--locked' => true]);
+
+        self::assertSame(
+            '<warning>Dependency policies are disabled (via the "policy" config or COMPOSER_POLICY env var), so the audit does not check anything.</warning>',
+            trim($appTester->getDisplay(true))
+        );
+        self::assertSame(Auditor::STATUS_OK, $exitCode);
+    }
+
+    public function testAuditDoesNothingWhenPolicyIsDisabledViaEnv(): void
+    {
+        $packages = [
+            ['name' => 'malicious/pkg', 'version' => '1.0.0'],
+            ['name' => 'banned/pkg', 'version' => '1.0.0'],
+        ];
+        $this->initTempComposerWithFilterLists($packages);
+        $this->createComposerLockWithPackages($packages);
+
+        Platform::putEnv('COMPOSER_POLICY', '0');
+        try {
+            $appTester = $this->getApplicationTester();
+            $exitCode = $appTester->run(['command' => 'audit', '--locked' => true, '--format' => 'json']);
+        } finally {
+            Platform::clearEnv('COMPOSER_POLICY');
+        }
+
+        $display = $appTester->getDisplay(true);
+        self::assertStringContainsString('Dependency policies are disabled', $display);
+        self::assertStringNotContainsString('"advisories"', $display);
+        self::assertStringNotContainsString('malicious/pkg', $display);
+        self::assertSame(Auditor::STATUS_OK, $exitCode);
+    }
+
     public function testAuditDirectSkipsTransitiveDependencies(): void
     {
         $packages = [
@@ -235,5 +279,21 @@ class AuditCommandTest extends TestCase
 
         $this->createInstalledJson($packages);
         $this->createComposerLock($packages);
+    }
+
+    public function testAbandonedReplacementIsPrintedLiterally(): void
+    {
+        $this->initTempComposer();
+        $package = self::getPackage('vendor/pkg');
+        $package->setAbandoned('<fg=foo>new/pkg</>');
+        $this->createInstalledJson([$package]);
+        $this->createComposerLock([$package]);
+
+        foreach (['plain', 'table'] as $format) {
+            $appTester = $this->getApplicationTester();
+            $appTester->run(['command' => 'audit', '--locked' => true, '--format' => $format, '--abandoned' => 'report']);
+
+            self::assertStringContainsString('<fg=foo>new/pkg</>', $appTester->getDisplay(true), $format);
+        }
     }
 }

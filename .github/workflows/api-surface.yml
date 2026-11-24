@@ -1,8 +1,7 @@
 name: "API Surface Check"
 
-# Minimal pull_request workflow whose only job is to fire workflow_run for the
-# api-surface-comment workflow (which has pull-requests:write even on fork PRs
-# and runs the actual analysis from trusted action code).
+# Analyzes the PR with a read-only token and uploads the comment text as an
+# artifact; api-surface-comment.yml posts it from workflow_run.
 
 on:
   pull_request:
@@ -10,15 +9,23 @@ on:
       - 'doc/**'
       - 'tests/**'
 
-permissions: {}
+permissions:
+  contents: read
 
 concurrency:
   group: api-surface-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
-  signal:
-    name: 'Trigger check'
+  analyze:
+    name: 'Analyze API surface'
     runs-on: ubuntu-latest
     steps:
-      - run: 'true'
+      - uses: composer/api-surface-check@09e3754365a4626daac35eef61d474a389961084 # 2.0.0
+        with:
+          install-dependencies: true
+          # paths: src/**/*.php
+          # source-roots: src
+          # include-internal: false
+          # show-removed: true
+          # show-modified: true

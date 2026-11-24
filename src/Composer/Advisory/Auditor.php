@@ -83,21 +83,26 @@ class Auditor
         $ignoreList = $policyConfig->advisories->getIgnoreListForOperation('audit');
         $ignoredSeverities = $policyConfig->advisories->getIgnoreSeverityForOperation('audit');
 
-        $result = $repoSet->getMatchingSecurityAdvisories($packages, $format === self::FORMAT_SUMMARY, $policyConfig->ignoreUnreachable->audit);
-        $allAdvisories = $result['advisories'];
-        $unreachableRepos = $result['unreachableRepos'];
-
-        // we need the CVE & remote IDs set to filter ignores correctly so if we have any matches using the optimized codepath above
-        // and ignores are set then we need to query again the full data to make sure it can be filtered
-        if ($format === self::FORMAT_SUMMARY && $this->needsCompleteAdvisoryLoad($allAdvisories, $ignoreList)) {
-            $result = $repoSet->getMatchingSecurityAdvisories($packages, false, $policyConfig->ignoreUnreachable->audit);
+        $allAdvisories = [];
+        $unreachableRepos = [];
+        if ($policyConfig->advisories->audit !== ListPolicyConfig::AUDIT_IGNORE) {
+            $result = $repoSet->getMatchingSecurityAdvisories($packages, $format === self::FORMAT_SUMMARY, $policyConfig->ignoreUnreachable->audit);
             $allAdvisories = $result['advisories'];
-            $unreachableRepos = array_merge($unreachableRepos, $result['unreachableRepos']);
+            $unreachableRepos = $result['unreachableRepos'];
+
+            // we need the CVE & remote IDs set to filter ignores correctly so if we have any matches using the optimized codepath above
+            // and ignores are set then we need to query again the full data to make sure it can be filtered
+            if ($format === self::FORMAT_SUMMARY && $this->needsCompleteAdvisoryLoad($allAdvisories, $ignoreList)) {
+                $result = $repoSet->getMatchingSecurityAdvisories($packages, false, $policyConfig->ignoreUnreachable->audit);
+                $allAdvisories = $result['advisories'];
+                $unreachableRepos = array_merge($unreachableRepos, $result['unreachableRepos']);
+            }
         }
         ['advisories' => $advisories, 'ignoredAdvisories' => $ignoredAdvisories] = $this->processAdvisories($allAdvisories, $ignoreList, $ignoredSeverities);
 
         $abandonedCount = 0;
         $affectedPackagesCount = count($advisories);
+        $failedAdvisoriesCount = $policyConfig->advisories->audit === ListPolicyConfig::AUDIT_FAIL ? $affectedPackagesCount : 0;
         if ($policyConfig->abandoned->audit === ListPolicyConfig::AUDIT_IGNORE) {
             $abandonedPackages = [];
         } else {
@@ -150,10 +155,14 @@ class Auditor
             }
         }
 
-        $auditResult = (0 < $affectedPackagesCount || 0 < $abandonedCount || 0 < $filteredCount || 0 < $cooldownCount) ? self::STATUS_FAILED : self::STATUS_OK;
+        $auditResult = (0 < $failedAdvisoriesCount || 0 < $abandonedCount || 0 < $filteredCount || 0 < $cooldownCount) ? self::STATUS_FAILED : self::STATUS_OK;
 
         if (self::FORMAT_JSON === $format) {
-            $json = ['advisories' => $advisories];
+            $json = [];
+            // an empty list would read as "checked, nothing found"
+            if ($policyConfig->advisories->audit !== ListPolicyConfig::AUDIT_IGNORE) {
+                $json['advisories'] = $advisories;
+            }
             if ($ignoredAdvisories !== []) {
                 $json['ignored-advisories'] = $ignoredAdvisories;
             }
@@ -180,7 +189,7 @@ class Auditor
             return $auditResult;
         }
 
-        $errorOrWarn = $warningOnly ? 'warning' : 'error';
+        $errorOrWarn = !$warningOnly && $failedAdvisoriesCount > 0 ? 'error' : 'warning';
         if ($affectedPackagesCount > 0 || count($ignoredAdvisories) > 0) {
             $passes = [
                 [$ignoredAdvisories, "<info>Found %d ignored security vulnerability advisor%s affecting %d package%s%s</info>"],
@@ -200,7 +209,7 @@ class Auditor
             if ($format === self::FORMAT_SUMMARY) {
                 $io->write('Run "composer audit" for a full list of advisories.');
             }
-        } else {
+        } elseif ($policyConfig->advisories->audit !== ListPolicyConfig::AUDIT_IGNORE) {
             $io->write('<info>No security vulnerability advisories found.</info>');
         }
 
@@ -491,7 +500,7 @@ class Auditor
         if ($format === self::FORMAT_PLAIN) {
             foreach ($packages as $pkg) {
                 $replacement = $pkg->getReplacementPackage() !== null
-                    ? 'Use '.$pkg->getReplacementPackage().' instead'
+                    ? 'Use '.OutputFormatter::escape($pkg->getReplacementPackage()).' instead'
                     : 'No replacement was suggested';
                 $io->write(sprintf(
                     '%s is abandoned. %s.',
@@ -513,7 +522,7 @@ class Auditor
             ->setColumnMaxWidth(1, 80);
 
         foreach ($packages as $pkg) {
-            $replacement = $pkg->getReplacementPackage() !== null ? $pkg->getReplacementPackage() : 'none';
+            $replacement = $pkg->getReplacementPackage() !== null ? OutputFormatter::escape($pkg->getReplacementPackage()) : 'none';
             $table->addRow(ConsoleIO::sanitize([$this->getPackageNameWithLink($pkg), $replacement]));
         }
 

@@ -240,6 +240,37 @@ class FilesystemRepositoryTest extends TestCase
         self::assertSame(file_get_contents(__DIR__.'/Fixtures/installed.php'), file_get_contents($dir.'/installed.php'));
     }
 
+    public function testSafelyLoadInstalledVersionsRejectsCodeInjectedViaVendorDir(): void
+    {
+        $dir = self::getUniqueTmpDirectory();
+        // a double-quoted string containing the __DIR__ marker must not get the vendor path interpolated into it
+        $vendorDir = $dir.'/v{${phpversion()}}/composer';
+        mkdir($vendorDir, 0777, true);
+        file_put_contents($vendorDir.'/installed.php', "<?php return array('a' => \"=> __DIR__ . '\",);\n");
+
+        $result = FilesystemRepository::safelyLoadInstalledVersions($vendorDir.'/installed.php');
+        $fs = new Filesystem();
+        $fs->removeDirectory($dir);
+
+        self::assertFalse($result);
+    }
+
+    public function testSafelyLoadInstalledVersionsWithBackslashAndDollarInPath(): void
+    {
+        $dir = self::getUniqueTmpDirectory();
+        $vendorDir = $dir.'/a\\b$1/composer';
+        mkdir($vendorDir, 0777, true);
+        file_put_contents($vendorDir.'/installed.php', "<?php return array('root' => array('install_path' => __DIR__ . '/../',),'versions' => array(),);\n");
+
+        $result = FilesystemRepository::safelyLoadInstalledVersions($vendorDir.'/installed.php');
+        $rawData = \Composer\InstalledVersions::getAllRawData();
+        $fs = new Filesystem();
+        $fs->removeDirectory($dir);
+
+        self::assertTrue($result);
+        self::assertSame($vendorDir.'/../', $rawData[count($rawData) - 1]['root']['install_path']);
+    }
+
     public function testSafelyLoadInstalledVersions(): void
     {
         $result = FilesystemRepository::safelyLoadInstalledVersions(__DIR__.'/Fixtures/installed_complex.php');
