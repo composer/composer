@@ -1488,7 +1488,7 @@ Set to `ignore`, `report` or `fail` to override the [policy.abandoned.audit](06-
 
 ### COMPOSER_POLICY
 
-Main dependency policy switch. Set to `0` to disable all dependency policy enforcement on updates, installs and audits, or `1` to enable it. Setting this to `1` will use the policy configuration in the composer.json. If you want to change the config value, use `composer config policy 1` instead.
+Main dependency policy switch. Set to `0` to disable all dependency policy enforcement on updates, installs and audits, or `1` to enable it. When disabled, `composer audit` does not check anything and only prints a warning saying so. Setting this to `1` will use the policy configuration in the composer.json. If you want to change the config value, use `composer config policy 1` instead.
 
 When set to `0`, all policy specific overrides below are ignored — the whole dependency policy config is short-circuited to disabled.
 
