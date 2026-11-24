@@ -97,6 +97,9 @@ EOT
         }
 
         $policyConfig = $this->createPolicyConfig($composer->getConfig(), $input);
+        if (!$policyConfig->enabled) {
+            $this->getIO()->writeError('<warning>Dependency policies are disabled (via the "policy" config or COMPOSER_POLICY env var), so the audit does not check anything.</warning>');
+        }
         if ($abandoned !== null) {
             $policyConfig = $policyConfig->withAudit($abandoned);
         }

@@ -90,6 +90,134 @@ Affected versions: >=8,<8.2.2|>=1,<2.5.6
 Reported at: 2022-05-25T13:21:00+00:00',
         ];
 
+        yield 'advisories reported only' => [
+            'data' => [
+                'packages' => [
+                    new Package('vendor1/package1', '8.2.1', '8.2.1'),
+                ],
+                'warningOnly' => true,
+                'advisories' => ListPolicyConfig::AUDIT_REPORT,
+            ],
+            'expected' => Auditor::STATUS_OK,
+            'output' => '<warning>Found 2 security vulnerability advisories affecting 1 package:</warning>
+Package: vendor1/package1
+Severity: high
+Advisory ID: ID4
+CVE: CVE3
+Title: advisory4
+URL: https://advisory.example.com/advisory4
+Affected versions: >=8,<8.2.2|>=1,<2.5.6
+Reported at: 2022-05-25T13:21:00+00:00
+--------
+Package: vendor1/package1
+Severity: medium
+Advisory ID: ID5
+CVE: '.'
+Title: advisory5
+URL: https://advisory.example.com/advisory5
+Affected versions: >=8,<8.2.2|>=1,<2.5.6
+Reported at: 2022-05-25T13:21:00+00:00',
+        ];
+
+        yield 'advisories failing are shown as error' => [
+            'data' => [
+                'packages' => [
+                    new Package('vendor1/package1', '8.2.1', '8.2.1'),
+                ],
+                'warningOnly' => false,
+            ],
+            'expected' => Auditor::STATUS_FAILED,
+            'output' => 'Found 2 security vulnerability advisories affecting 1 package:
+Package: vendor1/package1
+Severity: high
+Advisory ID: ID4
+CVE: CVE3
+Title: advisory4
+URL: https://advisory.example.com/advisory4
+Affected versions: >=8,<8.2.2|>=1,<2.5.6
+Reported at: 2022-05-25T13:21:00+00:00
+--------
+Package: vendor1/package1
+Severity: medium
+Advisory ID: ID5
+CVE: '.'
+Title: advisory5
+URL: https://advisory.example.com/advisory5
+Affected versions: >=8,<8.2.2|>=1,<2.5.6
+Reported at: 2022-05-25T13:21:00+00:00',
+        ];
+
+        yield 'advisories reported only are shown as warning even if not warningOnly' => [
+            'data' => [
+                'packages' => [
+                    new Package('vendor1/package1', '8.2.1', '8.2.1'),
+                ],
+                'warningOnly' => false,
+                'advisories' => ListPolicyConfig::AUDIT_REPORT,
+            ],
+            'expected' => Auditor::STATUS_OK,
+            'output' => '<warning>Found 2 security vulnerability advisories affecting 1 package:</warning>
+Package: vendor1/package1
+Severity: high
+Advisory ID: ID4
+CVE: CVE3
+Title: advisory4
+URL: https://advisory.example.com/advisory4
+Affected versions: >=8,<8.2.2|>=1,<2.5.6
+Reported at: 2022-05-25T13:21:00+00:00
+--------
+Package: vendor1/package1
+Severity: medium
+Advisory ID: ID5
+CVE: '.'
+Title: advisory5
+URL: https://advisory.example.com/advisory5
+Affected versions: >=8,<8.2.2|>=1,<2.5.6
+Reported at: 2022-05-25T13:21:00+00:00',
+        ];
+
+        yield 'advisories ignored' => [
+            'data' => [
+                'packages' => [
+                    new Package('vendor1/package1', '8.2.1', '8.2.1'),
+                ],
+                'warningOnly' => false,
+                'advisories' => ListPolicyConfig::AUDIT_IGNORE,
+            ],
+            'expected' => Auditor::STATUS_OK,
+            'output' => '',
+        ];
+
+        yield 'advisories ignored are omitted from json' => [
+            'data' => [
+                'packages' => [
+                    new Package('vendor1/package1', '8.2.1', '8.2.1'),
+                ],
+                'warningOnly' => false,
+                'advisories' => ListPolicyConfig::AUDIT_IGNORE,
+                'format' => Auditor::FORMAT_JSON,
+            ],
+            'expected' => Auditor::STATUS_OK,
+            'output' => '{
+    "abandoned": [],
+    "filter": [],
+    "cooldown": []
+}',
+        ];
+
+        yield 'advisories ignored with summary format' => [
+            'data' => [
+                'packages' => [
+                    new Package('vendor1/package1', '8.2.1', '8.2.1'),
+                ],
+                'warningOnly' => false,
+                'advisories' => ListPolicyConfig::AUDIT_IGNORE,
+                'format' => Auditor::FORMAT_SUMMARY,
+            ],
+            'expected' => Auditor::STATUS_OK,
+            'output' => '',
+        ];
+
         $abandonedWithReplacement = new CompletePackage('vendor/abandoned', '1.0.0', '1.0.0');
         $abandonedWithReplacement->setAbandoned('foo/bar');
         $abandonedNoReplacement = new CompletePackage('vendor/abandoned2', '1.0.0', '1.0.0');
@@ -271,7 +399,8 @@ Found 2 abandoned packages:
             'test-list',
             [],
             [],
-            $data['ignore-abandoned'] ?? []
+            $data['ignore-abandoned'] ?? [],
+            $data['advisories'] ?? ListPolicyConfig::AUDIT_FAIL
         );
         $auditor = new Auditor();
         $result = $auditor->audit($io = new BufferIO(), $this->getRepoSet(), $policyConfig, $data['packages'], $data['format'] ?? Auditor::FORMAT_PLAIN, $data['warningOnly']);
@@ -1072,6 +1201,7 @@ Affected versions: <1.0.1', trim(str_replace("\r", '', $io->getOutput())));
      * @param array<string, string|null> $ignoreAdvisories Mixed flat map of advisory IDs and package names => reason.
      * @param list<string> $ignoreSeverities
      * @param array<string, string|null> $ignoreAbandoned Package name => reason; package name may be a wildcard pattern.
+     * @param ListPolicyConfig::AUDIT_* $advisoriesAudit
      */
     private function createPolicyConfig(
         string $abandoned = ListPolicyConfig::AUDIT_IGNORE,
@@ -1080,7 +1210,8 @@ Affected versions: <1.0.1', trim(str_replace("\r", '', $io->getOutput())));
         string $filteredListName = 'test-list',
         array $ignoreAdvisories = [],
         array $ignoreSeverities = [],
-        array $ignoreAbandoned = []
+        array $ignoreAbandoned = [],
+        string $advisoriesAudit = ListPolicyConfig::AUDIT_FAIL
     ): PolicyConfig {
         $customLists = [];
         if ($filteredAudit !== null) {
@@ -1100,7 +1231,7 @@ Affected versions: <1.0.1', trim(str_replace("\r", '', $io->getOutput())));
         foreach ($ignoreSeverities as $severity) {
             $severityRules[$severity] = new IgnoreSeverityRule($severity);
         }
-        $advisories = new AdvisoriesPolicyConfig(false, AdvisoriesPolicyConfig::AUDIT_FAIL, $packageRules, $idRules, $severityRules);
+        $advisories = new AdvisoriesPolicyConfig(false, $advisoriesAudit, $packageRules, $idRules, $severityRules);
 
         $abandonedIgnore = [];
         foreach ($ignoreAbandoned as $packageName => $reason) {
