@@ -1,3 +1,10 @@
+### [2.2.33] 2026-11-24
+
+  * Security: Fixed code execution when running Composer in an untrusted project with a crafted vendor directory, bypassing the fix for CVE-2024-24821 (GHSA-374h-4mh9-7rpm)
+  * Security: Fixed package metadata such as descriptions, support/funding links and license names being rendered as console markup, an invalid style tag in them could also make `show`, `licenses`, `audit` and even `install`/`update` fail (#13293)
+  * Security: Sanitize URL-embedded credentials in `RemoteFilesystem` error messages (#13267)
+  * Fixed a crash on PHP < 5.5 on Windows when downloading over HTTPS with curl (#13277)
+
 ### [2.2.32] 2026-11-11
 
   * Security: Fixed malicious zip archives being able to write files outside of the package directory via symlinked entries when extraction falls back from `unzip` to `ZipArchive` (GHSA-w6hj-6587-3jh5)
@@ -1579,6 +1586,7 @@
 
   * Initial release
 
+[2.2.33]: https://github.com/composer/composer/compare/2.2.32...2.2.33
 [2.2.32]: https://github.com/composer/composer/compare/2.2.31...2.2.32
 [2.2.31]: https://github.com/composer/composer/compare/2.2.30...2.2.31
 [2.2.30]: https://github.com/composer/composer/compare/2.2.29...2.2.30
