@@ -720,7 +720,7 @@ class RemoteFilesystem
             $additionalOptions = AuthHelper::stripCredentialHeadersOnRedirect($additionalOptions, $this->fileUrl, $targetUrl);
             $additionalOptions['redirects'] = $this->redirects;
 
-            return $this->get(parse_url($targetUrl, PHP_URL_HOST), $targetUrl, $additionalOptions, $this->fileName, $this->progress);
+            return $this->get(Url::getOrigin($this->config, $targetUrl), $targetUrl, $additionalOptions, $this->fileName, $this->progress);
         }
 
         if (!$this->retry) {
