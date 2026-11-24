@@ -245,6 +245,16 @@ class ProblemTest extends TestCase
         self::assertStringContainsString("\n      - 1.0.1: still in the cooldown period configured in \"policy.cooldown\" (available in 5 days, based on the package-supplied time field as the repository provides no published-time)\n      To ignore filters for this package, add the package to the \"policy.malware.ignore\" config. To exempt the package from the cooldown policy, add it to the \"policy.cooldown.ignore\" config, or run the command with --no-cooldown for a one-off bypass. To turn a policy off entirely, you can set \"policy.malware.block\" or \"policy.cooldown.block\" to false.", $message);
     }
 
+    public function testGetMissingPackageReasonDoesNotBlameStabilityForAConflict(): void
+    {
+        $repositorySet = new RepositorySet();
+        $repositorySet->addRepository(new ArrayRepository([self::getPackage('vendor/pkg', '1.0.0'), self::getPackage('vendor/pkg', '1.1.0-beta1')]));
+
+        $message = implode('', Problem::getMissingPackageReason($repositorySet, new Request(), new Pool(), false, 'vendor/pkg', new Constraint('>=', '1.0.0.0')));
+
+        self::assertSame('- Root composer.json requires vendor/pkg >= 1.0.0.0, found vendor/pkg[1.0.0] but these were not loaded, likely because it conflicts with another require.', $message);
+    }
+
     public function testConflictAlternativeLinksCompleteAdvisories(): void
     {
         $conflicter = self::getPackage('acme/conflicter', '1.0.0');
