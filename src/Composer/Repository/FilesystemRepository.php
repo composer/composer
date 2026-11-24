@@ -231,7 +231,12 @@ class FilesystemRepository extends WritableArrayRepository
 ^<\?php\s++return\s++(?&array)\s*+;$}ix
 REGEX;
         if (is_string($installedVersionsData) && Preg::isMatch($pattern, trim($installedVersionsData))) {
-            \Composer\InstalledVersions::reload(eval('?>'.Preg::replace('{=>\s*+__DIR__\s*+\.\s*+([\'"])}', '=> '.var_export(dirname($path), true).' . $1', $installedVersionsData)));
+            $code = Preg::replace('{=>\s*+__DIR__\s*+\.\s*+([\'"])}', '=> '.var_export(dirname($path), true).' . $1', $installedVersionsData);
+            // the rewrite is not string-aware, so validate the code that is actually evaluated
+            if (!Preg::isMatch($pattern, trim($code))) {
+                return false;
+            }
+            \Composer\InstalledVersions::reload(eval('?>'.$code));
 
             return true;
         }
