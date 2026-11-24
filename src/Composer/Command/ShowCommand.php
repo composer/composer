@@ -1739,9 +1739,13 @@ EOT
             $isStabilityFallback = $latest !== null && $composer->getPackage()->getPreferStable() && BasePackage::STABILITIES[$latest->getStability()] > BasePackage::STABILITIES[$package->getStability()];
             $withheldCandidates = [];
             $installedIsWithheld = false;
-            foreach ($result->getRejections(RejectionReason::COOLDOWN) as $rejection) {
-                $withheldPackage = $rejection['package'];
-                $cooldownInfo = $rejection['reason']->getCooldownInfo();
+            // releases another policy blocks as well do not become installable once the cooldown period is over
+            foreach ($result->getRejectedOnlyBy(RejectionReason::COOLDOWN, RejectionReason::PLATFORM) as $withheldPackage) {
+                $cooldownReason = $result->getReason($withheldPackage, RejectionReason::COOLDOWN);
+                if ($cooldownReason === null) {
+                    continue;
+                }
+                $cooldownInfo = $cooldownReason->getCooldownInfo();
                 while ($withheldPackage instanceof AliasPackage) {
                     $withheldPackage = $withheldPackage->getAliasOf();
                 }

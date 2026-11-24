@@ -399,6 +399,35 @@ Everything up to date", trim($appTester->getDisplay(true)));
         self::assertStringContainsString('vulnerable/pkg 1.0.0 = 1.0.0 (2.0.0 blocked by advisories)', $appTester->getDisplay(true));
     }
 
+    public function testOutdatedDoesNotReportABlockedReleaseAsWaitingForTheCooldownPeriod(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => self::getVulnerableRepository([
+                    ['name' => 'vulnerable/pkg', 'version' => '1.0.0', 'published-time' => '2020-01-01T00:00:00+00:00'],
+                    ['name' => 'vulnerable/pkg', 'version' => '2.0.0', 'published-time' => '2999-01-01T00:00:00+00:00'],
+                ]),
+            ],
+            'require' => ['vulnerable/pkg' => '*'],
+            'config' => ['policy' => ['cooldown' => ['period' => '1 week']]],
+        ]);
+
+        $this->createInstalledJson([
+            self::getPackage('vulnerable/pkg', '1.0.0'),
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        self::assertSame(0, $appTester->run(['command' => 'outdated', '--strict' => true]));
+        self::assertStringContainsString('vulnerable/pkg 1.0.0 = 1.0.0 (2.0.0 blocked by advisories)', $appTester->getDisplay(true));
+        self::assertStringNotContainsString(' left)', $appTester->getDisplay(true));
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'outdated', '--format' => 'json']);
+        $installed = JsonFile::parseJson($appTester->getDisplay(true))['installed'];
+        self::assertSame('up-to-date', $installed[0]['latest-status']);
+        self::assertArrayNotHasKey('cooldown-available-in', $installed[0]);
+    }
+
     public function testShowLatestDoesNotOfferADowngradeWhenTheInstalledVersionIsBlocked(): void
     {
         $this->initTempComposer([
