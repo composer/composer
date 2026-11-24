@@ -259,6 +259,22 @@ class FilesystemRepositoryTest extends TestCase
         self::assertFalse($result);
     }
 
+    public function testSafelyLoadInstalledVersionsWithBackslashAndDollarInPath()
+    {
+        $dir = self::getUniqueTmpDirectory();
+        $vendorDir = $dir.'/a\\b$1/composer';
+        mkdir($vendorDir, 0777, true);
+        file_put_contents($vendorDir.'/installed.php', "<?php return array('root' => array('install_path' => __DIR__ . '/../',),'versions' => array(),);\n");
+
+        $result = FilesystemRepository::safelyLoadInstalledVersions($vendorDir.'/installed.php');
+        $rawData = \Composer\InstalledVersions::getAllRawData();
+        $fs = new Filesystem();
+        $fs->removeDirectory($dir);
+
+        self::assertTrue($result);
+        self::assertSame($vendorDir.'/../', $rawData[count($rawData) - 1]['root']['install_path']);
+    }
+
     public function testSafelyLoadInstalledVersions()
     {
         $result = FilesystemRepository::safelyLoadInstalledVersions(__DIR__.'/Fixtures/installed_complex.php');
