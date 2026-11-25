@@ -90,6 +90,9 @@ class VersionBumperTest extends TestCase
         yield 'upgrade bigger-or-eq in a single-pipe or-constraint' => ['>=10.0 <11|>=12', '12.1.0', '>=10.0 <11|>=12.1'];
         yield 'leave bigger-than untouched' => ['>2.2.3', '2.2.6', '>2.2.3'];
         yield 'skip pre-stable releases' => ['^0.3 || ^0.4', '0.4.3', '^0.3 || ^0.4.3'];
+        yield 'leave caret on 0.0 untouched as ^0.0.x would lower the upper bound' => ['^0.0', '0.0.5', '^0.0'];
+        yield 'leave wildcard on 0.0 untouched as ^0.0.x would lower the upper bound' => ['0.0.*', '0.0.5', '0.0.*'];
+        yield 'upgrade tilde on 0.0' => ['~0.0.3', '0.0.5', '~0.0.5'];
         yield 'upgrade full wildcard to bigger-or-eq' => ['*', '1.2.3', '>=1.2.3'];
     }
 }
