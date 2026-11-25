@@ -81,6 +81,10 @@ class FilterRepository implements RepositoryInterface, AdvisoryProviderInterface
      */
     public function hasPackage(PackageInterface $package): bool
     {
+        if (!$this->isAllowed($package->getName())) {
+            return false;
+        }
+
         return $this->repo->hasPackage($package);
     }
 

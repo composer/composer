@@ -49,6 +49,10 @@ class FilterRepositoryTest extends TestCase
         self::assertSame($expected, array_map(static function ($p): string {
             return $p->getName();
         }, $packages));
+
+        foreach ($this->arrayRepo->getPackages() as $package) {
+            self::assertSame(in_array($package->getName(), $expected, true), $repo->hasPackage($package), $package->getName());
+        }
     }
 
     public static function provideRepoMatchingTestCases(): array
