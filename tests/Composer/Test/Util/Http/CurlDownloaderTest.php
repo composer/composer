@@ -157,6 +157,18 @@ class CurlDownloaderTest extends TestCase
         );
     }
 
+    public function testNetworkErrorOfANonGetRequestIsOnlyRetriedIfTheRequestWasNotSent(): void
+    {
+        $job = $this->createJob();
+        $job['options'] = ['http' => ['method' => 'POST']];
+
+        self::assertTrue($this->decideCurlErrorRetry($job, 28, 'Connection timed out after 10001 milliseconds', 0.0));
+        self::assertTrue($this->decideCurlErrorRetry($job, 7, 'Failed to connect to example.org port 443', 0.0));
+        self::assertFalse($this->decideCurlErrorRetry($job, 28, 'Operation timed out after 300000 milliseconds with 0 bytes received', 0.25));
+        self::assertTrue($this->decideCurlErrorRetry($this->createJob(), 28, 'Operation timed out after 300000 milliseconds with 0 bytes received', 0.25));
+        self::assertFalse($this->decideCurlErrorRetry($this->createJob(3), 28, 'Connection timed out after 10001 milliseconds', 0.0));
+    }
+
     public function testDelayedRetryDoesNotBlockTheDownloadLoop(): void
     {
         $downloader = $this->createDownloader();
@@ -725,6 +737,17 @@ class CurlDownloaderTest extends TestCase
     private function decideRetry(array $job, Response $response)
     {
         return self::callPrivate($this->createDownloader(), 'isStatusCodeRetryNeeded', $job, $response);
+    }
+
+    /**
+     * @param mixed[] $job
+     */
+    private function decideCurlErrorRetry(array $job, int $errno, string $error, float $pretransferTime): bool
+    {
+        $retry = self::callPrivate($this->createDownloader(), 'isCurlErrorRetryNeeded', $job, $errno, $error, $pretransferTime);
+        self::assertIsBool($retry);
+
+        return $retry;
     }
 
     /**
