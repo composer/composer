@@ -321,6 +321,26 @@ class AutoloadGeneratorTest extends TestCase
         self::assertAutoloadFiles('classmap3', $this->vendorDir.'/composer', 'classmap');
     }
 
+    public function testRootPackageAutoloadingFromVendorDir(): void
+    {
+        $package = new RootPackage('root/a', '1.0', '1.0');
+        $package->setAutoload([
+            'psr-4' => ['' => 'composer-test-autoload/'],
+        ]);
+
+        $this->repository->expects($this->once())
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue([]));
+
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/composer');
+
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, 'VendorDirPsr4');
+        self::assertStringContainsString(
+            "public static \$fallbackDirsPsr4 = array (\n        0 => __DIR__ . '/..',\n    );",
+            (string) file_get_contents($this->vendorDir.'/composer/autoload_static.php')
+        );
+    }
+
     public function testRootPackageAutoloadingAlternativeVendorDir(): void
     {
         $package = new RootPackage('root/a', '1.0', '1.0');
