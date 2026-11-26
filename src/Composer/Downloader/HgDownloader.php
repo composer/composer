@@ -45,7 +45,7 @@ class HgDownloader extends VcsDownloader
             return sprintf('hg clone -- %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($path));
         };
 
-        $hgUtils->runCommand($cloneCommand, $url, $path);
+        $hgUtils->runCommand($cloneCommand, $url, null);
 
         $ref = ProcessExecutor::escape($package->getSourceReference());
         $command = sprintf('hg up -- %s', $ref);
