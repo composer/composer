@@ -446,6 +446,38 @@ class VersionSelectorTest extends TestCase
         self::assertSame($ignored, $versionSelector->findBestCandidate('foo/baz'));
     }
 
+    public function testDevBranchIsNotSelectedWhenEveryMatchingReleaseIsInTheCooldownPeriod(): void
+    {
+        $release = self::getPackage('foo/bar', '1.0.0');
+        $release->setPublishedDate(new \DateTimeImmutable('-1 hour'));
+        $branch = self::getPackage('foo/bar', '1.x-dev');
+        $branch->setPublishedDate(new \DateTimeImmutable('-1 hour'));
+
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->method('findPackages')->will($this->returnValue([$branch, $release]));
+
+        $versionSelector = new VersionSelector($repositorySet, null, self::cooldown(7 * 24 * 3600));
+
+        self::assertFalse($versionSelector->findBestCandidate('foo/bar'));
+    }
+
+    public function testDevBranchIsSelectedWhenAReleaseSatisfyingTheConstraintIsPastTheCooldownPeriod(): void
+    {
+        $release = self::getPackage('foo/bar', '1.0.0');
+        $release->setPublishedDate(new \DateTimeImmutable('-30 days'));
+        $newer = self::getPackage('foo/bar', '1.1.0');
+        $newer->setPublishedDate(new \DateTimeImmutable('-1 hour'));
+        $branch = self::getPackage('foo/bar', '1.x-dev');
+        $branch->setPublishedDate(new \DateTimeImmutable('-1 hour'));
+
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->method('findPackages')->will($this->returnValue([$branch, $newer, $release]));
+
+        $versionSelector = new VersionSelector($repositorySet, null, self::cooldown(7 * 24 * 3600));
+
+        self::assertSame($release, $versionSelector->findBestCandidate('foo/bar'));
+    }
+
     public function testAllVersionsWithinCooldownYieldNoCandidate(): void
     {
         $new = self::getPackage('foo/bar', '1.2.2');

@@ -14,9 +14,12 @@ namespace Composer\DependencyResolver;
 
 use Composer\Policy\CooldownPolicyConfig;
 use Composer\Package\AliasPackage;
+use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Repository\PlatformRepository;
+use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\ConstraintInterface;
 use DateTimeImmutable;
 use DateTimeInterface;
 
@@ -61,8 +64,14 @@ class CooldownPoolFilter
         $this->effectiveDateCache = [];
         $this->unverifiedVersions = [];
 
-        $packages = [];
+        $removed = [];
         $policyRemovedVersions = $pool->getAllPolicyRemovedVersions();
+        /** @var array<string, array<string, true>> $withheldReleases */
+        $withheldReleases = [];
+        /** @var array<string, array<string, true>> $keptReleases */
+        $keptReleases = [];
+        /** @var list<BasePackage> $devCandidates */
+        $devCandidates = [];
 
         foreach ($pool->getPackages() as $package) {
             // An alias shares the release date of the package it aliases but reports its own
@@ -73,16 +82,23 @@ class CooldownPoolFilter
             // 1. Root packages
             // 2. Platform packages (php, ext-*, lib-*, etc.)
             // 3. Locked packages kept by a partial update
-            // 4. Dev versions (mutable, no stable release date concept)
-            // 5. Ignored packages (matching configured policy.cooldown.ignore rules)
+            // 4. Ignored packages (matching configured policy.cooldown.ignore rules)
             if ($target instanceof RootPackageInterface
                 || PlatformRepository::isPlatformPackage($target->getName())
                 || $request->isLockedPackage($package)
                 || $request->isLockedPackage($target)
-                || $target->isDev()
                 || $this->config->isIgnored($target, 'block')
             ) {
-                $packages[] = $package;
+                if (!$target->isDev()) {
+                    $keptReleases[$target->getName()][$target->getVersion()] = true;
+                }
+                continue;
+            }
+
+            // Dev versions are mutable and have no release of their own, so they are only
+            // withheld when they would stand in for releases the cooldown removed, see below
+            if ($target->isDev()) {
+                $devCandidates[] = $package;
                 continue;
             }
 
@@ -94,20 +110,22 @@ class CooldownPoolFilter
                 $this->unverifiedVersions[$target->getRepository()->getRepoName()][] = $package->getPrettyName().' ('.$package->getPrettyVersion().')';
             }
 
-            // 6. Packages without release date (conservative - don't block unverifiable)
+            // 5. Packages without release date (conservative - don't block unverifiable)
             if ($this->effectiveDate($target) === null) {
-                $packages[] = $package;
+                $keptReleases[$target->getName()][$target->getVersion()] = true;
                 continue;
             }
 
             // Check if package is old enough
             $releaseDate = $this->effectiveDate($target);
             if (!$this->config->isWithinCooldown($releaseDate, $this->now)) {
-                $packages[] = $package;
+                $keptReleases[$target->getName()][$target->getVersion()] = true;
                 continue;
             }
 
             // Package is too new - filter it out and track for error messages
+            $withheldReleases[$target->getName()][$target->getVersion()] = true;
+            $removed[spl_object_id($package)] = true;
             Pool::recordPolicyRemoval($policyRemovedVersions, $package, PolicyRemovalReason::cooldown(
                 $package->getName(),
                 $package->getPrettyVersion(),
@@ -115,6 +133,90 @@ class CooldownPoolFilter
                 $this->config->formatTimeUntilAvailable($releaseDate, $this->now),
                 $target->getPublishedDate() !== null ? 'published-time' : 'time'
             ));
+        }
+
+        // A dev branch has no waiting period, so it must not stand in for releases the cooldown
+        // withheld. Gather what the graph requires of those packages to tell a requirement asking
+        // for the branch itself apart from one that only reaches it because its releases are gone
+        $branchesByName = [];
+        foreach ($devCandidates as $package) {
+            $name = ($package instanceof AliasPackage ? $package->getAliasOf() : $package)->getName();
+            if (isset($withheldReleases[$name])) {
+                $branchesByName[$name] = true;
+            }
+        }
+
+        if (count($branchesByName) > 0) {
+            /** @var array<string, list<ConstraintInterface>> $requirements */
+            $requirements = [];
+            foreach ($request->getRequires() as $name => $constraint) {
+                if (isset($branchesByName[$name])) {
+                    $requirements[$name][] = $constraint;
+                }
+            }
+            foreach ($pool->getPackages() as $package) {
+                // a version this filter removed cannot be installed, so nothing it requires can matter
+                if (isset($removed[spl_object_id($package)]) || $package instanceof RootPackageInterface || PlatformRepository::isPlatformPackage($package->getName())) {
+                    continue;
+                }
+                foreach ($package->getRequires() as $link) {
+                    if (isset($branchesByName[$link->getTarget()])) {
+                        $requirements[$link->getTarget()][] = $link->getConstraint();
+                    }
+                }
+            }
+
+            foreach ($devCandidates as $package) {
+                $target = $package instanceof AliasPackage ? $package->getAliasOf() : $package;
+                $name = $target->getName();
+                if (!isset($branchesByName[$name])) {
+                    continue;
+                }
+
+                $branchVersion = new Constraint('==', $target->getVersion());
+                $askedForBranch = false;
+                $neededByRequirement = false;
+                foreach ($requirements[$name] ?? [] as $constraint) {
+                    if (!$constraint->matches($branchVersion)) {
+                        continue;
+                    }
+                    // a requirement matching no release at all asks for the branch itself
+                    if (!$this->matchesAnyVersion($constraint, $withheldReleases[$name])) {
+                        $askedForBranch = true;
+                        break;
+                    }
+                    // one release the cooldown kept satisfies this requirement, so it does not need the branch
+                    if (isset($keptReleases[$name]) && $this->matchesAnyVersion($constraint, $keptReleases[$name])) {
+                        continue;
+                    }
+                    $neededByRequirement = true;
+                }
+
+                if ($askedForBranch || !$neededByRequirement) {
+                    continue;
+                }
+
+                $branchDate = $this->effectiveDate($target);
+                if ($branchDate === null || !$this->config->isWithinCooldown($branchDate, $this->now)) {
+                    continue;
+                }
+
+                $removed[spl_object_id($package)] = true;
+                Pool::recordPolicyRemoval($policyRemovedVersions, $package, PolicyRemovalReason::cooldown(
+                    $package->getName(),
+                    $package->getPrettyVersion(),
+                    $branchDate->format(DateTimeInterface::ATOM),
+                    $this->config->formatTimeUntilAvailable($branchDate, $this->now),
+                    $target->getPublishedDate() !== null ? 'published-time' : 'time'
+                ));
+            }
+        }
+
+        $packages = [];
+        foreach ($pool->getPackages() as $package) {
+            if (!isset($removed[spl_object_id($package)])) {
+                $packages[] = $package;
+            }
         }
 
         return new Pool(
@@ -149,5 +251,19 @@ class CooldownPoolFilter
         }
 
         return $this->effectiveDateCache[$key];
+    }
+
+    /**
+     * @param array<string, true> $versions normalized versions
+     */
+    private function matchesAnyVersion(ConstraintInterface $constraint, array $versions): bool
+    {
+        foreach ($versions as $version => $unused) {
+            if ($constraint->matches(new Constraint('==', (string) $version))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
