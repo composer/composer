@@ -406,6 +406,7 @@ EOT
         $require = $input->getOption('require');
         $requirements = [];
         if (count($require) > 0 || $io->askConfirmation($question)) {
+            $require = $this->resolveLocalPaths($input, $require)['requirements'];
             $requirements = $this->determineRequirements($input, $output, $require, $platformRepo, $preferredStability);
         }
         $input->setOption('require', $requirements);
@@ -414,6 +415,7 @@ EOT
         $requireDev = $input->getOption('require-dev');
         $devRequirements = [];
         if (count($requireDev) > 0 || $io->askConfirmation($question)) {
+            $requireDev = $this->resolveLocalPaths($input, $requireDev)['requirements'];
             $devRequirements = $this->determineRequirements($input, $output, $requireDev, $platformRepo, $preferredStability);
         }
         $input->setOption('require-dev', $devRequirements);
