@@ -12,9 +12,11 @@
 
 namespace Composer\Test\Util;
 
+use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use Composer\Util\Tar;
 use Composer\Test\TestCase;
+use PharData;
 
 /**
  * @author Wissem Riahi <wissemr@gmail.com>
@@ -68,6 +70,42 @@ class TarTest extends TestCase
     {
         self::expectException('RuntimeException');
         Tar::getComposerJson(__DIR__.'/Fixtures/Tar/multiple.tar.gz');
+    }
+
+    public function testTopLevelDirWithTopLevelFileIsInvalid(): void
+    {
+        $testDir = self::getUniqueTmpDirectory();
+        $tarPath = $testDir . '/mixed.tar';
+        $phar = new PharData($tarPath);
+        $phar->addEmptyDir('folder');
+        $phar->addFromString('folder/composer.json', '{"name": "foo/bar"}');
+        $phar->addFromString('README.md', '# Hello');
+
+        self::expectException('RuntimeException');
+        self::expectExceptionMessage('Archive has more than one top level directories, and no composer.json was found on the top level, so it\'s an invalid archive. Top level paths found were: README.md,folder');
+
+        try {
+            Tar::getComposerJson($tarPath);
+        } finally {
+            (new Filesystem())->removeDirectory($testDir);
+        }
+    }
+
+    public function testThrowsIfRootComposerJsonIsDirectory(): void
+    {
+        $testDir = self::getUniqueTmpDirectory();
+        $tarPath = $testDir . '/dir_as_composer_json.tar';
+        $phar = new PharData($tarPath);
+        $phar->addEmptyDir('composer.json');
+        $phar->addFromString('composer.json/foo.txt', 'bar');
+
+        self::expectException('RuntimeException');
+
+        try {
+            Tar::getComposerJson($tarPath);
+        } finally {
+            (new Filesystem())->removeDirectory($testDir);
+        }
     }
 
     public function testThrowsOnUnsafePhpVersionWithoutOptIn(): void
