@@ -69,7 +69,7 @@
         "platform-check": false,
         "policy": {
             "cooldown": {
-                "period": "7days",
+                "period": "1 day",
                 "ignore": {
                     "composer/ca-bundle": {"constraint": "1.6.0", "reason": "Required and approved"}
                 }
