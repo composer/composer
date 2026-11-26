@@ -519,6 +519,13 @@ class CurlDownloader
                     }
                     $progress['error_code'] = $errno;
 
+                    // the request was never sent, so starting it again costs the server nothing and is not a retry
+                    if ($errno === 28 /* CURLE_OPERATION_TIMEDOUT */ && $this->wasWaitingForAConnection($job['url'], $progress)) {
+                        $this->io->writeError('Restarting ' . Url::sanitize($job['url']) . ' which timed out waiting for a free connection to its host', true, IOInterface::DEBUG);
+                        $this->restartJob($job, $job['url']);
+                        continue;
+                    }
+
                     if (
                         (!isset($job['options']['http']['method']) || $job['options']['http']['method'] === 'GET')
                         && (
@@ -870,6 +877,42 @@ class CurlDownloader
         }
 
         return null;
+    }
+
+    /**
+     * Whether a transfer which timed out did so while waiting for one of the connections its host is limited to
+     *
+     * curl starts the clock of CURLOPT_CONNECTTIMEOUT when a transfer is added, not when it gets a connection, so
+     * a transfer queued behind CURLMOPT_MAX_HOST_CONNECTIONS times out without ever having tried to connect while
+     * slow downloads keep every connection busy. Another transfer to the same host which is connected shows the
+     * host is reachable, so the timeout says nothing about the host.
+     *
+     * @param mixed[] $progress curl_getinfo() of the transfer which timed out
+     */
+    private function wasWaitingForAConnection(string $url, array $progress): bool
+    {
+        // a transfer which started resolving or connected had left the queue, so it timed out for real. Not
+        // pretransfer_time, as curl 8.23 sets that to the time spent waiting even if nothing was ever sent
+        if (($progress['namelookup_time'] ?? 0) > 0 || ($progress['connect_time'] ?? 0) > 0) {
+            return false;
+        }
+
+        $host = self::getHostAndPort($url);
+        foreach ($this->jobs as $otherJob) {
+            if ($otherJob['primaryIp'] !== '' && self::getHostAndPort($otherJob['url']) === $host) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static function getHostAndPort(string $url): string
+    {
+        $parts = parse_url($url);
+        $port = $parts['port'] ?? (isset($parts['scheme']) && strtolower($parts['scheme']) === 'https' ? 443 : 80);
+
+        return strtolower($parts['host'] ?? '').':'.$port;
     }
 
     /**
