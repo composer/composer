@@ -378,6 +378,11 @@ class InitCommandTest extends TestCase
             null,
             ['--name' => 'test'],
         ];
+        yield 'invalid name argument that used to exhaust the backtrack limit' => [
+            InvalidArgumentException::class,
+            'The package name php-regex/regex-parser-symfony-Bundle is invalid',
+            ['--name' => 'php-regex/regex-parser-symfony-Bundle'],
+        ];
         yield 'invalid author argument' => [
             InvalidArgumentException::class,
             null,
