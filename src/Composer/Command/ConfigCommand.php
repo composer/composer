@@ -530,6 +530,7 @@ EOT
                 },
             ],
             'policy.ignore-unreachable' => [$booleanValidator, $booleanNormalizer],
+            'linked-packages.symlink' => [$booleanValidator, $booleanNormalizer],
         ];
         $multiConfigValues = [
             'github-protocols' => [

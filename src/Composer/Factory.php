@@ -248,6 +248,36 @@ class Factory
     }
 
     /**
+     * Returns the path of the local lock file, which is used instead of the lock file when present
+     */
+    public static function getLocalLockFile(string $composerFile): string
+    {
+        $env = Platform::getEnv('COMPOSER_LOCAL_LOCK');
+        if (is_string($env) && '' !== trim($env)) {
+            return trim($env);
+        }
+
+        return substr(self::getLockFile($composerFile), 0, -4).'local.lock';
+    }
+
+    /**
+     * Creates a locker reading and writing the local lock file of the given composer file
+     */
+    public static function createLocalLocker(IOInterface $io, Composer $composer, string $composerFile): Package\Locker
+    {
+        $contents = file_get_contents($composerFile);
+        if (false === $contents) {
+            throw new \RuntimeException('Unable to read '.$composerFile.' contents to load the local lock file.');
+        }
+
+        $lockFile = $composer->getConfig()->get('lock') ? self::getLocalLockFile($composerFile) : Platform::getDevNull();
+        $locker = new Package\Locker($io, new JsonFile($lockFile, null, $io), $composer->getInstallationManager(), $contents, $composer->getLoop()->getProcessExecutor());
+        $locker->setRepositoryManager($composer->getRepositoryManager());
+
+        return $locker;
+    }
+
+    /**
      * @return array{highlight: OutputFormatterStyle, warning: OutputFormatterStyle}
      */
     public static function createAdditionalStyles(): array

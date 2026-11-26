@@ -132,6 +132,21 @@ class LockerTest extends TestCase
         $locker->setLockData([$package1, $package2], [], [], [], [], 'dev', [], false, false, ['foo/bar' => '1.0']);
     }
 
+    public function testSetLockDataWritesLinkedPackages(): void
+    {
+        $lockFile = new JsonFile($this->initTempComposer().'/composer.local.lock');
+        $locker = new Locker(new NullIO, $lockFile, $this->createInstallationManagerMock(), $this->getJsonContent());
+
+        self::assertNull($locker->getLinkedPackages());
+
+        $linkedPackages = ['path' => '/path/to/linked', 'only' => ['acme/*']];
+        $locker->setLinkedPackages($linkedPackages);
+        $locker->setLockData([], [], [], [], [], 'dev', [], false, false, []);
+
+        self::assertSame(['plugin-api-version', 'linked-packages'], array_slice(array_keys($lockFile->read()), -2));
+        self::assertSame($linkedPackages, $locker->getLinkedPackages());
+    }
+
     public function testLockBadPackages(): void
     {
         $json = $this->createJsonFileMock();

@@ -94,6 +94,10 @@ everyone using the library will get the same versions of the dependencies.
 If there is no `composer.lock` file, Composer will create one after dependency
 resolution.
 
+If a [local lock file](#link) written by `update --with-linked-packages` exists,
+it is used instead of `composer.lock`; delete it to install from `composer.lock`
+again.
+
 ### Options
 
 * **--prefer-install:** There are two ways of downloading a package: `source`
@@ -185,6 +189,23 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
 > must be a subset of the existing constraint. The composer.json constraints still
 > apply and the composer.json is not modified by these temporary update constraints.
 
+To work on packages from local directories, link them with [`link`](#link) and
+update with `--with-linked-packages`. The linked packages are then used instead
+of the released versions, and the result is written to the
+[local lock file](#link) instead of `composer.lock`. The local lock file starts
+from `composer.lock`, so a partial update only changes the listed packages:
+
+```shell
+php composer.phar update --with-linked-packages=acme/foo acme/foo
+```
+
+Use `--follow-linked` to update again with the same linked packages; a plain
+`update` offers to do so when a local lock file exists, unless `--skip-linked`
+is passed.
+[`require-linked`](04-schema.md#require-linked) lists requirements only needed
+with linked packages. `--bump-after-update` is not applied when updating with
+linked packages.
+
 
 ### Options
 
@@ -247,6 +268,16 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
 * **--interactive:** Interactive interface with autocompletion to select the packages to update.
 * **--root-reqs:** Restricts the update to your first degree dependencies.
 * **--bump-after-update:** Runs `bump` after performing the update. Set to `dev` or `no-dev` to only bump those dependencies.
+* **--with-linked-packages:** Uses the [linked packages](#link) and writes the local lock file
+  instead of `composer.lock`. Pass a comma-separated list of package names, which may contain
+  wildcards, to only use some of them, e.g. `--with-linked-packages=acme/*,other/pkg`.
+  Use the `=` form, otherwise the next argument is taken as the list.
+* **--follow-linked:** Updates the local lock file with the same linked packages as the
+  previous `--with-linked-packages` update.
+* **--skip-linked:** Updates `composer.lock` without asking to update the linked packages
+  when a local lock file exists, as in non-interactive mode.
+* **--linked-repo-path:** Directory holding the `linked-packages.json` file to use with
+  `--with-linked-packages`. Defaults to the Composer home directory.
 
 Specifying one of the words `mirrors`, `lock`, or `nothing` as an argument has the same effect as specifying the option `--lock`, for example `composer update mirrors` is exactly the same as `composer update --lock`.
 
@@ -399,6 +430,57 @@ are local to the library and do not affect consumers of the package.
 * **--dev-only:** Only bump requirements in "require-dev".
 * **--no-dev-only:** Only bump requirements in "require".
 * **--dry-run:** Outputs the packages to bump, but will not execute anything.
+
+## link
+
+The `link` command links the package in the current directory, so that projects
+can install it from there instead of from their repositories. This lets you try
+changes to a package in a project without publishing them or editing the
+project's `composer.json`.
+
+```shell
+cd ~/dev/acme-foo
+php composer.phar link --as-version=1.x-dev
+cd ~/dev/my-project
+php composer.phar update --with-linked-packages=acme/foo
+```
+
+Links are stored in a `linked-packages.json` file in the
+[Composer home directory](#composer_home), and linking a package again replaces
+its previous link. In a project, [`update`](#update--u--upgrade) with
+`--with-linked-packages` installs the linked packages like
+[path repositories](05-repositories.md#path) (see the
+[`linked-packages`](06-config.md#linked-packages) config to mirror them) and
+writes the result to the local lock file, `composer.local.lock` (see
+[COMPOSER_LOCAL_LOCK](#composer_local_lock)), leaving `composer.lock` untouched.
+`install` then uses the local lock file until you delete it. Do not commit it:
+add it to your VCS ignore file (e.g. `.gitignore`).
+
+### Options
+
+* **--as-version:** The version to expose the package as, e.g. `1.x-dev`, instead
+  of the version a path repository would detect (including any
+  [branch alias](articles/aliases.md#branch-alias)). It must satisfy the
+  requirements of the projects using the package.
+* **--linked-repo-path:** The directory holding the `linked-packages.json` file,
+  defaults to the Composer home directory. This lets you keep several sets of
+  linked packages, for example to link the same package with different versions
+  for different projects. Pass the same option to `update`.
+
+## unlink
+
+The `unlink` command removes a package linked with [`link`](#link). Without an
+argument, it unlinks the package in the current directory. Projects which
+already installed the package are not changed until they are updated again.
+
+```shell
+php composer.phar unlink acme/foo
+```
+
+### Options
+
+* **--linked-repo-path:** The directory holding the `linked-packages.json` file,
+  defaults to the Composer home directory.
 
 ## reinstall
 
@@ -1385,6 +1467,12 @@ configuration in the project's `composer.json` always wins.
 
 Defaults to `1`. If set to `0`, Composer will not create `.htaccess` files in the
 Composer home, cache, and data directories.
+
+### COMPOSER_LOCAL_LOCK
+
+By setting this var you can change the path of the local lock file. By default it is
+named after the lock file: `composer.local.lock`, or `composer-other.local.lock` if
+`COMPOSER` is set to `composer-other.json`. See [`link`](#link).
 
 ### COMPOSER_MEMORY_LIMIT
 

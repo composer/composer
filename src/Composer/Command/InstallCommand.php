@@ -12,7 +12,9 @@
 
 namespace Composer\Command;
 
+use Composer\Factory;
 use Composer\Installer;
+use Composer\Package\LinkedPackages;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Advisory\Auditor;
@@ -103,6 +105,18 @@ EOT
         }
 
         $composer = $this->requireComposer();
+
+        $composerFile = Factory::getComposerFile();
+        $localLockFile = Factory::getLocalLockFile($composerFile);
+        if (file_exists($localLockFile)) {
+            $localLocker = Factory::createLocalLocker($io, $composer, $composerFile);
+            if (null !== $localLocker->getLinkedPackages()) {
+                // the local lock file was written with the require-linked requirements
+                LinkedPackages::addRequireLinked($composer->getPackage(), $composerFile);
+                $composer->setLocker($localLocker);
+                $io->writeError('<info>Using '.basename($localLockFile).' instead of '.basename(Factory::getLockFile($composerFile)).'</info>');
+            }
+        }
 
         if (!$composer->getLocker()->isLocked() && !HttpDownloader::isCurlEnabled()) {
             $io->writeError('<warning>Composer is operating significantly slower than normal because you do not have the PHP curl extension enabled.</warning>');

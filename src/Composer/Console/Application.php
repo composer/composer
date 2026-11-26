@@ -763,6 +763,8 @@ class Application extends BaseApplication
             new Command\BumpCommand(),
             new Command\RepositoryCommand(),
             new Command\PolicyCommand(),
+            new Command\LinkCommand(),
+            new Command\UnlinkCommand(),
             new Command\SelfUpdateCommand(),
         ]);
     }

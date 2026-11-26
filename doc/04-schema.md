@@ -517,6 +517,17 @@ tests, etc. The dev requirements of the root package are installed by default.
 Both `install` or `update` support the `--no-dev` option that prevents dev
 dependencies from being installed.
 
+#### require-linked <span>([root-only](04-schema.md#root-package))</span>
+
+Map of packages required only when working with [linked packages](03-cli.md#link),
+for example a package that has not been published yet. It is only read when
+[updating](03-cli.md#update--u--upgrade) with linked packages, and when installing
+from the local lock file they write. Every package
+listed here must be provided by a linked package, and an entry overrides a
+requirement on the same package in `require` or `require-dev`.
+
+As it is ignored otherwise, changing it does not make `composer.lock` out of date.
+
 #### conflict
 
 Map of packages that are incompatible with this version of this package. They

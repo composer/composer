@@ -59,6 +59,8 @@ class Locker
     private $virtualFileWritten = false;
     /** @var ?RepositoryManager */
     private $repositoryManager = null;
+    /** @var array{path: string, only?: list<string>}|null */
+    private $linkedPackages = null;
 
     /**
      * Initializes packages locker.
@@ -345,6 +347,30 @@ class Locker
     }
 
     /**
+     * Sets the linked packages repository path and package filter to be written to the lock file
+     *
+     * @param array{path: string, only?: list<string>}|null $linkedPackages
+     */
+    public function setLinkedPackages(?array $linkedPackages): void
+    {
+        $this->linkedPackages = $linkedPackages;
+    }
+
+    /**
+     * @return array{path: string, only?: list<string>}|null
+     */
+    public function getLinkedPackages(): ?array
+    {
+        if (!$this->isLocked()) {
+            return null;
+        }
+
+        $lockData = $this->getLockData();
+
+        return $lockData['linked-packages'] ?? null;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function getLockData(): array
@@ -410,6 +436,9 @@ class Locker
             $lock['platform-overrides'] = $platformOverrides;
         }
         $lock['plugin-api-version'] = PluginInterface::PLUGIN_API_VERSION;
+        if (null !== $this->linkedPackages) {
+            $lock['linked-packages'] = $this->linkedPackages;
+        }
 
         $lock = $this->fixupJsonDataType($lock);
 

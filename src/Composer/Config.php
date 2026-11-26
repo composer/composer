@@ -97,6 +97,7 @@ class Config
         'forgejo-domains' => ['codeberg.org'],
         'forgejo-token' => [],
         'source-fallback' => false,
+        'linked-packages' => [],
     ];
 
     /** @var array<string, mixed> */

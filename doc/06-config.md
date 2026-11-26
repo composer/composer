@@ -1464,4 +1464,24 @@ Defaults to `false`. If set to true, Composer will only perform absolutely neces
 changes to transitive dependencies during update.
 Can also be set via the `COMPOSER_MINIMAL_CHANGES=1` env var.
 
+## linked-packages
+
+Options for packages linked with the [`link`](03-cli.md#link) command.
+
+### symlink
+
+Defaults to installing linked packages like [path repositories](05-repositories.md#path):
+symlinked if possible, mirrored otherwise. Set to `true` to always symlink them,
+or `false` to mirror (copy) them.
+
+```json
+{
+    "config": {
+        "linked-packages": {
+            "symlink": false
+        }
+    }
+}
+```
+
 &larr; [Repositories](05-repositories.md)  |  [Runtime](07-runtime.md) &rarr;
