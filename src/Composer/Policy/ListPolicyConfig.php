@@ -12,6 +12,8 @@
 
 namespace Composer\Policy;
 
+use Composer\Pcre\Preg;
+use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Semver\VersionParser;
 
@@ -128,26 +130,45 @@ abstract class ListPolicyConfig
     }
 
     /**
-     * Flatten the package-name ignore rules into a `<packageName, mergedReason>` map for the given operation.
-     *
-     * When several rules apply to the same package, their reasons are merged with `mergeReason()`
-     * so a non-null reason is never silently dropped by a later null rule.
+     * Get the ignore rules for the given operation that match a package name at the given version.
      *
      * @param 'block'|'audit' $operation
-     * @return array<string, string|null>
+     * @return list<IgnorePackageRule>
      */
-    public function getFlatIgnoreForOperation(string $operation): array
+    public function getMatchingIgnoreRules(string $packageName, string $version, string $operation): array
     {
-        $result = [];
-        foreach ($this->ignore as $packageName => $rules) {
+        $ignore = $this->getIgnoreForOperation($operation);
+        if (count($ignore) === 0) {
+            return [];
+        }
+
+        $packageConstraint = new Constraint('==', $version);
+        $matches = [];
+        foreach ($ignore as $rules) {
             foreach ($rules as $rule) {
-                if (($operation === 'block' && $rule->onBlock) || ($operation === 'audit' && $rule->onAudit)) {
-                    $result[$packageName] = self::mergeReason($result, $packageName, $rule->reason);
+                if (Preg::isMatch($rule->packageNameRegex, $packageName) && $rule->constraint->matches($packageConstraint)) {
+                    $matches[] = $rule;
                 }
             }
         }
 
-        return $result;
+        return $matches;
+    }
+
+    /**
+     * Merge the reasons of several ignore rules with `mergeReason()` so a non-null reason is never
+     * silently dropped by a later null rule.
+     *
+     * @param list<IgnorePackageRule> $rules
+     */
+    public static function mergeRuleReasons(array $rules): ?string
+    {
+        $result = [];
+        foreach ($rules as $rule) {
+            $result['reason'] = self::mergeReason($result, 'reason', $rule->reason);
+        }
+
+        return $result['reason'] ?? null;
     }
 
     /**
