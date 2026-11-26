@@ -18,6 +18,7 @@ use Composer\Package\Dumper\ArrayDumper;
 use Composer\Pcre\Preg;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
+use Composer\Semver\Constraint\MultiConstraint;
 use Composer\Semver\Intervals;
 use Composer\Util\Platform;
 
@@ -128,6 +129,10 @@ class VersionBumper
             // if it is strictly equal to the previous one then no need to change anything
             $newConstraint = $parser->parseConstraints($modified);
             if (Intervals::isSubsetOf($newConstraint, $constraint) && Intervals::isSubsetOf($constraint, $newConstraint)) {
+                return $prettyConstraint;
+            }
+
+            if (!Intervals::isSubsetOf(new MultiConstraint([$constraint, new Constraint('>=', $version)]), $newConstraint)) {
                 return $prettyConstraint;
             }
 
