@@ -824,4 +824,287 @@ OUTPUT;
 
         self::assertStringMatchesFormat(trim($expected), trim($appTester->getDisplay(true)));
     }
+
+    public function testJsonFormatReportsInstallsOnStdout(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'root/req', 'version' => '1.0.0', 'require' => ['dep/pkg' => '^1']],
+                        ['name' => 'dep/pkg', 'version' => '1.0.2'],
+                    ],
+                ],
+            ],
+            'require' => [
+                'root/req' => '1.*',
+            ],
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $exitCode = $appTester->run(
+            ['command' => 'update', '--dry-run' => true, '--no-audit' => true, '--format' => 'json'],
+            ['capture_stderr_separately' => true]
+        );
+
+        self::assertSame(0, $exitCode);
+        self::assertSame([
+            'operations' => [
+                [
+                    'name' => 'dep/pkg',
+                    'type' => 'install',
+                    'direct' => false,
+                    'to' => ['version' => '1.0.2', 'reference' => null],
+                ],
+                [
+                    'name' => 'root/req',
+                    'type' => 'install',
+                    'direct' => true,
+                    'to' => ['version' => '1.0.0', 'reference' => null],
+                ],
+            ],
+        ], json_decode($appTester->getDisplay(true), true));
+
+        $errorOutput = $appTester->getErrorOutput(true);
+        self::assertStringContainsString('Lock file operations: 2 installs, 0 updates, 0 removals', $errorOutput);
+        self::assertStringContainsString('  - Locking dep/pkg (1.0.2)', $errorOutput);
+        self::assertStringNotContainsString('"operations"', $errorOutput);
+    }
+
+    public function testJsonFormatReportsUpdatesAndUninstalls(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'acme/foo', 'version' => '1.0.0'],
+                        ['name' => 'acme/foo', 'version' => '1.2.0'],
+                    ],
+                ],
+            ],
+            'require' => [
+                'acme/foo' => '^1.0',
+            ],
+        ]);
+
+        $this->createComposerLock([
+            self::getPackage('acme/foo', '1.0.0'),
+            self::getPackage('old/pkg', '2.0.0'),
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $exitCode = $appTester->run(
+            ['command' => 'update', '--dry-run' => true, '--no-audit' => true, '--no-install' => true, '--format' => 'json'],
+            ['capture_stderr_separately' => true]
+        );
+
+        self::assertSame(0, $exitCode);
+        $report = json_decode($appTester->getDisplay(true), true);
+        self::assertIsArray($report);
+        $operations = $report['operations'];
+        usort($operations, static function (array $a, array $b): int {
+            return strcmp($a['name'], $b['name']);
+        });
+
+        self::assertSame([
+            [
+                'name' => 'acme/foo',
+                'type' => 'update',
+                'direct' => true,
+                'from' => ['version' => '1.0.0', 'reference' => null],
+                'to' => ['version' => '1.2.0', 'reference' => null],
+            ],
+            [
+                'name' => 'old/pkg',
+                'type' => 'uninstall',
+                'direct' => false,
+                'from' => ['version' => '2.0.0', 'reference' => null],
+            ],
+        ], $operations);
+
+        $errorOutput = $appTester->getErrorOutput(true);
+        self::assertStringContainsString('Upgrading acme/foo (1.0.0 => 1.2.0)', $errorOutput);
+        self::assertStringContainsString('Removing old/pkg (2.0.0)', $errorOutput);
+    }
+
+    public function testJsonFormatTreatsDevRequiresAsDirect(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'dev/tool', 'version' => '3.1.0'],
+                    ],
+                ],
+            ],
+            'require-dev' => [
+                'dev/tool' => '^3',
+            ],
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(
+            ['command' => 'update', '--dry-run' => true, '--no-audit' => true, '--no-install' => true, '--format' => 'json'],
+            ['capture_stderr_separately' => true]
+        );
+
+        self::assertSame([
+            'operations' => [
+                [
+                    'name' => 'dev/tool',
+                    'type' => 'install',
+                    'direct' => true,
+                    'to' => ['version' => '3.1.0', 'reference' => null],
+                ],
+            ],
+        ], json_decode($appTester->getDisplay(true), true));
+    }
+
+    public function testJsonFormatPrefersSourceReferenceAndFallsBackToDistReference(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        [
+                            'name' => 'with/source',
+                            'version' => '1.0.0',
+                            'source' => ['type' => 'git', 'url' => 'https://example.org/with-source.git', 'reference' => 'sourceref'],
+                            'dist' => ['type' => 'zip', 'url' => 'https://example.org/with-source.zip', 'reference' => 'distref1'],
+                        ],
+                        [
+                            'name' => 'dist/only',
+                            'version' => '1.0.0',
+                            'dist' => ['type' => 'zip', 'url' => 'https://example.org/dist-only.zip', 'reference' => 'distref2'],
+                        ],
+                    ],
+                ],
+            ],
+            'require' => [
+                'with/source' => '^1',
+                'dist/only' => '^1',
+            ],
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(
+            ['command' => 'update', '--dry-run' => true, '--no-audit' => true, '--no-install' => true, '--format' => 'json'],
+            ['capture_stderr_separately' => true]
+        );
+
+        $report = json_decode($appTester->getDisplay(true), true);
+        self::assertIsArray($report);
+        $references = [];
+        foreach ($report['operations'] as $operation) {
+            $references[$operation['name']] = $operation['to']['reference'];
+        }
+        ksort($references);
+
+        self::assertSame(['dist/only' => 'distref2', 'with/source' => 'sourceref'], $references);
+    }
+
+    public function testJsonFormatSkipsMirrorOnlyUpdates(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        [
+                            'name' => 'acme/foo',
+                            'version' => '1.0.0',
+                            'dist' => ['type' => 'zip', 'url' => 'https://example.org/new-mirror.zip', 'reference' => 'newref'],
+                        ],
+                    ],
+                ],
+            ],
+            'require' => [
+                'acme/foo' => '^1.0',
+            ],
+        ]);
+
+        $locked = self::getPackage('acme/foo', '1.0.0');
+        $locked->setDistType('zip');
+        $locked->setDistUrl('https://example.org/old-mirror.zip');
+        $locked->setDistReference('oldref');
+        $this->createComposerLock([$locked]);
+
+        $appTester = $this->getApplicationTester();
+        $exitCode = $appTester->run(
+            ['command' => 'update', '--lock' => true, '--dry-run' => true, '--no-audit' => true, '--no-install' => true, '--format' => 'json'],
+            ['capture_stderr_separately' => true]
+        );
+
+        self::assertSame(0, $exitCode);
+        self::assertSame(['operations' => []], json_decode($appTester->getDisplay(true), true));
+    }
+
+    public function testJsonFormatOutputsNothingOnStdoutWhenResolutionFails(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'root/req', 'version' => '1.0.0'],
+                    ],
+                ],
+            ],
+            'require' => [
+                'root/req' => '^2',
+            ],
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $exitCode = $appTester->run(
+            ['command' => 'update', '--dry-run' => true, '--no-audit' => true, '--format' => 'json'],
+            ['capture_stderr_separately' => true]
+        );
+
+        self::assertNotSame(0, $exitCode);
+        self::assertSame('', $appTester->getDisplay(true));
+        self::assertStringContainsString('Your requirements could not be resolved', $appTester->getErrorOutput(true));
+    }
+
+    public function testTextFormatDoesNotWriteJsonToStdout(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'root/req', 'version' => '1.0.0'],
+                    ],
+                ],
+            ],
+            'require' => [
+                'root/req' => '1.*',
+            ],
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $exitCode = $appTester->run(
+            ['command' => 'update', '--dry-run' => true, '--no-audit' => true, '--no-install' => true, '--format' => 'text'],
+            ['capture_stderr_separately' => true]
+        );
+
+        self::assertSame(0, $exitCode);
+        self::assertSame('', $appTester->getDisplay(true));
+        self::assertStringContainsString('  - Locking root/req (1.0.0)', $appTester->getErrorOutput(true));
+    }
+
+    public function testUnsupportedFormatFails(): void
+    {
+        $this->initTempComposer(['require' => []]);
+
+        $appTester = $this->getApplicationTester();
+        $exitCode = $appTester->run(['command' => 'update', '--dry-run' => true, '--no-audit' => true, '--format' => 'xml']);
+
+        self::assertSame(1, $exitCode);
+        self::assertSame('Unsupported format "xml". See help for supported formats.', trim($appTester->getDisplay(true)));
+    }
 }
