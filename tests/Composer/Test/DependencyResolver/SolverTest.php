@@ -32,7 +32,7 @@ use Composer\Repository\RepositorySet;
 use Composer\Test\TestCase;
 use Composer\Semver\Constraint\MultiConstraint;
 use Composer\Semver\Constraint\MatchAllConstraint;
-use Composer\DependencyResolver\PolicyRemovalReason;
+use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\DependencyResolver\Pool;
 
 class SolverTest extends TestCase
@@ -1047,7 +1047,7 @@ class SolverTest extends TestCase
     {
         $package = self::getPackage('vendor/malware', '1.0.0');
         $pool = new Pool([], [], [], [], [
-            'vendor/malware' => ['1.0.0.0' => PolicyRemovalReason::filterList('vendor/malware', '1.0.0', [
+            'vendor/malware' => ['1.0.0.0' => RejectionReason::filterList('vendor/malware', '1.0.0', [
                 new FilterListEntry(
                     'vendor/malware',
                     new MatchAllConstraint(),

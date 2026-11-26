@@ -12,13 +12,10 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Filter\PackageFilter\CooldownRule;
 use Composer\Policy\CooldownPolicyConfig;
 use Composer\Package\AliasPackage;
-use Composer\Package\PackageInterface;
-use Composer\Package\RootPackageInterface;
-use Composer\Repository\PlatformRepository;
 use DateTimeImmutable;
-use DateTimeInterface;
 
 /**
  * Withholds package versions published more recently than the configured cooldown period.
@@ -37,9 +34,6 @@ class CooldownPoolFilter
     /** @var DateTimeImmutable */
     private $now;
 
-    /** @var array<int, ?DateTimeInterface> */
-    private $effectiveDateCache = [];
-
     /** @var array<string, list<string>> Repository name => "name (version)" of versions judged without a repository-provided publication date */
     private $unverifiedVersions = [];
 
@@ -54,67 +48,34 @@ class CooldownPoolFilter
      */
     public function filter(Pool $pool, Request $request): Pool
     {
+        $this->unverifiedVersions = [];
+
         if (!$this->config->hasCooldown() || !$this->config->block) {
             return $pool;
         }
 
-        $this->effectiveDateCache = [];
-        $this->unverifiedVersions = [];
+        // Locked packages kept by a partial update are not subject to the cooldown
+        $candidates = [];
+        foreach ($pool->getPackages() as $index => $package) {
+            $target = $package instanceof AliasPackage ? $package->getAliasOf() : $package;
+            if (!$request->isLockedPackage($package) && !$request->isLockedPackage($target)) {
+                $candidates[$index] = $package;
+            }
+        }
+
+        $rule = new CooldownRule($this->config, $this->now);
+        $rejections = $rule->getRejections($candidates);
+        $this->unverifiedVersions = $rule->getUnverifiedVersions();
 
         $packages = [];
         $policyRemovedVersions = $pool->getAllPolicyRemovedVersions();
-
-        foreach ($pool->getPackages() as $package) {
-            // An alias shares the release date of the package it aliases but reports its own
-            // stability, so decide on the aliased package to keep the pair consistent
-            $target = $package instanceof AliasPackage ? $package->getAliasOf() : $package;
-
-            // Skip filtering for packages that should always be allowed through:
-            // 1. Root packages
-            // 2. Platform packages (php, ext-*, lib-*, etc.)
-            // 3. Locked packages kept by a partial update
-            // 4. Dev versions (mutable, no stable release date concept)
-            // 5. Ignored packages (matching configured policy.cooldown.ignore rules)
-            if ($target instanceof RootPackageInterface
-                || PlatformRepository::isPlatformPackage($target->getName())
-                || $request->isLockedPackage($package)
-                || $request->isLockedPackage($target)
-                || $target->isDev()
-                || $this->config->isIgnored($target, 'block')
-            ) {
-                $packages[] = $package;
+        foreach ($pool->getPackages() as $index => $package) {
+            if (isset($rejections[$index])) {
+                Pool::recordPolicyRemoval($policyRemovedVersions, $package, $rejections[$index]);
                 continue;
             }
 
-            // A Composer repository has to vouch for the publication date, see the policy config
-            $this->config->assertPublishedTimeProvided($target);
-
-            // Nothing vouches for the date of this version, keep track so the user learns the protection is weaker
-            if ($target->getPublishedDate() === null && !$package instanceof AliasPackage && $target->getRepository() !== null) {
-                $this->unverifiedVersions[$target->getRepository()->getRepoName()][] = $package->getPrettyName().' ('.$package->getPrettyVersion().')';
-            }
-
-            // 6. Packages without release date (conservative - don't block unverifiable)
-            if ($this->effectiveDate($target) === null) {
-                $packages[] = $package;
-                continue;
-            }
-
-            // Check if package is old enough
-            $releaseDate = $this->effectiveDate($target);
-            if (!$this->config->isWithinCooldown($releaseDate, $this->now)) {
-                $packages[] = $package;
-                continue;
-            }
-
-            // Package is too new - filter it out and track for error messages
-            Pool::recordPolicyRemoval($policyRemovedVersions, $package, PolicyRemovalReason::cooldown(
-                $package->getName(),
-                $package->getPrettyVersion(),
-                $releaseDate->format(DateTimeInterface::ATOM),
-                $this->config->formatTimeUntilAvailable($releaseDate, $this->now),
-                $target->getPublishedDate() !== null ? 'published-time' : 'time'
-            ));
+            $packages[] = $package;
         }
 
         return new Pool(
@@ -135,19 +96,5 @@ class CooldownPoolFilter
     public function getUnverifiedVersions(): array
     {
         return $this->unverifiedVersions;
-    }
-
-    /**
-     * Resolve a package's effective date once per filter() run and reuse it across the
-     * skip and cooldown checks.
-     */
-    private function effectiveDate(PackageInterface $package): ?DateTimeInterface
-    {
-        $key = spl_object_id($package);
-        if (!array_key_exists($key, $this->effectiveDateCache)) {
-            $this->effectiveDateCache[$key] = $this->config->getEffectiveDate($package);
-        }
-
-        return $this->effectiveDateCache[$key];
     }
 }

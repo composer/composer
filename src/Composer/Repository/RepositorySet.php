@@ -20,6 +20,8 @@ use Composer\DependencyResolver\FilterListPoolFilter;
 use Composer\DependencyResolver\SecurityAdvisoryPoolFilter;
 use Composer\DependencyResolver\CooldownPoolFilter;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\Filter\PackageFilter\PackageFilterResult;
+use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\Advisory\SecurityAdvisory;
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\IO\IOInterface;
@@ -64,7 +66,7 @@ class RepositorySet
      */
     private $rootReferences;
 
-    /** @var RepositoryInterface[] */
+    /** @var list<RepositoryInterface> */
     private $repositories = [];
 
     /**
@@ -181,6 +183,15 @@ class RepositorySet
     }
 
     /**
+     * @internal
+     * @return list<RepositoryInterface> in order of priority
+     */
+    public function getRepositories(): array
+    {
+        return $this->repositories;
+    }
+
+    /**
      * Find packages providing or matching a name and optionally meeting a constraint in all repositories
      *
      * Returned in the order of repositories, matching priority
@@ -230,12 +241,88 @@ class RepositorySet
     }
 
     /**
+     * Finds every version of a package in all repositories and stabilities, with the reasons findPackages() would skip each one for
+     *
+     * Returned in the order of repositories, matching priority. This loads more than findPackages() does, so only use it to explain why a package was not found.
+     *
+     * @internal
+     * @param bool $skipShadowedIfAccepted do not query the repositories findPackages() would not look in when it would return versions
+     */
+    public function findPackagesWithRejections(string $name, ?ConstraintInterface $constraint = null, bool $skipShadowedIfAccepted = false): PackageFilterResult
+    {
+        $packages = [];
+        $reasons = [];
+        $canonicalRepo = null;
+        foreach ($this->repositories as $repository) {
+            if ($skipShadowedIfAccepted && $canonicalRepo !== null && \count($packages) > \count($reasons)) {
+                break;
+            }
+
+            // what findPackages() would load from this repository, aliases included the same way
+            $acceptable = $repository->loadPackages([$name => $constraint], $this->acceptableStabilities, $this->stabilityFlags);
+            $acceptableKeys = self::getPackageKeys($acceptable['packages']);
+            $all = $repository->loadPackages([$name => null], BasePackage::STABILITIES, []);
+            $matchingKeys = $constraint !== null ? self::getPackageKeys($repository->loadPackages([$name => $constraint], BasePackage::STABILITIES, [])['packages']) : null;
+
+            foreach ($all['packages'] as $package) {
+                $key = self::getPackageKey($package);
+                $packageReasons = [];
+                if ($canonicalRepo !== null) {
+                    $packageReasons[] = RejectionReason::repositoryPriority($package->getName(), $package->getPrettyVersion(), $canonicalRepo->getRepoName());
+                }
+                $matchesConstraint = $matchingKeys === null || isset($matchingKeys[$key]);
+                if (!$matchesConstraint) {
+                    $packageReasons[] = RejectionReason::constraint($package->getName(), $package->getPrettyVersion());
+                }
+                if (!isset($acceptableKeys[$key]) && ($matchesConstraint || !$this->isPackageAcceptable($package->getNames(), $package->getStability()))) {
+                    $packageReasons[] = RejectionReason::stability($package->getName(), $package->getPrettyVersion());
+                }
+
+                if (\count($packageReasons) > 0) {
+                    $reasons[\count($packages)] = $packageReasons;
+                }
+                $packages[] = $package;
+            }
+
+            // once a repository has the package, findPackages() does not look in lower priority ones
+            if ($canonicalRepo === null && \in_array($name, $acceptable['namesFound'], true)) {
+                $canonicalRepo = $repository;
+            }
+        }
+
+        return new PackageFilterResult($packages, $reasons);
+    }
+
+    /**
+     * Repositories create new package instances on each load, so loads are compared by package version
+     *
+     * @param array<BasePackage> $packages
+     * @return array<string, true>
+     */
+    private static function getPackageKeys(array $packages): array
+    {
+        $keys = [];
+        foreach ($packages as $package) {
+            $keys[self::getPackageKey($package)] = true;
+        }
+
+        return $keys;
+    }
+
+    private static function getPackageKey(BasePackage $package): string
+    {
+        return ($package instanceof AliasPackage ? 'alias ' : '').$package->getUniqueName();
+    }
+
+    /**
      * Loads packages from all repositories in one batch per repository, to warm up caches before many findPackages() calls
      *
      * @param string[] $names
+     * @return list<BasePackage> what findPackages() would return for each of the names
      */
-    public function preloadPackages(array $names): void
+    public function preloadPackages(array $names): array
     {
+        $packages = [];
         $nameMap = array_fill_keys($names, null);
         foreach ($this->repositories as $repository) {
             if ($nameMap === []) {
@@ -243,11 +330,16 @@ class RepositorySet
             }
 
             $result = $repository->loadPackages($nameMap, $this->acceptableStabilities, $this->stabilityFlags);
+            foreach ($result['packages'] as $package) {
+                $packages[] = $package;
+            }
             foreach ($result['namesFound'] as $name) {
                 // like findPackages, do not query lower priority repositories for names already found
                 unset($nameMap[$name]);
             }
         }
+
+        return $packages;
     }
 
     /**

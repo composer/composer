@@ -12,7 +12,7 @@
 
 namespace Composer\Test\DependencyResolver;
 
-use Composer\DependencyResolver\PolicyRemovalReason;
+use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\DependencyResolver\Pool;
 use Composer\FilterList\FilterListEntry;
 use Composer\IO\NullIO;
@@ -52,7 +52,7 @@ class CooldownPoolFilterTest extends TestCase
         $filteredPool = $filter->filter($pool, new Request());
 
         $this->assertSame([$oldPackage], $filteredPool->getPackages());
-        $this->assertSame(PolicyRemovalReason::COOLDOWN, self::getRemovalType($filteredPool, 'vendor/pkg', '2.0.0.0'));
+        $this->assertSame(RejectionReason::COOLDOWN, self::getRemovalType($filteredPool, 'vendor/pkg', '2.0.0.0'));
     }
 
     public function testAvailableInReportsTotalDaysForLongWaitsSpanningMultipleMonths(): void
@@ -146,7 +146,7 @@ class CooldownPoolFilterTest extends TestCase
         $filteredPool = $filter->filter($pool, new Request());
 
         $this->assertSame([], $filteredPool->getPackages());
-        $this->assertSame(PolicyRemovalReason::COOLDOWN, self::getRemovalType($filteredPool, 'evil/pkg', '2.0.0.0'));
+        $this->assertSame(RejectionReason::COOLDOWN, self::getRemovalType($filteredPool, 'evil/pkg', '2.0.0.0'));
     }
 
     public function testDevVersionsAreNotFiltered(): void
@@ -348,8 +348,8 @@ class CooldownPoolFilterTest extends TestCase
         $this->assertEmpty($filteredPool->getPackages());
 
         // Replaced names are part of getNames(false), so a requirement on either name explains the cooldown
-        $this->assertSame(PolicyRemovalReason::COOLDOWN, self::getRemovalType($filteredPool, 'vendor/pkg', '2.0.0.0'));
-        $this->assertSame(PolicyRemovalReason::COOLDOWN, self::getRemovalType($filteredPool, 'vendor/replaced', '2.0.0.0'));
+        $this->assertSame(RejectionReason::COOLDOWN, self::getRemovalType($filteredPool, 'vendor/pkg', '2.0.0.0'));
+        $this->assertSame(RejectionReason::COOLDOWN, self::getRemovalType($filteredPool, 'vendor/replaced', '2.0.0.0'));
         // while the primary name is kept so output can list the package once
         $info = self::getCooldownInfo($filteredPool, 'vendor/replaced', '2.0.0.0');
         $this->assertNotNull($info);
@@ -369,14 +369,14 @@ class CooldownPoolFilterTest extends TestCase
 
         // an earlier filter removed vendor/replaced 2.0.0 itself
         $pool = new Pool([$replacer], [], [], [], [
-            'vendor/replaced' => ['2.0.0.0' => PolicyRemovalReason::filterList('vendor/replaced', '2.0.0', [
+            'vendor/replaced' => ['2.0.0.0' => RejectionReason::filterList('vendor/replaced', '2.0.0', [
                 new FilterListEntry('vendor/replaced', new MatchAllConstraint(), 'malware'),
             ])],
         ]);
         $filteredPool = $filter->filter($pool, new Request());
 
-        $this->assertSame(PolicyRemovalReason::COOLDOWN, self::getRemovalType($filteredPool, 'vendor/pkg', '2.0.0.0'));
-        $this->assertSame(PolicyRemovalReason::FILTER_LIST, self::getRemovalType($filteredPool, 'vendor/replaced', '2.0.0.0'));
+        $this->assertSame(RejectionReason::COOLDOWN, self::getRemovalType($filteredPool, 'vendor/pkg', '2.0.0.0'));
+        $this->assertSame(RejectionReason::FILTER_LIST, self::getRemovalType($filteredPool, 'vendor/replaced', '2.0.0.0'));
     }
 
     public function testDevAliasIsKeptTogetherWithItsDevTarget(): void
@@ -411,8 +411,8 @@ class CooldownPoolFilterTest extends TestCase
         $filteredPool = $filter->filter($pool, new Request());
 
         $this->assertSame([], $filteredPool->getPackages());
-        $this->assertSame(PolicyRemovalReason::COOLDOWN, self::getRemovalType($filteredPool, 'vendor/pkg', '2.0.0.0'));
-        $this->assertSame(PolicyRemovalReason::COOLDOWN, self::getRemovalType($filteredPool, 'vendor/pkg', '2.0.9999999.9999999-dev'));
+        $this->assertSame(RejectionReason::COOLDOWN, self::getRemovalType($filteredPool, 'vendor/pkg', '2.0.0.0'));
+        $this->assertSame(RejectionReason::COOLDOWN, self::getRemovalType($filteredPool, 'vendor/pkg', '2.0.9999999.9999999-dev'));
     }
 
     public function testComposerRepositoryVersionWithoutPublishedTimeIsRejected(): void

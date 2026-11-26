@@ -164,6 +164,11 @@ versions from being installed during `composer update`, `require`, or `remove`. 
 policy and [custom dependency policies](#block-scope-1) can additionally block during a
 `composer install` via their `block-scope` setting.
 
+`composer require`, `init` and `create-project` skip the versions the policies would block when picking
+a version constraint or the project version, so that the constraint they write can be resolved.
+`composer outdated` and `composer show --latest` report the newest version the policies allow
+installing, and mention a newer release that a policy blocks.
+
 Set to `false` to disable all dependency policy enforcement:
 
 ```json

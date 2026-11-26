@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\Filter\PlatformRequirementFilter\IgnoreListPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
@@ -261,7 +262,7 @@ class RuleSetGenerator
             // re-assigns ids for packages it actually contains, so removed
             // entries keep their previous id).
             $policyRemoval = $request->isLockedPackage($package) ? $this->pool->getPolicyRemovalReason($package->getName(), $package->getVersion()) : null;
-            if ($policyRemoval !== null && $policyRemoval->getType() === PolicyRemovalReason::FILTER_LIST) {
+            if ($policyRemoval !== null && $policyRemoval->getType() === RejectionReason::FILTER_LIST) {
                 continue;
             }
 
