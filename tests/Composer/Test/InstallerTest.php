@@ -29,6 +29,7 @@ use Composer\Repository\ArrayRepository;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\InstalledArrayRepository;
+use Composer\Package\RootPackage;
 use Composer\Package\RootPackageInterface;
 use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
@@ -155,6 +156,94 @@ class InstallerTest extends TestCase
 
         $uninstalled = $installationManager->getUninstalledPackages();
         self::assertSame($expectedUninstalled, $uninstalled);
+    }
+
+    public function testRunRestoresGarbageCollectionWhenResolutionFails(): void
+    {
+        $rootPackage = self::getRootPackage('a/a', '1.0.0');
+        $rootPackage->setRequires([
+            'b/b' => new Link('a/a', 'b/b', $v = self::getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
+        ]);
+
+        $installer = $this->createInstallerWithoutRepositories($rootPackage);
+
+        self::assertTrue(gc_enabled());
+        self::assertSame(Installer::ERROR_DEPENDENCY_RESOLUTION_FAILED, $installer->run());
+        self::assertTrue(gc_enabled(), 'The installer must re-enable the garbage collector when it returns an error code');
+    }
+
+    public function testRunRestoresGarbageCollectionWhenItThrows(): void
+    {
+        $installer = $this->createInstallerWithoutRepositories(self::getRootPackage('a/a', '1.0.0'));
+        $installer->setUpdateMirrors(true);
+        $installer->setUpdateAllowList(['b/b']);
+
+        self::assertTrue(gc_enabled());
+        try {
+            $installer->run();
+            self::fail('Expected the installer to throw');
+        } catch (\RuntimeException $e) {
+            self::assertStringContainsString('mutually exclusive', $e->getMessage());
+        }
+        self::assertTrue(gc_enabled(), 'The installer must re-enable the garbage collector when it throws');
+    }
+
+    public function testRunKeepsGarbageCollectionDisabledWhenItWasDisabledBefore(): void
+    {
+        $installer = $this->createInstallerWithoutRepositories(self::getRootPackage('a/a', '1.0.0'));
+
+        gc_disable();
+        try {
+            self::assertSame(0, $installer->run());
+            self::assertFalse(gc_enabled(), 'The installer must not enable a garbage collector the caller disabled');
+        } finally {
+            gc_enable();
+        }
+    }
+
+    private function createInstallerWithoutRepositories(RootPackage $rootPackage): Installer
+    {
+        $io = new BufferIO('', OutputInterface::VERBOSITY_NORMAL, new OutputFormatter(false));
+
+        $downloadManager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
+            ->setConstructorArgs([$io])
+            ->getMock();
+        $config = $this->getMockBuilder('Composer\Config')->getMock();
+        $config->expects($this->any())
+            ->method('get')
+            ->will($this->returnCallback(static function ($key) {
+                switch ($key) {
+                    case 'vendor-dir':
+                        return 'foo';
+                    case 'lock':
+                        return false;
+                    case 'notify-on-install':
+                        return true;
+                    case 'platform':
+                    case 'audit':
+                        return [];
+                    case 'policy':
+                        return false;
+                }
+
+                throw new \UnexpectedValueException('Unknown key '.$key);
+            }));
+
+        $eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock();
+        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
+        $repositoryManager = new RepositoryManager($io, $config, $httpDownloader, $eventDispatcher);
+        $repositoryManager->setLocalRepository(new InstalledArrayRepository());
+
+        $installationManager = new InstallationManagerMock();
+        $lockJsonMock = $this->getMockBuilder('Composer\Json\JsonFile')->disableOriginalConstructor()->getMock();
+        $locker = new Locker($io, $lockJsonMock, $installationManager, '{}');
+        $autoloadGenerator = $this->getMockBuilder('Composer\Autoload\AutoloadGenerator')->disableOriginalConstructor()->getMock();
+
+        $installer = new Installer($io, $config, $rootPackage, $downloadManager, $repositoryManager, $locker, $installationManager, $eventDispatcher, $autoloadGenerator);
+        $installer->setAuditConfig(new AuditConfig(false));
+        $installer->setWriteLock(false);
+
+        return $installer;
     }
 
     /**

@@ -263,6 +263,8 @@ class Installer
      */
     public function run(): int
     {
+        $gcWasEnabled = gc_enabled();
+
         // Disable GC to save CPU cycles, as the dependency solver can create hundreds of thousands
         // of PHP objects, the GC can spend quite some time walking the tree of references looking
         // for stuff to collect while there is nothing to collect. This slows things down dramatically
@@ -270,6 +272,23 @@ class Installer
         gc_collect_cycles();
         gc_disable();
 
+        try {
+            return $this->doRun($gcWasEnabled);
+        } finally {
+            // re-enable GC on every exit path, so a failed install or update does not leave
+            // a long-running process (e.g. Composer used as a library) without garbage collection
+            if ($gcWasEnabled && !defined('HHVM_VERSION')) {
+                gc_enable();
+            }
+        }
+    }
+
+    /**
+     * @throws \Exception
+     * @phpstan-return self::ERROR_*
+     */
+    private function doRun(bool $gcWasEnabled): int
+    {
         if ($this->updateAllowList !== null && $this->updateMirrors) {
             throw new \RuntimeException("The installer options updateMirrors and updateAllowList are mutually exclusive.");
         }
@@ -445,7 +464,7 @@ class Installer
         }
 
         // re-enable GC except on HHVM which triggers a warning here
-        if (!defined('HHVM_VERSION')) {
+        if ($gcWasEnabled && !defined('HHVM_VERSION')) {
             gc_enable();
         }
 
