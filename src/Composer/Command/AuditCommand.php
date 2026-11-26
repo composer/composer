@@ -16,6 +16,7 @@ use Composer\Composer;
 use Composer\FilterList\FilterListProvider\FilterListProviderSet;
 use Composer\Policy\ListPolicyConfig;
 use Composer\Policy\PolicyConfig;
+use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\RepositoryUtils;
 use Symfony\Component\Console\Input\InputInterface;
@@ -63,8 +64,14 @@ EOT
         $packages = $this->getPackages($composer, $input);
 
         if (count($packages) === 0) {
-            if ($composer->getPackage()->getRequires() !== []
-                || (!$input->getOption('no-dev') && $composer->getPackage()->getDevRequires() !== [])) {
+            $requires = $composer->getPackage()->getRequires();
+            if (!$input->getOption('no-dev')) {
+                $requires = array_merge($requires, $composer->getPackage()->getDevRequires());
+            }
+
+            if (count(array_filter(array_keys($requires), static function (string $name): bool {
+                return !PlatformRepository::isPlatformPackage($name);
+            })) > 0) {
                 $this->getIO()->writeError('No installed packages found. Please run "composer install" before running "audit" or pass "--locked" to audit the lock file.');
  
                 return Auditor::STATUS_FAILED;
