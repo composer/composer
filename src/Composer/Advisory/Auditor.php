@@ -90,9 +90,9 @@ class Auditor
             $allAdvisories = $result['advisories'];
             $unreachableRepos = $result['unreachableRepos'];
 
-            // we need the CVE & remote IDs set to filter ignores correctly so if we have any matches using the optimized codepath above
+            // we need the CVE & remote IDs and severity set to filter ignores correctly so if we have any matches using the optimized codepath above
             // and ignores are set then we need to query again the full data to make sure it can be filtered
-            if ($format === self::FORMAT_SUMMARY && $this->needsCompleteAdvisoryLoad($allAdvisories, $ignoreList)) {
+            if ($format === self::FORMAT_SUMMARY && $this->needsCompleteAdvisoryLoad($allAdvisories, $ignoreList, $ignoredSeverities)) {
                 $result = $repoSet->getMatchingSecurityAdvisories($packages, false, $policyConfig->ignoreUnreachable->audit);
                 $allAdvisories = $result['advisories'];
                 $unreachableRepos = array_merge($unreachableRepos, $result['unreachableRepos']);
@@ -271,8 +271,9 @@ class Auditor
     /**
      * @param array<string, array<SecurityAdvisory|PartialSecurityAdvisory>> $advisories
      * @param array<string, string|null> $ignoreList
+     * @param array<string, string|null> $ignoredSeverities
      */
-    public function needsCompleteAdvisoryLoad(array $advisories, array $ignoreList): bool
+    public function needsCompleteAdvisoryLoad(array $advisories, array $ignoreList, array $ignoredSeverities): bool
     {
         if (\count($advisories) === 0) {
             return false;
@@ -283,6 +284,11 @@ class Auditor
             return array_all($pkgAdvisories, static function ($advisory) { return $advisory instanceof SecurityAdvisory; });
         })) {
             return false;
+        }
+
+        // partial advisories have no severity so they need to be fully loaded to be filtered by severity
+        if (\count($ignoredSeverities) > 0) {
+            return true;
         }
 
         $ignoredIds = array_keys($ignoreList);

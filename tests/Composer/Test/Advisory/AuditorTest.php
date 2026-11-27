@@ -1485,15 +1485,16 @@ Affected versions: <1.0.1', trim(str_replace("\r", '', $io->getOutput())));
      * @dataProvider needsCompleteLoadProvider
      * @param array<string, array<SecurityAdvisory|PartialSecurityAdvisory>> $advisories
      * @param array<string> $ignoreList
+     * @param array<string, string|null> $ignoredSeverities
      */
-    public function testNeedsCompleteAdvisoryLoad(array $advisories, array $ignoreList, bool $expected): void
+    public function testNeedsCompleteAdvisoryLoad(array $advisories, array $ignoreList, bool $expected, array $ignoredSeverities = []): void
     {
         $auditor = new Auditor();
-        self::assertSame($expected, $auditor->needsCompleteAdvisoryLoad($advisories, $ignoreList));
+        self::assertSame($expected, $auditor->needsCompleteAdvisoryLoad($advisories, $ignoreList, $ignoredSeverities));
     }
 
     /**
-     * @return array<array{array<string, array<SecurityAdvisory|PartialSecurityAdvisory>>, array<string, string|null>, bool}>
+     * @return array<array{0: array<string, array<SecurityAdvisory|PartialSecurityAdvisory>>, 1: array<string, string|null>, 2: bool, 3?: array<string, string|null>}>
      */
     public static function needsCompleteLoadProvider(): array
     {
@@ -1529,6 +1530,14 @@ Affected versions: <1.0.1', trim(str_replace("\r", '', $io->getOutput())));
                 ],
                 ['CVE-2025-1234' => null],
                 false,
+            ],
+            'severity filter needs to fully load if partial advisories are present' => [
+                ['vendor1/package1' => [
+                    new PartialSecurityAdvisory('foo/bar', '1234', new Constraint('=', '1.0.0.0')),
+                ]],
+                [],
+                true,
+                ['low' => null],
             ],
         ];
     }
