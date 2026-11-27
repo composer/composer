@@ -74,10 +74,11 @@ class SecurityAdvisoryPoolFilter
         }
 
         $ignoreListForBlocking = $advisories->getIgnoreListForOperation('block');
+        $ignoreSeverityForBlocking = $advisories->getIgnoreSeverityForOperation('block');
         $ignoreUnreachableUpdate = $this->policyConfig->ignoreUnreachable->update;
 
         $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, true, $ignoreUnreachableUpdate);
-        if ($this->auditor->needsCompleteAdvisoryLoad($allAdvisories['advisories'], $ignoreListForBlocking)) {
+        if ($this->auditor->needsCompleteAdvisoryLoad($allAdvisories['advisories'], $ignoreListForBlocking, $ignoreSeverityForBlocking)) {
             $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, false, $ignoreUnreachableUpdate);
         }
 
@@ -88,7 +89,7 @@ class SecurityAdvisoryPoolFilter
             }
         }
 
-        $advisoryMap = $this->auditor->processAdvisories($allAdvisories['advisories'], $ignoreListForBlocking, $advisories->getIgnoreSeverityForOperation('block'))['advisories'];
+        $advisoryMap = $this->auditor->processAdvisories($allAdvisories['advisories'], $ignoreListForBlocking, $ignoreSeverityForBlocking)['advisories'];
 
         $ignoreAbandonedForBlocking = $abandoned->getFlatIgnoreForOperation('block');
 

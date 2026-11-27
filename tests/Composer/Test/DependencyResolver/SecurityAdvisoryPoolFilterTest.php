@@ -13,6 +13,7 @@
 namespace Composer\Test\DependencyResolver;
 
 use Composer\Advisory\Auditor;
+use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\DependencyResolver\PolicyRemovalReason;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
@@ -29,6 +30,7 @@ use Composer\Policy\CooldownPolicyConfig;
 use Composer\Policy\AdvisoriesPolicyConfig;
 use Composer\Policy\IgnoreIdRule;
 use Composer\Policy\IgnorePackageRule;
+use Composer\Policy\IgnoreSeverityRule;
 use Composer\Policy\IgnoreUnreachable;
 use Composer\Policy\ListPolicyConfig;
 use Composer\Policy\MalwarePolicyConfig;
@@ -124,6 +126,55 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
 
         $this->assertSame([$expectedPackage1, $expectedPackage2], $filteredPool->getPackages());
         $this->assertCount(0, self::getRemovals($filteredPool, PolicyRemovalReason::ABANDONED));
+        $this->assertCount(0, self::getRemovals($filteredPool, PolicyRemovalReason::ADVISORIES));
+    }
+
+    public function testDontFilterPackagesByIgnoredSeverityWithPartialAdvisories(): void
+    {
+        $policyConfig = new PolicyConfig(
+            true,
+            new AdvisoriesPolicyConfig(
+                true,
+                ListPolicyConfig::AUDIT_FAIL,
+                [],
+                [],
+                ['high' => new IgnoreSeverityRule('high')]
+            ),
+            MalwarePolicyConfig::disabled(),
+            new AbandonedPolicyConfig(true, ListPolicyConfig::AUDIT_FAIL, []),
+            CooldownPolicyConfig::disabled(),
+            [],
+            IgnoreUnreachable::default()
+        );
+        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $policyConfig, new NullIO());
+
+        $repository = new class([
+            'package' => [],
+            'security-advisories' => [
+                'acme/package' => [$this->generateSecurityAdvisory('acme/package', 'CVE-2024-1234', '>=1.0.0,<1.1.0')],
+            ],
+        ]) extends PackageRepository {
+            public function getSecurityAdvisories(array $packageConstraintMap, bool $allowPartialAdvisories = false): array
+            {
+                $result = parent::getSecurityAdvisories($packageConstraintMap, $allowPartialAdvisories);
+                if ($allowPartialAdvisories) {
+                    $result['advisories'] = array_map(static function (array $advisories): array {
+                        return array_map(static function ($advisory): PartialSecurityAdvisory {
+                            return new PartialSecurityAdvisory($advisory->packageName, $advisory->advisoryId, $advisory->affectedVersions);
+                        }, $advisories);
+                    }, $result['advisories']);
+                }
+
+                return $result;
+            }
+        };
+        $pool = new Pool([
+            $expectedPackage1 = new Package('acme/package', '1.0.0.0', '1.0'),
+            $expectedPackage2 = new Package('acme/package', '1.1.0.0', '1.1'),
+        ]);
+        $filteredPool = $filter->filter($pool, [$repository], new Request());
+
+        $this->assertSame([$expectedPackage1, $expectedPackage2], $filteredPool->getPackages());
         $this->assertCount(0, self::getRemovals($filteredPool, PolicyRemovalReason::ADVISORIES));
     }
 
