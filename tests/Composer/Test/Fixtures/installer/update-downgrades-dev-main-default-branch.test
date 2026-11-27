@@ -1,0 +1,54 @@
+--TEST--
+Downgrading from a dev-main default branch to a more stable package should be reported as a downgrade
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/a", "version": "dev-main",
+                    "source": { "reference": "abcd", "url": "https://example.org", "type": "git" },
+                    "default-branch": true
+                },
+                {
+                    "name": "a/a", "version": "1.0.0",
+                    "source": { "reference": "1.0.0", "url": "https://example.org", "type": "git" },
+                    "dist": { "reference": "1.0.0", "url": "https://example.org", "type": "zip", "shasum": "" }
+                },
+                {
+                    "name": "b/b", "version": "dev-main",
+                    "source": { "reference": "abcd", "url": "https://example.org", "type": "git" },
+                    "default-branch": true
+                },
+                {
+                    "name": "b/b", "version": "1.0.0",
+                    "source": { "reference": "1.0.0", "url": "https://example.org", "type": "git" },
+                    "dist": { "reference": "1.0.0", "url": "https://example.org", "type": "zip", "shasum": "" }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "*",
+        "b/b": "*@dev"
+    }
+}
+--INSTALLED--
+[
+    {
+        "name": "a/a", "version": "dev-main",
+        "source": { "reference": "abcd", "url": "https://example.org", "type": "git" },
+        "default-branch": true
+    },
+    {
+        "name": "b/b", "version": "dev-main",
+        "source": { "reference": "abcd", "url": "https://example.org", "type": "git" },
+        "default-branch": true
+    }
+]
+--RUN--
+update
+--EXPECT--
+Marking a/a (9999999-dev abcd) as uninstalled, alias of a/a (dev-main abcd)
+Downgrading a/a (dev-main abcd => 1.0.0)
