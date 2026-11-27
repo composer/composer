@@ -90,7 +90,7 @@ class Auditor
             $allAdvisories = $result['advisories'];
             $unreachableRepos = $result['unreachableRepos'];
 
-            // we need the CVE & remote IDs set to filter ignores correctly so if we have any matches using the optimized codepath above
+            // we need the CVE & remote IDs and severity set to filter ignores correctly so if we have any matches using the optimized codepath above
             // and ignores are set then we need to query again the full data to make sure it can be filtered
             if ($format === self::FORMAT_SUMMARY && $this->needsCompleteAdvisoryLoad($allAdvisories, $ignoreList, $ignoredSeverities)) {
                 $result = $repoSet->getMatchingSecurityAdvisories($packages, false, $policyConfig->ignoreUnreachable->audit);
@@ -273,7 +273,7 @@ class Auditor
      * @param array<string, string|null> $ignoreList
      * @param array<string, string|null> $ignoredSeverities
      */
-    public function needsCompleteAdvisoryLoad(array $advisories, array $ignoreList, array $ignoredSeverities = []): bool
+    public function needsCompleteAdvisoryLoad(array $advisories, array $ignoreList, array $ignoredSeverities): bool
     {
         if (\count($advisories) === 0) {
             return false;
