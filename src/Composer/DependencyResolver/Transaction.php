@@ -13,7 +13,6 @@
 namespace Composer\DependencyResolver;
 
 use Composer\Package\AliasPackage;
-use Composer\Package\CompletePackageInterface;
 use Composer\Package\Link;
 use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Package\PackageInterface;
@@ -172,14 +171,7 @@ class Transaction
                         if ($package->getVersion() !== $presentPackageMap[$package->getName()]->getVersion() ||
                             $package->getDistReference() !== $presentPackageMap[$package->getName()]->getDistReference() ||
                             $package->getSourceReference() !== $presentPackageMap[$package->getName()]->getSourceReference() ||
-                            (
-                                $package instanceof CompletePackageInterface
-                                && $presentPackageMap[$package->getName()] instanceof CompletePackageInterface
-                                && (
-                                    $package->isAbandoned() !== $presentPackageMap[$package->getName()]->isAbandoned()
-                                    || $package->getReplacementPackage() !== $presentPackageMap[$package->getName()]->getReplacementPackage()
-                                )
-                            )
+                            null !== Operation\UpdateOperation::getAbandonedStateChange($presentPackageMap[$package->getName()], $package)
                         ) {
                             $operations[] = new Operation\UpdateOperation($source, $package);
                         }
