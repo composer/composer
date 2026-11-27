@@ -60,6 +60,11 @@ class VersionParserTest extends TestCase
             ['1.0.0.0', 'dev-foo', true],
             ['dev-foo', 'dev-foo', true],
             ['dev-foo', '1.0.0.0', true],
+            ['dev-master', '1.0.0.0', false],
+            ['dev-main', '1.0.0.0', false],
+            ['1.0.0.0', 'dev-master', true],
+            ['1.0.0.0', 'dev-main', true],
+            ['dev-main', 'dev-master', true],
         ];
     }
 }

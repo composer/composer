@@ -76,10 +76,10 @@ class VersionParser extends SemverVersionParser
             return true;
         }
 
-        if (in_array($normalizedFrom, ['dev-master', 'dev-trunk', 'dev-default'], true)) {
+        if (in_array($normalizedFrom, ['dev-master', 'dev-trunk', 'dev-default', 'dev-main'], true)) {
             $normalizedFrom = VersionParser::DEFAULT_BRANCH_ALIAS;
         }
-        if (in_array($normalizedTo, ['dev-master', 'dev-trunk', 'dev-default'], true)) {
+        if (in_array($normalizedTo, ['dev-master', 'dev-trunk', 'dev-default', 'dev-main'], true)) {
             $normalizedTo = VersionParser::DEFAULT_BRANCH_ALIAS;
         }
 
