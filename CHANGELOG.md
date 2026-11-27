@@ -1,3 +1,7 @@
+### [unreleased]
+
+  * Fixed `bump` and `require` putting the lock file's old modification time back after the content-hash changes, which made rsync and Git for Windows skip the updated lock (#13305)
+
 ### [2.11.3] 2026-11-24
 
   * Security: Fixed arbitrary code execution when running Composer in a directory whose `composer.json` and vendor directory were prepared by an attacker, a bypass of the CVE-2024-24821 fix (GHSA-374h-4mh9-7rpm)

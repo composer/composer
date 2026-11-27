@@ -437,7 +437,9 @@ class Locker
     /**
      * Updates the lock file's hash in-place from a given composer.json's JsonFile
      *
-     * This does not reload or require any packages, and retains the filemtime of the lock file.
+     * This does not reload or require any packages. The previous mtime is put back
+     * only when the bytes on disk do not change. A new content-hash keeps the new
+     * mtime, so tools that compare size and mtime still see the update.
      *
      * Use this only to update the lock file hash after updating a composer.json in ways that are guaranteed NOT to impact the dependency resolution.
      *
@@ -452,7 +454,9 @@ class Locker
             throw new \RuntimeException('Unable to read '.$composerJson->getPath().' contents to update the lock file hash.');
         }
 
-        $lockMtime = filemtime($this->lockFile->getPath());
+        $lockPath = $this->lockFile->getPath();
+        $lockMtime = filemtime($lockPath);
+        $previous = file_get_contents($lockPath);
         $lockData = $this->lockFile->read();
         $lockData['content-hash'] = Locker::getContentHash($contents);
         if ($dataProcessor !== null) {
@@ -462,8 +466,11 @@ class Locker
         $this->lockFile->write($this->fixupJsonDataType($lockData));
         $this->lockDataCache = null;
         $this->virtualFileWritten = false;
-        if (is_int($lockMtime)) {
-            @touch($this->lockFile->getPath(), $lockMtime);
+        // filePutContentsIfModified skips a byte-identical write, but touch()
+        // used to put the old mtime back even after a real content-hash change.
+        // rsync and Git for Windows then treat the lock as unchanged (#13305).
+        if (is_int($lockMtime) && is_string($previous) && $previous === file_get_contents($lockPath)) {
+            @touch($lockPath, $lockMtime);
         }
     }
 

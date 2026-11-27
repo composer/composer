@@ -242,6 +242,68 @@ class LockerTest extends TestCase
         self::assertSame(Locker::getContentHash(JsonFile::encode($base)), Locker::getContentHash(JsonFile::encode($withOtherConfig)));
     }
 
+    public function testUpdateHashDoesNotRestoreMtimeWhenTheContentChanges(): void
+    {
+        $dir = $this->initTempComposer(['require' => ['acme/foo' => '^1.0']], [], [
+            'content-hash' => 'stale',
+            'packages' => [],
+            'packages-dev' => [],
+            'stability-flags' => new \stdClass(),
+            'platform' => new \stdClass(),
+            'platform-dev' => new \stdClass(),
+        ]);
+        $lockPath = $dir.'/composer.lock';
+        $oldMtime = time() - 30;
+        touch($lockPath, $oldMtime);
+        clearstatcache(true, $lockPath);
+
+        file_put_contents(
+            $dir.'/composer.json',
+            JsonFile::encode(['require' => ['acme/foo' => '^2.0']], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)."\n"
+        );
+        $composerJson = file_get_contents($dir.'/composer.json');
+        self::assertIsString($composerJson);
+
+        $locker = new Locker(new NullIO(), new JsonFile($lockPath), $this->createInstallationManagerMock(), $composerJson);
+        $locker->updateHash(new JsonFile($dir.'/composer.json'));
+
+        clearstatcache(true, $lockPath);
+        $lock = json_decode((string) file_get_contents($lockPath), true);
+        self::assertIsArray($lock);
+        self::assertSame(Locker::getContentHash($composerJson), $lock['content-hash']);
+        self::assertGreaterThan($oldMtime, filemtime($lockPath));
+    }
+
+    public function testUpdateHashKeepsMtimeWhenTheLockBytesDoNotChange(): void
+    {
+        $composerJson = JsonFile::encode(['require' => ['acme/foo' => '^1.0']], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)."\n";
+        $dir = $this->initTempComposer(['require' => ['acme/foo' => '^1.0']], [], [
+            'content-hash' => Locker::getContentHash($composerJson),
+            'packages' => [],
+            'packages-dev' => [],
+            'stability-flags' => new \stdClass(),
+            'platform' => new \stdClass(),
+            'platform-dev' => new \stdClass(),
+        ]);
+        // Rewrite through updateHash so the file is in the form write() emits.
+        $lockPath = $dir.'/composer.lock';
+        file_put_contents($dir.'/composer.json', $composerJson);
+        $locker = new Locker(new NullIO(), new JsonFile($lockPath), $this->createInstallationManagerMock(), $composerJson);
+        $locker->updateHash(new JsonFile($dir.'/composer.json'));
+
+        $canonical = file_get_contents($lockPath);
+        self::assertIsString($canonical);
+        $oldMtime = time() - 30;
+        touch($lockPath, $oldMtime);
+        clearstatcache(true, $lockPath);
+
+        $locker->updateHash(new JsonFile($dir.'/composer.json'));
+
+        clearstatcache(true, $lockPath);
+        self::assertSame($canonical, file_get_contents($lockPath));
+        self::assertSame($oldMtime, filemtime($lockPath));
+    }
+
     /**
      * @return \PHPUnit\Framework\MockObject\MockObject&JsonFile
      */
