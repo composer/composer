@@ -1,0 +1,7 @@
+{
+    "name": "symlinked/path-pkg",
+    "version": "1.0.0",
+    "require": {
+        "locked/dep": "^2.0"
+    }
+}
