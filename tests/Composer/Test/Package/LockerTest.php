@@ -242,9 +242,6 @@ class LockerTest extends TestCase
         self::assertSame(Locker::getContentHash(JsonFile::encode($base)), Locker::getContentHash(JsonFile::encode($withOtherConfig)));
     }
 
-    /**
-     * @return \PHPUnit\Framework\MockObject\MockObject&JsonFile
-     */
     public function testUpdateHashDoesNotRestoreMtimeWhenTheContentChanges(): void
     {
         $dir = $this->initTempComposer(['require' => ['acme/foo' => '^1.0']], [], [
@@ -265,6 +262,7 @@ class LockerTest extends TestCase
             JsonFile::encode(['require' => ['acme/foo' => '^2.0']], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)."\n"
         );
         $composerJson = file_get_contents($dir.'/composer.json');
+        self::assertIsString($composerJson);
 
         $locker = new Locker(new NullIO(), new JsonFile($lockPath), $this->createInstallationManagerMock(), $composerJson);
         $locker->updateHash(new JsonFile($dir.'/composer.json'));
@@ -294,6 +292,7 @@ class LockerTest extends TestCase
         $locker->updateHash(new JsonFile($dir.'/composer.json'));
 
         $canonical = file_get_contents($lockPath);
+        self::assertIsString($canonical);
         $oldMtime = time() - 30;
         touch($lockPath, $oldMtime);
         clearstatcache(true, $lockPath);
@@ -305,6 +304,9 @@ class LockerTest extends TestCase
         self::assertSame($oldMtime, filemtime($lockPath));
     }
 
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject&JsonFile
+     */
     private function createJsonFileMock()
     {
         return $this->getMockBuilder('Composer\Json\JsonFile')
