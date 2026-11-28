@@ -281,6 +281,46 @@ Now the `custom-plugin-command` is available alongside Composer commands.
 
 > _Composer commands are based on the [Symfony Console Component][10]._
 
+### Authentication provider
+
+The [`Composer\Plugin\Capability\AuthenticationProvider`][14] capability allows a
+plugin to provide authentication credentials for host origins, as an alternative
+or complement to credentials stored in auth.json files.
+
+Credentials must be returned in the same shape Composer uses internally, the
+password doubling as an auth scheme marker, for example `x-oauth-basic` for
+GitHub, `oauth2` or `private-token` for GitLab, or the plain password for HTTP
+basic auth.
+
+```php
+<?php
+
+namespace My\Composer;
+
+use Composer\Plugin\Capability\AuthenticationProvider as AuthenticationProviderCapability;
+
+class AuthenticationProvider implements AuthenticationProviderCapability
+{
+    public function getAuthentication(string $origin): ?array
+    {
+        if ($origin === 'packages.example.org') {
+            return ['username' => 'me', 'password' => 'secret'];
+        }
+
+        return null;
+    }
+}
+```
+
+This capability receives an array with `composer`, `io`, `config` and `plugin`
+keys as constructor argument, mirroring the arguments Composer uses when
+instantiating a capability.
+
+When a plugin provides this capability, Composer consults it as a source of
+credentials for origins without locally configured authentication, for example
+in auth.json files. Locally configured authentication always takes precedence
+over credentials provided by authentication providers.
+
 ## Running plugins manually
 
 Plugins for an event can be run manually by the `run-script` command. This works the same way as
@@ -391,3 +431,4 @@ includes:
 [11]: https://github.com/composer/composer/blob/main/src/Composer/Util/SyncHelper.php
 [12]: https://phpstan.org/config-reference#multiple-files
 [13]: https://github.com/phpstan/extension-installer#usage
+[14]: https://github.com/composer/composer/blob/main/src/Composer/Plugin/Capability/AuthenticationProvider.php
