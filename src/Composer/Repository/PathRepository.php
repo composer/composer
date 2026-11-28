@@ -26,6 +26,7 @@ use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
 use Composer\Util\Url;
 use Composer\Util\Git as GitUtil;
+use Symfony\Component\Finder\Finder;
 
 /**
  * This repository allows installing local packages that are not necessarily under their own VCS.
@@ -251,6 +252,49 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
         // Ensure environment-specific path separators are normalized to URL separators
         return array_map(static function ($val): string {
             return rtrim(str_replace(DIRECTORY_SEPARATOR, '/', $val), '/');
-        }, glob($this->url, $flags));
+        }, $this->globPath($this->url, $flags));
+    }
+
+    /**
+     * @return string[]
+     */
+    private function globPath(string $url, int $flags): array
+    {
+        $parts = explode('/', str_replace(DIRECTORY_SEPARATOR, '/', $url));
+        $recursivePart = array_search('**', $parts, true);
+        if (false === $recursivePart) {
+            $matches = glob($url, $flags);
+
+            return $matches === false ? [] : $matches;
+        }
+
+        $base = implode('/', array_slice($parts, 0, $recursivePart));
+        if ('' === $base) {
+            $base = isset($url[0]) && '/' === $url[0] ? '/' : '.';
+        }
+        $remaining = implode('/', array_slice($parts, $recursivePart + 1));
+        $matches = [];
+
+        $roots = glob($base, $flags);
+        foreach ($roots === false ? [] : $roots as $root) {
+            $directories = [$root];
+            foreach (Finder::create()->directories()->ignoreDotFiles(true)->in($root) as $directory) {
+                if (!$directory->isLink()) {
+                    $directories[] = $directory->getPathname();
+                }
+            }
+
+            foreach ($directories as $directory) {
+                $candidate = '' === $remaining ? $directory : rtrim($directory, '/').'/'.$remaining;
+                foreach ($this->globPath($candidate, $flags) as $match) {
+                    $matches[] = $match;
+                }
+            }
+        }
+
+        $matches = array_values(array_unique($matches));
+        sort($matches);
+
+        return $matches;
     }
 }
