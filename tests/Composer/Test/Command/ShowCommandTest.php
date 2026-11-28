@@ -650,6 +650,27 @@ OUTPUT;
         );
     }
 
+    public function testLockedPathOfPackageWhichIsNotInstalled(): void
+    {
+        $this->initTempComposer();
+        $this->createComposerLock([static::getPackage('vendor/locked', '3.0.0')]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', '--locked' => true, '--path' => true]);
+        self::assertSame(0, $appTester->getStatusCode());
+        self::assertSame('vendor/locked null', trim($appTester->getDisplay(true)));
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', '--locked' => true, '--path' => true, '--format' => 'json']);
+        self::assertSame(0, $appTester->getStatusCode());
+        self::assertSame([['name' => 'vendor/locked', 'direct-dependency' => false, 'homepage' => null, 'source' => null, 'path' => null, 'abandoned' => false]], json_decode($appTester->getDisplay(true), true)['locked']);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', '--locked' => true, '--path' => true, 'package' => 'vendor/locked']);
+        self::assertSame(0, $appTester->getStatusCode());
+        self::assertSame('vendor/locked null', trim($appTester->getDisplay(true)));
+    }
+
     public function testInvalidOptionCombinations(): void
     {
         $appTester = $this->getApplicationTester();

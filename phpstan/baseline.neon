@@ -727,11 +727,6 @@ parameters:
 			path: ../src/Composer/Command/ShowCommand.php
 
 		-
-			message: "#^Parameter \\#1 \\$str of function strtok expects string, string\\|false given\\.$#"
-			count: 2
-			path: ../src/Composer/Command/ShowCommand.php
-
-		-
 			message: "#^Parameter \\#1 \\$var of function count expects array\\|Countable, array\\<int, array\\<string, array\\|string\\>\\>\\|string given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ShowCommand.php
