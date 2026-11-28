@@ -367,8 +367,10 @@ EOT
             if ($input->getOption('path')) {
                 $io->write($package->getName(), false);
                 $path = $composer->getInstallationManager()->getInstallPath($package);
+                // realpath() fails for packages which are locked but not installed
+                $path = is_string($path) ? realpath($path) : false;
                 if (is_string($path)) {
-                    $io->write(' ' . strtok(realpath($path), "\r\n"));
+                    $io->write(' ' . strtok($path, "\r\n"));
                 } else {
                     $io->write(' null');
                 }
@@ -627,8 +629,10 @@ EOT
                         }
                         if ($writePath) {
                             $path = $composer->getInstallationManager()->getInstallPath($package);
+                            // realpath() fails for packages which are locked but not installed
+                            $path = is_string($path) ? realpath($path) : false;
                             if (is_string($path)) {
-                                $packageViewData['path'] = strtok(realpath($path), "\r\n");
+                                $packageViewData['path'] = strtok($path, "\r\n");
                             } else {
                                 $packageViewData['path'] = null;
                             }
