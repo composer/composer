@@ -50,7 +50,7 @@ use React\Promise\PromiseInterface;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ComposerRepository extends ArrayRepository implements ConfigurableRepositoryInterface, AdvisoryProviderInterface, FilterListProviderInterface
+class ComposerRepository extends ArrayRepository implements BatchLoadingRepositoryInterface, ConfigurableRepositoryInterface, AdvisoryProviderInterface, FilterListProviderInterface
 {
     /**
      * Package names per security-advisories API request
@@ -75,6 +75,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $io;
     /** @var HttpDownloader */
     private $httpDownloader;
+    /** @var PackageLoadBudget|null */
+    private $packageLoadBudget;
+
     /** @var Loop */
     private $loop;
     /** @var Cache */
@@ -569,6 +572,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         return $result['packageNames'];
+    }
+
+    public function configurePackageLoading(PackageLoadBudget $budget): void
+    {
+        $this->packageLoadBudget = $budget;
     }
 
     public function loadPackages(array $packageNameMap, array $acceptableStabilities, array $stabilityFlags, array $alreadyLoaded = [])
@@ -1381,21 +1389,15 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $packages = [];
         $namesFound = [];
         $promises = [];
+        $memoryBefore = memory_get_usage();
+        $budget = $this->packageLoadBudget;
 
         if (null === $this->lazyProvidersUrl) {
             throw new \LogicException('loadAsyncPackages only supports v2 protocol composer repos with a metadata-url');
         }
 
-        // load ~dev versions of the packages as well if needed
-        foreach ($packageNames as $name => $constraint) {
-            if ($acceptableStabilities === null || $stabilityFlags === null || StabilityFilter::isPackageAcceptable($acceptableStabilities, $stabilityFlags, [$name], 'dev')) {
-                $packageNames[$name.'~dev'] = $constraint;
-            }
-            // if only dev stability is requested, we skip loading the non dev file
-            if (isset($acceptableStabilities['dev']) && count($acceptableStabilities) === 1 && count($stabilityFlags) === 0) {
-                unset($packageNames[$name]);
-            }
-        }
+        $packageNames = $this->expandAsyncPackageNames($packageNames, $acceptableStabilities, $stabilityFlags);
+        $filter = $this->createPackageVersionFilter($acceptableStabilities, $stabilityFlags, $alreadyLoaded);
 
         foreach ($packageNames as $name => $constraint) {
             $name = strtolower($name);
@@ -1407,54 +1409,107 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             $promises[] = $this->startCachedAsyncDownload($name, $realName)
-                ->then(function (array $spec) use (&$packages, &$namesFound, $realName, $constraint, $acceptableStabilities, $stabilityFlags, $alreadyLoaded): void {
-                    [$response, $packagesSource] = $spec;
-                    if (null === $response || !isset($response['packages'][$realName])) {
-                        return;
-                    }
+                ->then(function (array $spec) use (&$packages, &$namesFound, $realName, $constraint, $filter): void {
+                    $matches = $this->loadAsyncPackageVersions($spec, $realName, $constraint, $filter);
 
-                    $versions = $response['packages'][$realName];
-
-                    if (isset($response['minified']) && $response['minified'] === 'composer/2.0') {
-                        $versions = MetadataMinifier::expand($versions);
-                    }
-
-                    $namesFound[$realName] = true;
-                    $versionsToLoad = [];
-                    foreach ($versions as $version) {
-                        if (!isset($version['version_normalized'])) {
-                            $version['version_normalized'] = $this->versionParser->normalize($version['version']);
-                        } elseif ($version['version_normalized'] === VersionParser::DEFAULT_BRANCH_ALIAS) {
-                            // handling of existing repos which need to remain composer v1 compatible, in case the version_normalized contained VersionParser::DEFAULT_BRANCH_ALIAS, we renormalize it
-                            $version['version_normalized'] = $this->versionParser->normalize($version['version']);
-                        }
-
-                        // avoid loading packages which have already been loaded
-                        if (isset($alreadyLoaded[$realName][$version['version_normalized']])) {
-                            continue;
-                        }
-
-                        if ($this->isVersionAcceptable($constraint, $realName, $version, $acceptableStabilities, $stabilityFlags)) {
-                            $versionsToLoad[] = $version;
-                        }
-                    }
-
-                    $loadedPackages = $this->createPackages($versionsToLoad, $packagesSource);
-                    foreach ($loadedPackages as $package) {
-                        $package->setRepository($this);
-                        $packages[spl_object_id($package)] = $package;
-
-                        if ($package instanceof AliasPackage && !isset($packages[spl_object_id($package->getAliasOf())])) {
-                            $package->getAliasOf()->setRepository($this);
-                            $packages[spl_object_id($package->getAliasOf())] = $package->getAliasOf();
-                        }
+                    if ($matches !== null) {
+                        $namesFound[$realName] = true;
+                        $packages += $matches;
                     }
                 });
+
+            if ($budget !== null && $budget->shouldFlush(memory_get_usage() - $memoryBefore)) {
+                $this->loop->wait($promises);
+                $promises = [];
+                $memoryBefore = memory_get_usage();
+            }
         }
 
         $this->loop->wait($promises);
 
         return ['namesFound' => $namesFound, 'packages' => $packages];
+    }
+
+    /**
+     * @param array<key-of<BasePackage::STABILITIES>, BasePackage::STABILITY_*>|null $acceptableStabilities
+     * @param array<string, BasePackage::STABILITY_*>|null $stabilityFlags
+     * @param array<string, array<string, PackageInterface>> $alreadyLoaded
+     * @return \Closure(string, ?ConstraintInterface, array<array<string, mixed>>): array<array<string, mixed>>
+     */
+    private function createPackageVersionFilter(?array $acceptableStabilities, ?array $stabilityFlags, array $alreadyLoaded): \Closure
+    {
+        return function (string $name, ?ConstraintInterface $constraint, array $versions) use ($acceptableStabilities, $stabilityFlags, $alreadyLoaded): array {
+            $versionsToLoad = [];
+
+            foreach ($versions as $version) {
+                // Normalize versions on demand, including legacy default branch aliases from Composer v1 repositories
+                if (!isset($version['version_normalized']) || $version['version_normalized'] === VersionParser::DEFAULT_BRANCH_ALIAS) {
+                    $version['version_normalized'] = $this->versionParser->normalize($version['version']);
+                }
+
+                // avoid loading packages which have already been loaded
+                if (!isset($alreadyLoaded[$name][$version['version_normalized']]) && $this->isVersionAcceptable($constraint, $name, $version, $acceptableStabilities, $stabilityFlags)) {
+                    $versionsToLoad[] = $version;
+                }
+            }
+
+            return $versionsToLoad;
+        };
+    }
+
+    /**
+     * @param array<string, ConstraintInterface|null> $packageNames
+     * @param array<key-of<BasePackage::STABILITIES>, BasePackage::STABILITY_*>|null $acceptableStabilities
+     * @param array<string, BasePackage::STABILITY_*>|null $stabilityFlags
+     * @return array<string, ConstraintInterface|null>
+     */
+    private function expandAsyncPackageNames(array $packageNames, ?array $acceptableStabilities, ?array $stabilityFlags): array
+    {
+        // load ~dev versions of the packages as well if needed
+        foreach ($packageNames as $name => $constraint) {
+            if ($acceptableStabilities === null || $stabilityFlags === null || StabilityFilter::isPackageAcceptable($acceptableStabilities, $stabilityFlags, [$name], 'dev')) {
+                $packageNames[$name.'~dev'] = $constraint;
+            }
+            // if only dev stability is requested, we skip loading the non dev file
+            if (isset($acceptableStabilities['dev']) && count($acceptableStabilities) === 1 && count($stabilityFlags) === 0) {
+                unset($packageNames[$name]);
+            }
+        }
+
+        return $packageNames;
+    }
+
+    /**
+     * @param array{mixed, string} $spec
+     * @param callable(string, ?ConstraintInterface, array<array<string, mixed>>): array<array<string, mixed>> $filter
+     * @return array<int, BasePackage>|null
+     */
+    private function loadAsyncPackageVersions(array $spec, string $name, ?ConstraintInterface $constraint, callable $filter): ?array
+    {
+        [$response, $packagesSource] = $spec;
+
+        if ($response === null || !isset($response['packages'][$name])) {
+            return null;
+        }
+        $versions = $response['packages'][$name];
+
+        if (isset($response['minified']) && $response['minified'] === 'composer/2.0') {
+            $versions = MetadataMinifier::expand($versions);
+        }
+        $versions = $filter($name, $constraint, $versions);
+        $packages = [];
+
+        foreach ($this->createPackages($versions, $packagesSource) as $package) {
+            $package->setRepository($this);
+            $packages[spl_object_id($package)] = $package;
+
+            if ($package instanceof AliasPackage && !isset($packages[spl_object_id($package->getAliasOf())])) {
+                $package->getAliasOf()->setRepository($this);
+                $packages[spl_object_id($package->getAliasOf())] = $package->getAliasOf();
+            }
+        }
+
+        return $packages;
     }
 
     /**

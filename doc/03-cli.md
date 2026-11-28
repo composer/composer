@@ -1436,7 +1436,7 @@ on how to use proxy env vars.
 ### COMPOSER_MAX_PARALLEL_HTTP
 
 Set to an integer to configure how many files can be downloaded in parallel. This
-defaults to 12 and must be between 1 and 50. If your proxy has issues with
+defaults to 36 across all hosts and must be between 1 and 50. If your proxy has issues with
 concurrency maybe you want to lower this. Increasing it should generally not result
 in performance gains.
 

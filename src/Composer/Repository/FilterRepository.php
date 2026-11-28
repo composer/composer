@@ -22,7 +22,7 @@ use Composer\Pcre\Preg;
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class FilterRepository implements RepositoryInterface, AdvisoryProviderInterface, FilterListProviderInterface
+class FilterRepository implements BatchLoadingRepositoryInterface, AdvisoryProviderInterface, FilterListProviderInterface
 {
     /** @var ?string */
     private $only = null;
@@ -106,6 +106,13 @@ class FilterRepository implements RepositoryInterface, AdvisoryProviderInterface
         }
 
         return $this->repo->findPackages($name, $constraint);
+    }
+
+    public function configurePackageLoading(PackageLoadBudget $budget): void
+    {
+        if ($this->repo instanceof BatchLoadingRepositoryInterface) {
+            $this->repo->configurePackageLoading($budget);
+        }
     }
 
     /**

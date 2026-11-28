@@ -21,7 +21,7 @@ use Composer\Package\PackageInterface;
  *
  * @author Beau Simensen <beau@dflydev.com>
  */
-class CompositeRepository implements RepositoryInterface
+class CompositeRepository implements BatchLoadingRepositoryInterface
 {
     /**
      * List of repositories
@@ -101,6 +101,15 @@ class CompositeRepository implements RepositoryInterface
         }
 
         return $packages ? array_merge(...$packages) : [];
+    }
+
+    public function configurePackageLoading(PackageLoadBudget $budget): void
+    {
+        foreach ($this->repositories as $repository) {
+            if ($repository instanceof BatchLoadingRepositoryInterface) {
+                $repository->configurePackageLoading($budget);
+            }
+        }
     }
 
     /**

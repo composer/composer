@@ -20,6 +20,11 @@ use Composer\Package\Package;
 use Composer\Json\JsonFile;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\RepositoryInterface;
+use Composer\Repository\PackageLoadBudget;
+use Composer\Util\HttpDownloader;
+use Composer\Util\Http\Response;
+use React\Promise\Deferred;
+use React\Promise\PromiseInterface;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Test\Mock\FactoryMock;
@@ -28,6 +33,52 @@ use Composer\Package\Loader\ArrayLoader;
 
 class ComposerRepositoryTest extends TestCase
 {
+    /** @dataProvider provideMetadataBudgets */
+    public function testMemoryBudgetDrainsPendingMetadata(int $budget, int $expectedPeak): void
+    {
+        $http = $this->createMock(HttpDownloader::class);
+        $http->method('get')->willReturn(new Response(['url' => 'https://repo.test/packages.json'], 200, [], '{"packages":{},"metadata-url":"/p2/%package%.json"}'));
+        $pending = [];
+        $peak = 0;
+        $http->method('add')->willReturnCallback(static function (string $url) use (&$pending, &$peak): PromiseInterface {
+            /** @var Deferred<Response> $deferred */
+            $deferred = new Deferred;
+            self::assertNotSame('', $url);
+            $pending[$url] = $deferred;
+            $peak = max($peak, count($pending));
+
+            return $deferred->promise();
+        });
+        $http->method('countActiveJobs')->willReturnCallback(static function () use (&$pending): int {
+            foreach ($pending as $url => $deferred) {
+                $name = basename($url, '.json');
+                $body = ['packages' => ['vendor/'.$name => [['name' => 'vendor/'.$name, 'version' => '1.0']]]];
+                $deferred->resolve(new Response(['url' => $url], 200, [], JsonFile::encode($body)));
+            }
+            $pending = [];
+
+            return 0;
+        });
+
+        $config = FactoryMock::createConfig();
+        $config->merge(['config' => ['cache-dir' => '/dev/null']]);
+        $repo = new ComposerRepository(['url' => 'https://repo.test'], new NullIO, $config, $http);
+        $repo->configurePackageLoading(new PackageLoadBudget($budget));
+        $names = ['vendor/one' => null, 'vendor/two' => null, 'vendor/three' => null];
+        $result = $repo->loadPackages($names, ['stable' => 0], []);
+
+        self::assertSame($expectedPeak, $peak);
+        self::assertSame(array_keys($names), $result['namesFound']);
+        self::assertCount(3, $result['packages']);
+    }
+
+    /** @return iterable<string, array{int, int}> */
+    public static function provideMetadataBudgets(): iterable
+    {
+        yield 'drain after each request' => [1, 1];
+        yield 'keep all requests pending' => [PHP_INT_MAX, 3];
+    }
+
     /**
      * @dataProvider loadDataProvider
      *
